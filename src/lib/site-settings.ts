@@ -66,7 +66,7 @@ export const SETTINGS_FALLBACK: SiteSettings = {
   aboutTitle: '',
   aboutBody: '',
   footerAbout: '',
-  productsTitle: 'Các mẫu diều',
+  productsTitle: 'Các mẫu sản phẩm',
   promoTitle: 'Đang khuyến mãi',
   categoryTitle: 'Danh mục diều',
   aboutHeading: 'Xưởng diều Hậu Trần',

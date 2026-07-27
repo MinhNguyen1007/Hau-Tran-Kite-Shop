@@ -38,15 +38,12 @@ export function NewArrivals({
   categories: Category[]
   title: string
 }) {
-  // Danh mục rỗng (chưa có sản phẩm nào thuộc nó) bị loại khỏi tab — tab bấm vào chỉ để thấy
-  // "chưa có mẫu nào" là tab vô ích.
-  const usable = categories.filter((category) =>
-    products.some((product) => product.categoryId === category.id),
-  )
-
+  // Hiện ĐỦ mọi danh mục, kể cả danh mục chưa có sản phẩm nào (yêu cầu user 2026-07-27):
+  // hàng tab là cách khách thấy shop bán những gì, giấu nhóm rỗng đi thì trông như shop
+  // không làm mặt hàng đó. Tab rỗng có sẵn lời mời nhắn Zalo đặt riêng.
   const tabs: ProductTab[] = [
     { id: 'all', label: 'Tất cả', content: <ProductRail products={products} /> },
-    ...usable.map((category) => ({
+    ...categories.map((category) => ({
       id: category.id,
       label: category.name,
       content: (
