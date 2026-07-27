@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { ArchiveButton } from '@/components/admin/ArchiveButton'
-import { formatProductPrice } from '@/lib/product-shared'
+import { visiblePrice } from '@/lib/product-shared'
 import { getProductsForAdmin } from '@/lib/products'
 
 export default async function AdminProductsPage() {
@@ -54,10 +54,9 @@ export default async function AdminProductsPage() {
                     )}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap font-semibold text-ink-900 dark:text-stone-100">
-                    {formatProductPrice(product)}
-                    {product.sizes.length > 0 && (
-                      <span className="block text-xs font-normal text-stone-500 dark:text-stone-400">
-                        {product.sizes.length} cỡ
+                    {visiblePrice(product) ?? (
+                      <span className="font-normal text-stone-500 dark:text-stone-400">
+                        {product.priceText.trim() === '' ? '— chưa ghi giá —' : '— đang ẩn giá —'}
                       </span>
                     )}
                   </td>

@@ -1,29 +1,35 @@
 ---
 name: product-card
-description: Dùng khi render sản phẩm ra UI — card trong lưới danh sách, trang chi tiết, hoặc bất kỳ chỗ nào hiện ảnh/giá/nút yêu thích. Chốt cách format giá VND (khoảng giá theo cỡ), lấy ảnh từ Supabase Storage, và vì sao không có tồn kho.
+description: Dùng khi render sản phẩm ra UI — card trong lưới danh sách, trang chi tiết, hoặc bất kỳ chỗ nào hiện ảnh/giá/nút yêu thích. Chốt cách hiện giá (chữ tự do, admin ẩn được), lấy ảnh từ Supabase Storage, và vì sao không có tồn kho lẫn bộ chọn cỡ.
 ---
 
 # Card sản phẩm
 
-## Giá — luôn VND, và thường là KHOẢNG giá
+## Giá — CHỮ TỰ DO, admin ẩn được
 
-Lưu trong DB là **integer đồng**, không float, không chuỗi. Hai nguồn:
+`products.price_text` là chuỗi admin gõ tay: "3 triệu – 5 triệu", "350.000 ₫", "Liên hệ".
+Shop làm thủ công theo yêu cầu nên không có bảng giá cố định — đừng cố ép về số.
 
-- `product_sizes` — mẫu bán nhiều cỡ, mỗi cỡ một giá. Đây là ca thường gặp với diều.
-- `products.price_vnd` — mẫu bán một mức (vải, dây, phụ kiện). Có bảng cỡ thì giá này bị bỏ qua.
-
-Render bằng `formatProductPrice(product)` trong `src/lib/product-shared.ts`, KHÔNG gọi
-`formatVnd(product.priceVnd)` thẳng — mẫu nhiều cỡ sẽ hiện sai một con số thay vì khoảng giá.
+Đọc bằng `visiblePrice(product)` trong `src/lib/product-shared.ts`, ĐỪNG đọc thẳng
+`product.priceText`:
 
 ```ts
-formatProductPrice(product)   // "1.000.000 – 3.000.000 ₫" hoặc "450.000 ₫"
+visiblePrice(product)   // string | null
 ```
 
-⚠ `Intl.NumberFormat('vi-VN')` ngăn số với ₫ bằng **NBSP (U+00A0)**, không phải dấu cách
-thường. Test so chuỗi bằng literal gõ tay sẽ trượt dù nhìn y hệt — dựng mốc so sánh từ chính
-`formatVnd`.
+Nó lo luôn **hai** đường ẩn giá — `show_price = false` (admin tạm ẩn nhưng vẫn giữ chữ) và
+chuỗi rỗng (chưa ghi). Rải tay ra là chỗ hiện giá chỗ không, khách thấy mâu thuẫn.
 
-Không tự nối `.toLocaleString() + ' đ'` rải rác trong component — dùng đúng một helper.
+`null` → hiện "Liên hệ để biết giá", đừng để chỗ trống.
+
+`formatVnd` vẫn còn cho nơi thật sự có số. ⚠ `Intl.NumberFormat('vi-VN')` ngăn số với ₫ bằng
+**NBSP (U+00A0)**, không phải dấu cách thường — test so chuỗi bằng literal gõ tay sẽ trượt dù
+nhìn y hệt.
+
+## Kích thước là MÔ TẢ, không phải lựa chọn
+
+`products.size_note` — "Nhận làm từ 3m đến 5m, cỡ lớn hơn liên hệ shop". Đừng dựng lại bộ chọn
+cỡ: shop làm theo yêu cầu, cho khách "chọn" là hứa những thứ chưa chắc làm được.
 
 ## Ảnh
 

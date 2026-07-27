@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { formatVnd } from './format'
 import {
   addItem,
   hasItem,
@@ -14,8 +15,7 @@ const dieu = {
   productId: 'p1',
   slug: 'dieu-canh-coc-lon',
   name: 'Diều cánh cốc lớn',
-  priceVnd: 450_000,
-  priceMaxVnd: null,
+  priceText: '450.000 ₫',
   imagePath: null,
 }
 
@@ -23,8 +23,7 @@ const sao = {
   productId: 'p2',
   slug: 'sao-dieu-tre',
   name: 'Sáo diều tre',
-  priceVnd: 120_000,
-  priceMaxVnd: null,
+  priceText: '120.000 ₫',
   imagePath: 'kites/sao.webp',
 }
 
@@ -46,8 +45,8 @@ describe('addItem', () => {
   })
 
   it('làm mới snapshot tên/giá khi thích lại', () => {
-    const list = addItem(addItem([], dieu), { ...dieu, priceVnd: 500_000 })
-    expect(list[0].priceVnd).toBe(500_000)
+    const list = addItem(addItem([], dieu), { ...dieu, priceText: '500.000 ₫' })
+    expect(list[0].priceText).toBe('500.000 ₫')
   })
 
   it('xếp mới nhất lên đầu', () => {
@@ -98,9 +97,9 @@ describe('mergeWishlists', () => {
   })
 
   it('trùng productId thì lấy snapshot của DB (đáng tin hơn localStorage cũ)', () => {
-    const local = addItem([], { ...dieu, priceVnd: 111_000 }, '2026-01-01T00:00:00.000Z')
-    const remote = addItem([], { ...dieu, priceVnd: 450_000 }, '2026-07-01T00:00:00.000Z')
-    expect(mergeWishlists(local, remote)[0].priceVnd).toBe(450_000)
+    const local = addItem([], { ...dieu, priceText: 'giá cũ' }, '2026-01-01T00:00:00.000Z')
+    const remote = addItem([], { ...dieu, priceText: '3 triệu – 5 triệu' }, '2026-07-01T00:00:00.000Z')
+    expect(mergeWishlists(local, remote)[0].priceText).toBe('3 triệu – 5 triệu')
   })
 
   it('merge hai lần cho cùng kết quả — đăng nhập lại không nhân bản', () => {
@@ -135,9 +134,9 @@ describe('parseWishlist', () => {
     expect(parseWishlist(JSON.stringify([dieu]))).toEqual([])
   })
 
-  // Dòng lưu trước 2026-07-27 có `stock` và không có `priceMaxVnd`. Đổi schema mà xoá sạch
-  // danh sách của khách là mất dữ liệu thật, nên phải đọc được cả bản cũ.
-  it('vẫn đọc được dòng lưu theo schema cũ (có stock, thiếu priceMaxVnd)', () => {
+  // Dòng lưu trước 2026-07-27 mang `priceVnd` dạng SỐ (và có cả `stock`). Đổi schema mà xoá
+  // sạch danh sách của khách là mất dữ liệu thật, nên phải đọc được cả bản cũ.
+  it('vẫn đọc được dòng lưu theo schema cũ và dựng lại chuỗi giá từ priceVnd', () => {
     const legacy = {
       productId: 'p1',
       slug: 'dieu-canh-coc-lon',
@@ -149,26 +148,38 @@ describe('parseWishlist', () => {
     }
     const list = parseWishlist(JSON.stringify([legacy]))
     expect(list).toHaveLength(1)
-    expect(list[0].priceMaxVnd).toBeNull()
+    expect(list[0].priceText).toBe(formatVnd(450_000))
+  })
+
+  it('dòng cũ không có giá nào thì priceText rỗng, không phải undefined', () => {
+    const legacy = {
+      productId: 'p1',
+      slug: 'dieu-nho',
+      name: 'Diều nhỏ',
+      imagePath: null,
+      addedAt: '2026-07-01T00:00:00.000Z',
+    }
+    expect(parseWishlist(JSON.stringify([legacy]))[0].priceText).toBe('')
   })
 })
 
 describe('toWishlistItem', () => {
-  const base = { id: 'p9', slug: 'dieu-nho', name: 'Diều nhỏ', priceVnd: 90_000, imagePath: null }
+  const base = {
+    id: 'p9',
+    slug: 'dieu-nho',
+    name: 'Diều nhỏ',
+    priceText: '3 triệu – 5 triệu',
+    imagePath: null,
+  }
 
-  it('mẫu bán một mức: dùng priceVnd, không có giá trần', () => {
-    const item = toWishlistItem(base)
+  it('chép lại chuỗi giá khi shop có công khai giá', () => {
+    const item = toWishlistItem({ ...base, showPrice: true })
     expect(item.productId).toBe('p9')
-    expect(item.priceVnd).toBe(90_000)
-    expect(item.priceMaxVnd).toBeNull()
+    expect(item.priceText).toBe('3 triệu – 5 triệu')
   })
 
-  it('mẫu nhiều cỡ: lấy khoảng giá từ bảng cỡ, bỏ qua priceVnd', () => {
-    const item = toWishlistItem({
-      ...base,
-      sizes: [{ priceVnd: 2_200_000 }, { priceVnd: 1_000_000 }, { priceVnd: 3_000_000 }],
-    })
-    expect(item.priceVnd).toBe(1_000_000)
-    expect(item.priceMaxVnd).toBe(3_000_000)
+  // Danh sách yêu thích không được lộ giá mà trang sản phẩm đang giấu.
+  it('bỏ trống giá khi shop tắt hiện giá', () => {
+    expect(toWishlistItem({ ...base, showPrice: false }).priceText).toBe('')
   })
 })

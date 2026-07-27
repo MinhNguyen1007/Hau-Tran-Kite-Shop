@@ -7,7 +7,6 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ContactCta } from '@/components/contact/ContactCta'
 import { useWishlist } from '@/components/wishlist/useWishlist'
-import { formatPriceRange } from '@/lib/product-shared'
 import { getProductImageUrl } from '@/lib/storage'
 import type { WishlistItem } from '@/lib/wishlist'
 
@@ -99,9 +98,12 @@ function WishlistLine({ item, onRemove }: { item: WishlistItem; onRemove: () => 
           </button>
         </div>
 
-        <span className="text-sm font-bold text-brand-600 dark:text-brand-400">
-          {formatPriceRange(item.priceVnd, item.priceMaxVnd ?? item.priceVnd)}
-        </span>
+        {/* Rỗng = shop không công khai giá mẫu này. Bỏ trống chỗ đó thay vì hiện "0 ₫". */}
+        {item.priceText && (
+          <span className="text-sm font-bold text-brand-600 dark:text-brand-400">
+            {item.priceText}
+          </span>
+        )}
       </div>
     </li>
   )

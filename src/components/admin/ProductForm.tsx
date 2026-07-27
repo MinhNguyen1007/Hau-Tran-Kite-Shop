@@ -2,21 +2,15 @@
 
 // Form dùng chung cho tạo mới và sửa sản phẩm. Gửi lên API admin (validate + kiểm quyền ở đó),
 // form này chỉ lo trải nghiệm nhập liệu.
-import { Plus, Trash, WarningCircle } from '@phosphor-icons/react'
+import { WarningCircle } from '@phosphor-icons/react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import type { Category } from '@/lib/categories'
-import { formatVnd } from '@/lib/format'
-import { formatPriceRange } from '@/lib/product-shared'
 import type { Product } from '@/lib/products'
 import { Field, inputClass } from './FormField'
 import { ImageUploader } from './ImageUploader'
 import { slugify } from './slugify'
-
-// Dòng cỡ giữ giá dạng CHUỖI trong lúc nhập: ô number cho phép rỗng và ký tự 'e',
-// ép sang số ngay sẽ biến ô trống thành 0 và admin không xoá đi được để gõ lại.
-type SizeRow = { label: string; price: string }
 
 export function ProductForm({
   product,
@@ -35,7 +29,9 @@ export function ProductForm({
   const [slugTouched, setSlugTouched] = useState(editing)
   const [description, setDescription] = useState(product?.description ?? '')
   const [categoryId, setCategoryId] = useState(product?.categoryId ?? '')
-  const [priceVnd, setPriceVnd] = useState(String(product?.priceVnd ?? ''))
+  const [priceText, setPriceText] = useState(product?.priceText ?? '')
+  const [showPrice, setShowPrice] = useState(product?.showPrice ?? true)
+  const [sizeNote, setSizeNote] = useState(product?.sizeNote ?? '')
   const [images, setImages] = useState<string[]>(() => {
     // Ảnh bìa đứng đầu, rồi tới bộ ảnh chi tiết. Gộp thành MỘT danh sách cho admin kéo thả
     // trực quan; lúc gửi lên mới tách lại thành imagePath + images.
@@ -43,9 +39,6 @@ export function ProductForm({
     const cover = product?.imagePath
     return cover ? [cover, ...gallery.filter((path) => path !== cover)] : gallery
   })
-  const [sizes, setSizes] = useState<SizeRow[]>(
-    () => product?.sizes.map((size) => ({ label: size.label, price: String(size.priceVnd) })) ?? [],
-  )
 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -55,43 +48,21 @@ export function ProductForm({
     if (!slugTouched) setSlug(slugify(value))
   }
 
-  function updateSize(index: number, patch: Partial<SizeRow>) {
-    setSizes((rows) => rows.map((row, i) => (i === index ? { ...row, ...patch } : row)))
-  }
-
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     setSaving(true)
     setError(null)
 
-    const parsedSizes = sizes
-      .filter((row) => row.label.trim() !== '')
-      .map((row) => ({ label: row.label.trim(), priceVnd: Number(row.price) }))
-
-    if (parsedSizes.some((size) => !Number.isInteger(size.priceVnd))) {
-      setError('Giá của mỗi cỡ phải là số nguyên đồng')
-      setSaving(false)
-      return
-    }
-
-    // Mẫu không khai cỡ nào thì bắt buộc phải có giá chung, không thì trang khách trống trơn.
-    const basePrice = Number(priceVnd)
-    if (parsedSizes.length === 0 && !Number.isInteger(basePrice)) {
-      setError('Nhập giá cho sản phẩm, hoặc thêm ít nhất một cỡ kèm giá')
-      setSaving(false)
-      return
-    }
-
     const body = {
       slug: slug.trim(),
       name: name.trim(),
       description: description.trim(),
-      // Có bảng cỡ thì giá chung không hiện ra đâu cả — gửi 0 cho khỏi bắt admin nhập thừa.
-      priceVnd: parsedSizes.length > 0 ? (Number.isInteger(basePrice) ? basePrice : 0) : basePrice,
+      priceText: priceText.trim(),
+      showPrice,
+      sizeNote: sizeNote.trim(),
       categoryId,
       imagePath: images[0] ?? '',
       images: images.slice(1).map((path) => ({ imagePath: path, alt: '' })),
-      sizes: parsedSizes,
     }
 
     try {
@@ -119,16 +90,6 @@ export function ProductForm({
       setSaving(false)
     }
   }
-
-  // Xem trước đúng chuỗi giá khách sẽ thấy trên card.
-  const sizePrices = sizes.map((row) => Number(row.price)).filter((price) => Number.isFinite(price) && price > 0)
-  const basePriceNumber = Number(priceVnd)
-  const pricePreview =
-    sizePrices.length > 0
-      ? formatPriceRange(Math.min(...sizePrices), Math.max(...sizePrices))
-      : Number.isFinite(basePriceNumber) && basePriceNumber > 0
-        ? formatVnd(basePriceNumber)
-        : null
 
   return (
     <form onSubmit={handleSubmit} className="flex max-w-2xl flex-col gap-5">
@@ -198,85 +159,54 @@ export function ProductForm({
 
       <hr className="border-stone-200 dark:border-ink-700" />
 
-      <div className="flex flex-col gap-3">
-        <span className="text-sm font-semibold text-ink-900 dark:text-stone-100">
-          Giá theo kích thước
-        </span>
-        <p className="-mt-1 text-xs text-stone-600 dark:text-stone-400">
-          Mỗi sải cánh một giá, ví dụ &quot;3 mét&quot; · 1.000.000. Khách thấy khoảng giá ngoài
-          lưới và danh sách đầy đủ ở trang chi tiết. Để trống nếu mẫu này bán một mức duy nhất.
-        </p>
-
-        {sizes.map((row, index) => (
-          <div key={index} className="flex items-start gap-2">
-            <input
-              value={row.label}
-              onChange={(event) => updateSize(index, { label: event.target.value })}
-              placeholder="3 mét"
-              maxLength={60}
-              aria-label={`Tên cỡ thứ ${index + 1}`}
-              className={`${inputClass} flex-1`}
-            />
-            <input
-              type="number"
-              inputMode="numeric"
-              min={0}
-              step={1}
-              value={row.price}
-              onChange={(event) => updateSize(index, { price: event.target.value })}
-              placeholder="1000000"
-              aria-label={`Giá cỡ thứ ${index + 1}`}
-              className={`${inputClass} w-40`}
-            />
-            <button
-              type="button"
-              onClick={() => setSizes((rows) => rows.filter((_, i) => i !== index))}
-              aria-label={`Xoá cỡ thứ ${index + 1}`}
-              className="mt-1 grid h-9 w-9 shrink-0 place-items-center rounded-lg text-stone-500 transition-colors hover:bg-stone-100 hover:text-brand-700 dark:text-stone-400 dark:hover:bg-ink-800"
-            >
-              <Trash size={18} />
-            </button>
-          </div>
-        ))}
-
-        <button
-          type="button"
-          onClick={() => setSizes((rows) => [...rows, { label: '', price: '' }])}
-          className="flex w-fit items-center gap-1.5 rounded-full border border-stone-300 px-4 py-2 text-sm font-bold text-stone-800 transition-colors hover:bg-stone-100 dark:border-ink-700 dark:text-stone-200 dark:hover:bg-ink-800"
-        >
-          <Plus size={16} weight="bold" />
-          Thêm cỡ
-        </button>
-      </div>
+      <Field
+        label="Kích thước làm được"
+        htmlFor="product-size-note"
+        hint='Viết tự do, ví dụ: "Nhận làm từ 3m đến 5m, cỡ lớn hơn liên hệ shop". Để trống thì không hiện.'
+      >
+        <input
+          id="product-size-note"
+          value={sizeNote}
+          onChange={(event) => setSizeNote(event.target.value)}
+          placeholder="Nhận làm từ 3m đến 5m tuỳ yêu cầu"
+          maxLength={300}
+          className={inputClass}
+        />
+      </Field>
 
       <Field
-        label="Giá chung (đồng)"
+        label="Giá"
         htmlFor="product-price"
-        hint={
-          sizes.length > 0
-            ? 'Không dùng đến vì mẫu này đã có bảng cỡ ở trên'
-            : 'Dùng cho mẫu bán một mức duy nhất (vải, dây, phụ kiện)'
-        }
+        hint='Viết tự do, ví dụ: "3 triệu – 5 triệu" hoặc "350.000 ₫". Không có bảng giá cố định thì cứ ghi khoảng.'
       >
         <input
           id="product-price"
-          type="number"
-          inputMode="numeric"
-          min={0}
-          step={1}
-          value={priceVnd}
-          onChange={(event) => setPriceVnd(event.target.value)}
-          disabled={sizes.length > 0}
+          value={priceText}
+          onChange={(event) => setPriceText(event.target.value)}
+          placeholder="3 triệu – 5 triệu"
+          maxLength={120}
+          disabled={!showPrice}
           className={`${inputClass} disabled:cursor-not-allowed disabled:opacity-50`}
         />
       </Field>
 
-      {pricePreview && (
-        <p className="-mt-2 text-sm text-stone-600 dark:text-stone-400">
-          Khách sẽ thấy:{' '}
-          <strong className="font-bold text-brand-700 dark:text-brand-400">{pricePreview}</strong>
-        </p>
-      )}
+      {/* Tách khỏi ô giá để admin GIỮ giá đã ghi mà vẫn tạm ẩn được, khỏi xoá rồi gõ lại. */}
+      <label className="-mt-2 flex items-center gap-2.5 text-sm font-semibold text-ink-900 dark:text-stone-100">
+        <input
+          type="checkbox"
+          checked={showPrice}
+          onChange={(event) => setShowPrice(event.target.checked)}
+          className="h-4 w-4 accent-brand-600"
+        />
+        Hiện giá trên trang khách
+      </label>
+
+      <p className="-mt-2 text-sm text-stone-600 dark:text-stone-400">
+        Khách sẽ thấy:{' '}
+        <strong className="font-bold text-brand-700 dark:text-brand-400">
+          {showPrice && priceText.trim() !== '' ? priceText.trim() : 'không hiện giá'}
+        </strong>
+      </p>
 
       {error && (
         <p

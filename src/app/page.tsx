@@ -1,8 +1,7 @@
-// Trang chủ — bố cục theo thiết kế tham chiếu (public/images/anh.png):
-// banner → dải cam kết → các mẫu diều (tab) → khuyến mãi → danh mục → giới thiệu → kinh nghiệm.
+// Trang chủ: banner → dải cam kết → các mẫu sản phẩm (tab) → khuyến mãi → danh mục → giới thiệu.
+// Khối "Kinh nghiệm chơi diều" đã bỏ 2026-07-27 theo yêu cầu user, cùng lượt với trang /huong-dan.
 import { AboutStrip } from '@/components/home/AboutStrip'
 import { CategoryGrid } from '@/components/home/CategoryGrid'
-import { GuideCards } from '@/components/home/GuideCards'
 import { HeroBanner } from '@/components/home/HeroBanner'
 import { NewArrivals } from '@/components/home/NewArrivals'
 import { PromoBanners } from '@/components/home/PromoBanners'
@@ -36,7 +35,6 @@ export default async function Home() {
       <PromoBanners />
       <CategoryGrid />
       <AboutStrip />
-      <GuideCards />
     </>
   )
 }

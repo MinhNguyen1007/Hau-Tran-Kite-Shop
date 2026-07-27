@@ -5,7 +5,7 @@
 // mẫu nào cũng đặt được.
 import Image from 'next/image'
 import Link from 'next/link'
-import { formatProductPrice } from '@/lib/product-shared'
+import { visiblePrice } from '@/lib/product-shared'
 import type { Product } from '@/lib/products'
 import { getProductImageUrl } from '@/lib/storage'
 import { toWishlistItem } from '@/lib/wishlist'
@@ -19,6 +19,7 @@ export function ProductCard({
   priority?: boolean
 }) {
   const href = `/san-pham/${product.slug}`
+  const price = visiblePrice(product)
 
   return (
     <div className="flex h-full flex-col overflow-hidden rounded-xl border border-stone-200 bg-white transition-all hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-lg hover:shadow-brand-900/10 dark:border-ink-700 dark:bg-ink-900 dark:hover:border-brand-700">
@@ -51,16 +52,14 @@ export function ProductCard({
           {product.name}
         </Link>
 
+        {/* Shop có thể không công khai giá. Khi đó mời khách hỏi thay vì để chỗ trống. */}
         <span className="mt-auto text-base font-extrabold text-brand-600 dark:text-brand-400">
-          {formatProductPrice(product)}
+          {price ?? (
+            <span className="text-sm font-bold text-stone-600 dark:text-stone-400">
+              Liên hệ để biết giá
+            </span>
+          )}
         </span>
-
-        {/* Nói rõ giá thay đổi theo cỡ, để khoảng giá không bị đọc nhầm thành giá lên xuống. */}
-        {product.sizes.length > 0 && (
-          <span className="-mt-1 text-xs text-stone-500 dark:text-stone-400">
-            {product.sizes.length} cỡ, tuỳ sải cánh
-          </span>
-        )}
 
         <WishlistButton item={toWishlistItem(product)} />
       </div>

@@ -117,22 +117,31 @@ Gỡ ảnh khỏi form CỐ Ý không xoá file trong bucket — sản phẩm kh
 
 ---
 
-## 4c. Giá và kích thước
-
-Diều bán theo sải cánh, mỗi cỡ một giá:
+## 4c. Giá và kích thước — CHỮ TỰ DO
 
 ```
-products.price_vnd        giá của mẫu bán MỘT mức (vải, dây, phụ kiện)
-product_sizes             mỗi dòng = một cỡ + giá riêng ("3 mét" · 1.000.000)
+products.price_text   "3 triệu – 5 triệu", "350.000 ₫", "Liên hệ"…
+products.show_price   admin tạm ẩn giá mà vẫn GIỮ chữ đã ghi
+products.size_note    "Nhận làm từ 3m đến 5m, cỡ lớn hơn liên hệ shop"
 ```
 
-Có `product_sizes` thì `price_vnd` không hiện ra đâu cả. Card ngoài lưới hiện KHOẢNG giá tính
-từ bảng cỡ (`formatProductPrice` trong `product-shared.ts`), trang chi tiết hiện danh sách đầy
-đủ để khách chọn — cỡ đang chọn đi kèm vào event `contact_click`, đó là thứ shop cần biết nhất
-khi khách nhắn tới.
+Sáng 2026-07-27 từng dựng bảng `product_sizes` (mỗi cỡ một giá, khách chọn cỡ) rồi **gỡ ngay
+chiều cùng ngày**. Lý do: diều làm thủ công theo yêu cầu, shop không có bảng giá cố định theo
+cỡ — ép vào bảng cỡ×giá là bắt admin bịa ra những con số shop không có, và cho khách "chọn cỡ"
+là hứa những thứ chưa chắc làm được. Kích thước giờ là **mô tả**, không phải danh sách chọn.
+
+Đọc giá qua `visiblePrice()` trong `product-shared.ts`, đừng đọc thẳng `priceText` — hàm đó lo
+luôn hai đường ẩn giá (`show_price = false` và chuỗi rỗng), rải tay ra là chỗ hiện chỗ không.
 
 **KHÔNG có tồn kho** (bỏ 2026-07-27): diều làm thủ công theo đơn, "còn 5 chiếc" là thông tin
 sai và làm khách ngại hỏi.
+
+### Bẫy lọc theo danh mục
+
+`getProducts({ categorySlug })` tra slug ra id rồi lọc `.eq('category_id', id)`.
+**KHÔNG** viết `.eq('categories.slug', …)`: trong PostgREST, filter trên bảng nhúng chỉ lọc
+phần nhúng, dòng cha vẫn trả về đủ (kèm `categories = null`). Trông đúng nhưng lọc không ăn gì
+cả — đã dính đúng lỗi này một lần, lọc "Vải" ra đủ 5 sản phẩm.
 
 ---
 

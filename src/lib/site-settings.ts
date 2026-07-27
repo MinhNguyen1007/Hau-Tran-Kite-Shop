@@ -24,7 +24,6 @@ export type SiteSettings = {
   promoTitle: string
   categoryTitle: string
   aboutHeading: string
-  guideTitle: string
 }
 
 type SiteSettingsRow = {
@@ -44,13 +43,12 @@ type SiteSettingsRow = {
   promo_title: string
   category_title: string
   about_heading: string
-  guide_title: string
 }
 
 const COLUMNS = `
   shop_name, tagline, hotline, zalo_phone, email, area, address, open_hours,
   hero_note, about_title, about_body, footer_about,
-  products_title, promo_title, category_title, about_heading, guide_title
+  products_title, promo_title, category_title, about_heading
 `
 
 export const SETTINGS_FALLBACK: SiteSettings = {
@@ -70,7 +68,6 @@ export const SETTINGS_FALLBACK: SiteSettings = {
   promoTitle: 'Đang khuyến mãi',
   categoryTitle: 'Danh mục diều',
   aboutHeading: 'Xưởng diều Hậu Trần',
-  guideTitle: 'Kinh nghiệm chơi diều',
 }
 
 function mapSettings(row: SiteSettingsRow): SiteSettings {
@@ -91,7 +88,6 @@ function mapSettings(row: SiteSettingsRow): SiteSettings {
     promoTitle: row.promo_title,
     categoryTitle: row.category_title,
     aboutHeading: row.about_heading,
-    guideTitle: row.guide_title,
   }
 }
 
@@ -130,7 +126,6 @@ export async function updateSiteSettings(input: SiteSettings): Promise<SiteSetti
       promo_title: input.promoTitle,
       category_title: input.categoryTitle,
       about_heading: input.aboutHeading,
-      guide_title: input.guideTitle,
       updated_at: new Date().toISOString(),
     })
     .eq('id', 1)

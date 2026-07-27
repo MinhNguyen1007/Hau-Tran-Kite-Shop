@@ -16,8 +16,10 @@
       và đăng nhập lần hai KHÔNG nhân đôi dòng.
 - [ ] Nút Zalo / gọi mở đúng số lấy từ `site_settings`.
 - [ ] Admin sửa thông tin shop + khối nội dung trang chủ, đổi xong trang khách thấy ngay.
-- [ ] Admin thêm/sửa danh mục, xếp sản phẩm vào danh mục, lọc `/san-pham?danh-muc=` ra đúng.
-- [ ] Admin nhập bảng cỡ cho một mẫu: card hiện khoảng giá, trang chi tiết hiện đủ danh sách cỡ.
+- [ ] Admin thêm/sửa danh mục, xếp sản phẩm vào danh mục, lọc `/san-pham?danh-muc=` ra ĐÚNG
+      số sản phẩm của danh mục đó (không phải toàn bộ hàng).
+- [ ] Admin ghi giá dạng chữ và mô tả kích thước; tắt "Hiện giá" thì trang khách chuyển sang
+      "Liên hệ để biết giá" ở cả card lẫn trang chi tiết.
 - [ ] Admin upload ảnh từ máy cho sản phẩm / danh mục / khối khuyến mãi, ảnh lên đúng bucket.
 - [ ] Trang liên hệ + thông tin shop.
 - [ ] Bảng `events` + RLS chạy; `logEvent` gọi ở đủ các chỗ trong taxonomy

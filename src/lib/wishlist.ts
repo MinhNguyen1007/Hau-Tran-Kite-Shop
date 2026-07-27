@@ -5,6 +5,7 @@
 // nhập). File này giữ THUẦN — không React, không chạm window ở top level, không gọi Supabase —
 // để unit test được. Phần chạm localStorage gom ở cuối, luôn bọc try/catch: Safari private mode
 // ném khi setItem. Phần chạm DB nằm ở wishlist-remote.ts.
+import { formatVnd } from './format'
 
 export type WishlistItem = {
   productId: string
@@ -13,10 +14,9 @@ export type WishlistItem = {
   // Ảnh chụp lúc bấm thích — CHỈ để hiển thị nhanh khi mở lại trang. Giá thật luôn lấy lại
   // từ DB ở trang chi tiết; danh sách để lâu thì snapshot có thể cũ.
   //
-  // Mẫu bán nhiều cỡ thì đây là KHOẢNG giá: priceVnd là mức thấp nhất, priceMaxVnd là mức
-  // cao nhất. Bán một mức thì priceMaxVnd = null.
-  priceVnd: number
-  priceMaxVnd: number | null
+  // Chuỗi đã sẵn sàng hiển thị ("3 triệu – 5 triệu"). Rỗng = shop không công khai giá mẫu
+  // này, UI bỏ trống chỗ đó.
+  priceText: string
   imagePath: string | null
   // ISO. Dùng để xếp mới nhất lên đầu và để merge local ↔ DB có kết quả xác định.
   addedAt: string
@@ -30,17 +30,16 @@ export function toWishlistItem(product: {
   id: string
   slug: string
   name: string
-  priceVnd: number
+  priceText: string
+  showPrice: boolean
   imagePath: string | null
-  sizes?: { priceVnd: number }[]
 }): Omit<WishlistItem, 'addedAt'> {
-  const prices = (product.sizes ?? []).map((size) => size.priceVnd)
   return {
     productId: product.id,
     slug: product.slug,
     name: product.name,
-    priceVnd: prices.length > 0 ? Math.min(...prices) : product.priceVnd,
-    priceMaxVnd: prices.length > 0 ? Math.max(...prices) : null,
+    // Chụp lại đúng thứ khách đang nhìn thấy: shop tắt hiện giá thì danh sách cũng không hiện.
+    priceText: product.showPrice ? product.priceText : '',
     imagePath: product.imagePath,
   }
 }
@@ -104,21 +103,39 @@ export function mergeWishlists(local: Wishlist, remote: Wishlist): Wishlist {
 
 // localStorage chứa dữ liệu người dùng sửa được và dữ liệu của bản build cũ — không tin cấu trúc.
 // Dòng nào không đúng hình dạng thì bỏ qua, thà mất một dòng còn hơn vỡ cả trang.
-function isValidItem(value: unknown): value is WishlistItem {
+// priceText CỐ Ý không bắt buộc: dòng lưu trước 2026-07-27 mang `priceVnd` dạng số thay vì
+// chuỗi. Từ chối chúng là xoá sạch danh sách của khách chỉ vì ta đổi schema — thà nhận vào
+// rồi dựng lại chuỗi giá ở normaliseItem.
+function isValidItem(value: unknown): value is Record<string, unknown> {
   if (typeof value !== 'object' || value === null) return false
   const line = value as Record<string, unknown>
   return (
     typeof line.productId === 'string' &&
     typeof line.slug === 'string' &&
     typeof line.name === 'string' &&
-    typeof line.priceVnd === 'number' &&
-    Number.isFinite(line.priceVnd) &&
-    // priceMaxVnd CỐ Ý không bắt buộc: dòng lưu trước 2026-07-27 không có field này.
-    // Thiếu thì coi như bán một mức, còn hơn xoá sạch danh sách của khách vì đổi schema.
-    (typeof line.priceMaxVnd === 'number' || line.priceMaxVnd == null) &&
     (typeof line.imagePath === 'string' || line.imagePath === null) &&
     typeof line.addedAt === 'string'
   )
+}
+
+// Dựng dòng đúng kiểu hiện tại từ dòng bất kỳ đã qua isValidItem.
+// Dòng cũ có priceVnd (số) → format lại thành chuỗi để khách không mất phần giá đã lưu.
+function normaliseItem(line: Record<string, unknown>): WishlistItem {
+  const priceText =
+    typeof line.priceText === 'string'
+      ? line.priceText
+      : typeof line.priceVnd === 'number' && Number.isFinite(line.priceVnd)
+        ? formatVnd(line.priceVnd)
+        : ''
+
+  return {
+    productId: line.productId as string,
+    slug: line.slug as string,
+    name: line.name as string,
+    priceText,
+    imagePath: (line.imagePath ?? null) as string | null,
+    addedAt: line.addedAt as string,
+  }
 }
 
 export function parseWishlist(raw: string | null): Wishlist {
@@ -126,11 +143,7 @@ export function parseWishlist(raw: string | null): Wishlist {
   try {
     const parsed: unknown = JSON.parse(raw)
     if (!Array.isArray(parsed)) return []
-    // Chuẩn hoá dòng cũ: thiếu priceMaxVnd thì đặt null cho khớp kiểu hiện tại.
-    return parsed
-      .filter(isValidItem)
-      .map((item) => ({ ...item, priceMaxVnd: item.priceMaxVnd ?? null }))
-      .sort(byNewest)
+    return parsed.filter(isValidItem).map(normaliseItem).sort(byNewest)
   } catch {
     return []
   }

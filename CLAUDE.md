@@ -29,8 +29,9 @@ MVP: auth (admin/user + Google), sản phẩm, danh sách yêu thích, liên h�
   `site_settings` (thông tin shop + tiêu đề khối), `content_blocks` (khuyến mãi / kinh nghiệm /
   cam kết), `categories` (danh mục diều).
 - KHÔNG có tồn kho. Diều làm thủ công theo đơn, mẫu nào cũng đặt được.
-- Giá: mẫu nhiều cỡ thì giá nằm ở `product_sizes` (mỗi cỡ một giá), card hiện KHOẢNG giá.
-  Mẫu bán một mức (vải, dây, phụ kiện) thì dùng `products.price_vnd`.
+- Giá và kích thước là CHỮ TỰ DO (`price_text`, `size_note`), không phải số, không phải
+  danh sách chọn. Shop báo khoảng ("3 triệu – 5 triệu", "làm từ 3m đến 5m") chứ không có
+  bảng giá cố định. `show_price` cho admin tạm ẩn giá mà vẫn giữ chữ đã ghi.
 - Ảnh: admin upload thẳng từ trình duyệt lên Storage (`ImageUploader`), RLS lo quyền.
   `products.image_path` là ảnh bìa, `product_images` là bộ ảnh trang chi tiết.
 - Event logging nằm trong GIAI ĐOẠN 1, không hoãn sang giai đoạn DE — hành vi khách

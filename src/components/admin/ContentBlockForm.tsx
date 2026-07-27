@@ -22,10 +22,10 @@ import { Field, inputClass } from './FormField'
 import { ImageUploader } from './ImageUploader'
 
 // Ô nào có tác dụng với loại khối nào — khớp với các component trong src/components/home.
-const USES_SUBTITLE: Record<Section, boolean> = { promo: true, guide: false, trust: false }
-const USES_BODY: Record<Section, boolean> = { promo: true, guide: true, trust: true }
-const USES_ICON: Record<Section, boolean> = { promo: false, guide: true, trust: true }
-const USES_IMAGE: Record<Section, boolean> = { promo: true, guide: false, trust: false }
+const USES_SUBTITLE: Record<Section, boolean> = { promo: true, trust: false }
+const USES_BODY: Record<Section, boolean> = { promo: true, trust: true }
+const USES_ICON: Record<Section, boolean> = { promo: false, trust: true }
+const USES_IMAGE: Record<Section, boolean> = { promo: true, trust: false }
 
 export function ContentBlockForm({ block }: { block?: ContentBlock }) {
   const router = useRouter()

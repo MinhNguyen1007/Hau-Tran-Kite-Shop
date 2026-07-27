@@ -185,16 +185,6 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
           />
         </Field>
 
-        <Field label="Khối kinh nghiệm" htmlFor="title-guide">
-          <input
-            id="title-guide"
-            value={form.guideTitle}
-            onChange={(event) => set('guideTitle', event.target.value)}
-            required
-            maxLength={120}
-            className={inputClass}
-          />
-        </Field>
       </div>
 
       <hr className="border-stone-200 dark:border-ink-700" />
