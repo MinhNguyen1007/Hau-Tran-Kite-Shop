@@ -1,0 +1,94 @@
+@import "tailwindcss";
+
+/* Bật `dark:` theo class .dark trên <html> thay vì chỉ prefers-color-scheme, để người dùng
+   tự chọn được nền sáng/tối. Script chặn trong layout.tsx gắn class TRƯỚC khi trang paint,
+   nếu chưa từng chọn thì lấy theo hệ thống. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Bảng màu thương hiệu lấy từ banner thật của shop (public/images/shop_background.jpg):
+   cam lửa + vàng kim trên nền xanh đêm. MỘT accent duy nhất (brand) cho toàn site —
+   không xen kẽ sky/blue như bản cũ. */
+@theme {
+  --color-brand-50: #fff7ed;
+  --color-brand-100: #ffedd5;
+  --color-brand-200: #fed7aa;
+  --color-brand-300: #fdba74;
+  --color-brand-400: #fb923c;
+  --color-brand-500: #f97316;
+  /* brand-600 là nền của mọi nút/nav mang chữ trắng: #cc4409 là sắc cam đậm nhất còn giữ
+     được độ rực mà vẫn đạt WCAG AA với chữ trắng (4.55:1). Sáng hơn nữa là rớt chuẩn.
+     brand-700 dùng cho chữ cam cỡ nhỏ trên nền sáng (6.5:1) và cho hover. */
+  --color-brand-600: #cc4409;
+  --color-brand-700: #a83607;
+  --color-brand-800: #872b06;
+  --color-brand-900: #6b2205;
+
+  --color-gold-300: #ffd97a;
+  --color-gold-400: #ffc23c;
+  --color-gold-500: #f5a524;
+
+  --color-ink-700: #1b2f52;
+  --color-ink-800: #12213f;
+  --color-ink-900: #0b1730;
+  --color-ink-950: #060e1e;
+}
+
+:root {
+  /* Nền trung tính ẤM (stone) chứ không phải xám lạnh: xám lạnh đặt cạnh cam lửa bị vênh tông.
+     Cùng lý do, toàn bộ chữ/viền xám trong app dùng thang stone. */
+  --background: #f5f5f4;
+  --foreground: #1c1917;
+  /* color-scheme để thanh cuộn và control gốc của trình duyệt đổi theo, không bị lệch tông. */
+  color-scheme: light;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-be-vietnam);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.dark {
+  --background: #060e1e;
+  --foreground: #e8eaee;
+  color-scheme: dark;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-be-vietnam), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Rail sản phẩm cuộn ngang: giấu thanh cuộn nhưng vẫn cuộn được bằng touch/trackpad. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Sọc chéo phủ lên ô danh mục và ô khuyến mãi.
+   Phải vẽ bằng ::before chứ KHÔNG đặt thẳng vào background-image: các ô đó dùng
+   bg-gradient-* (cũng ghi vào background-image) nên hai bên đè nhau, sọc thắng và ô mất sạch
+   nền cam. isolation + z-index:-1 giữ sọc nằm trên nền gradient nhưng dưới chữ. */
+@utility stripe-brand {
+  position: relative;
+  isolation: isolate;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      rgb(255 255 255 / 0.14) 0px,
+      rgb(255 255 255 / 0.14) 2px,
+      transparent 2px,
+      transparent 16px
+    );
+  }
+}

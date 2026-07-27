@@ -1,0 +1,93 @@
+import Link from 'next/link'
+import { ArchiveButton } from '@/components/admin/ArchiveButton'
+import { formatVnd } from '@/lib/format'
+import { getProductsForAdmin } from '@/lib/products'
+
+export default async function AdminProductsPage() {
+  // Layout /admin đã chặn người không phải admin; RLS là lớp thứ hai (admin thấy cả hàng đã gỡ).
+  const products = await getProductsForAdmin()
+
+  return (
+    <div>
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-xl font-extrabold tracking-tight text-ink-900 dark:text-stone-50">
+          Sản phẩm ({products.length})
+        </h1>
+        <Link
+          href="/admin/san-pham/moi"
+          className="rounded-full bg-brand-600 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-700 active:scale-[0.98]"
+        >
+          Thêm sản phẩm
+        </Link>
+      </div>
+
+      {products.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-stone-300 px-6 py-12 text-center text-sm text-stone-600 dark:border-ink-700 dark:text-stone-400">
+          Chưa có sản phẩm nào. Bấm “Thêm sản phẩm” để tạo mẫu diều đầu tiên.
+        </p>
+      ) : (
+        <div className="overflow-x-auto rounded-xl border border-stone-200 dark:border-ink-700">
+          <table className="w-full min-w-[42rem] border-collapse bg-white text-left text-sm dark:bg-ink-900">
+            <thead className="border-b border-stone-200 text-xs uppercase tracking-wide text-stone-600 dark:border-ink-700 dark:text-stone-400">
+              <tr>
+                <th className="px-4 py-3 font-bold">Tên</th>
+                <th className="px-4 py-3 font-bold">Giá</th>
+                <th className="px-4 py-3 font-bold">Tồn</th>
+                <th className="px-4 py-3 font-bold">Trạng thái</th>
+                <th className="px-4 py-3 text-right font-bold">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-stone-200 dark:divide-ink-700">
+              {products.map((product) => (
+                <tr key={product.id} className={product.archivedAt ? 'opacity-60' : undefined}>
+                  <td className="px-4 py-3">
+                    <span className="block font-semibold text-ink-900 dark:text-stone-100">
+                      {product.name}
+                    </span>
+                    <span className="block font-mono text-xs text-stone-500 dark:text-stone-400">
+                      {product.slug}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 whitespace-nowrap font-semibold text-ink-900 dark:text-stone-100">
+                    {formatVnd(product.priceVnd)}
+                  </td>
+                  <td className="px-4 py-3 tabular-nums text-ink-900 dark:text-stone-100">
+                    {product.stock}
+                  </td>
+                  <td className="px-4 py-3">
+                    <Status archived={product.archivedAt !== null} stock={product.stock} />
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center justify-end gap-4">
+                      <Link
+                        href={`/admin/san-pham/${product.id}`}
+                        className="text-sm font-semibold text-brand-700 hover:underline dark:text-brand-400"
+                      >
+                        Sửa
+                      </Link>
+                      <ArchiveButton
+                        productId={product.id}
+                        productName={product.name}
+                        archived={product.archivedAt !== null}
+                      />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  )
+}
+
+function Status({ archived, stock }: { archived: boolean; stock: number }) {
+  if (archived) {
+    return <span className="text-xs font-bold text-stone-500 dark:text-stone-400">Đã gỡ</span>
+  }
+  if (stock === 0) {
+    return <span className="text-xs font-bold text-brand-700 dark:text-brand-400">Hết hàng</span>
+  }
+  return <span className="text-xs font-bold text-stone-600 dark:text-stone-300">Đang bán</span>
+}

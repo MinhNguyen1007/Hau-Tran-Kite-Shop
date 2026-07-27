@@ -1,0 +1,36 @@
+// Trang chủ — bố cục theo thiết kế tham chiếu (public/images/anh.png):
+// banner → dải cam kết → diều mới về (tab) → khuyến mãi → danh mục → giới thiệu → kinh nghiệm.
+import { AboutStrip } from '@/components/home/AboutStrip'
+import { CategoryGrid } from '@/components/home/CategoryGrid'
+import { GuideCards } from '@/components/home/GuideCards'
+import { HeroBanner } from '@/components/home/HeroBanner'
+import { NewArrivals } from '@/components/home/NewArrivals'
+import { PromoBanners } from '@/components/home/PromoBanners'
+import { TrustStrip } from '@/components/home/TrustStrip'
+import { getProducts, type Product } from '@/lib/products'
+
+// Trang chủ không được trắng chỉ vì Supabase local đang tắt — hỏng thì rail sản phẩm rỗng,
+// phần còn lại vẫn lên. (Trang /san-pham vẫn để lỗi nổi lên như cũ.)
+async function loadProducts(): Promise<Product[]> {
+  try {
+    return await getProducts()
+  } catch {
+    return []
+  }
+}
+
+export default async function Home() {
+  const products = await loadProducts()
+
+  return (
+    <>
+      <HeroBanner />
+      <TrustStrip />
+      <NewArrivals products={products} />
+      <PromoBanners />
+      <CategoryGrid />
+      <AboutStrip />
+      <GuideCards />
+    </>
+  )
+}

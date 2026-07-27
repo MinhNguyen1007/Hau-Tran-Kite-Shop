@@ -1,0 +1,11 @@
+node_modules/
+.next/
+build/
+dist/
+.env
+.env.*
+*.pem
+*.key
+supabase/.temp/
+coverage/
+*.mp4

@@ -1,0 +1,39 @@
+# deps
+node_modules/
+
+# next
+.next/
+out/
+build/
+dist/
+
+# env — KHÔNG BAO GIỜ commit
+.env
+.env.*
+!.env.example
+
+# secrets
+*.pem
+*.key
+
+# supabase local
+supabase/.temp/
+supabase/.branches/
+
+# test / tooling
+coverage/
+.eslintcache
+*.tsbuildinfo
+
+# next auto-generated
+next-env.d.ts
+
+# claude code — permission cá nhân từng máy, không share
+.claude/settings.local.json
+
+# deploy
+.vercel
+
+# os
+.DS_Store
+Thumbs.db
