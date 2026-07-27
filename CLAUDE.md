@@ -27,7 +27,7 @@ MVP: auth (admin/user + Google), sản phẩm, danh sách yêu thích, liên h�
   khách đã đăng nhập; merge lúc đăng nhập. Thao tác thêm phải idempotent.
 - Nội dung trang nằm trong DB, KHÔNG hard-code trong component. Admin sửa ở /admin:
   `site_settings` (thông tin shop + tiêu đề khối), `content_blocks` (khuyến mãi / kinh nghiệm /
-  cam kết), `categories` (danh mục diều), `guide_videos` (bài hướng dẫn + link YouTube).
+  cam kết), `categories` (danh mục diều).
 - KHÔNG có tồn kho. Diều làm thủ công theo đơn, mẫu nào cũng đặt được.
 - Giá: mẫu nhiều cỡ thì giá nằm ở `product_sizes` (mỗi cỡ một giá), card hiện KHOẢNG giá.
   Mẫu bán một mức (vải, dây, phụ kiện) thì dùng `products.price_vnd`.
@@ -71,7 +71,7 @@ MVP: auth (admin/user + Google), sản phẩm, danh sách yêu thích, liên h�
 - KHÔNG đổi tên event_type đã dùng — dữ liệu lịch sử sẽ lệch không sửa được. Cần loại mới
   thì THÊM, để loại cũ chết tự nhiên.
 - KHÔNG hard-code nội dung hiện trên trang hay số điện thoại vào component — nó thuộc
-  `site_settings` / `content_blocks` / `categories` / `guide_videos` để admin sửa được.
+  `site_settings` / `content_blocks` / `categories` để admin sửa được.
 - KHÔNG thêm lại tồn kho, nút "Hết hàng", hay trạng thái còn/hết. Đã bỏ có chủ ý.
 - KHÔNG import src/lib/site-settings.ts (hay file nào chạm next/headers) vào Client
   Component — gãy build, và lỗi CHỈ lộ ra lúc `npm run build`, dev server vẫn chạy.

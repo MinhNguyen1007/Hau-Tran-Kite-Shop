@@ -60,16 +60,6 @@ export const ContentBlockSchema = z.object({
   active: z.boolean(),
 })
 
-// Link YouTube để TRỐNG được: user đưa link sau, mục vẫn hiện nhưng không bấm được.
-// Chặn javascript: và các scheme lạ — chỉ nhận http(s).
-export const GuideVideoSchema = z.object({
-  title: z.string().trim().min(1, 'Chưa nhập tiêu đề').max(200),
-  description: z.string().trim().max(1000),
-  youtubeUrl: z.union([z.literal(''), z.url('Link không hợp lệ').startsWith('http')]),
-  sortOrder: z.number().int('Thứ tự phải là số nguyên').min(-9999).max(9999),
-  active: z.boolean(),
-})
-
 export const CategorySchema = z.object({
   slug: z
     .string()
@@ -91,5 +81,4 @@ export const CategorySchema = z.object({
 
 export type SiteSettingsParsed = z.infer<typeof SiteSettingsSchema>
 export type ContentBlockParsed = z.infer<typeof ContentBlockSchema>
-export type GuideVideoParsed = z.infer<typeof GuideVideoSchema>
 export type CategoryParsed = z.infer<typeof CategorySchema>

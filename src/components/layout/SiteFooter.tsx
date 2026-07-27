@@ -1,20 +1,20 @@
 // Footer nền tối + thanh cam cuối trang, theo thiết kế tham chiếu.
 //
-// Cụm "Chính sách" đã BỎ (2026-07-27): shop không bán qua web nên không có chính sách đổi
-// trả / thanh toán để nói. Cụm hướng dẫn giờ là link thật sang /huong-dan.
+// Đã BỎ hai cụm danh sách (2026-07-27): "Chính sách" vì shop không bán qua web nên không có
+// chính sách đổi trả/thanh toán để nói, và "Hướng dẫn chơi diều" theo yêu cầu của user —
+// cả trang hướng dẫn lẫn bảng dữ liệu của nó cũng đã gỡ theo. Đừng dựng lại.
 import { Envelope, MapPin, Phone, Wind } from '@phosphor-icons/react/ssr'
 import Link from 'next/link'
-import { getGuideVideos } from '@/lib/guide-videos'
 import { NAV_ITEMS, telHref, zaloHref } from '@/lib/shop'
 import { getSiteSettings, toParagraphs } from '@/lib/site-settings'
 
 export async function SiteFooter() {
-  const [settings, guides] = await Promise.all([getSiteSettings(), getGuideVideos()])
+  const settings = await getSiteSettings()
   const about = toParagraphs(settings.footerAbout)
 
   return (
     <footer className="mt-16 bg-ink-900 text-stone-300">
-      <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-12 md:grid-cols-2 lg:grid-cols-3">
+      <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-12 md:grid-cols-2">
         <div>
           <div className="mb-4 flex items-center gap-2.5">
             <span className="grid h-9 w-9 place-items-center rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 text-gold-300">
@@ -72,31 +72,6 @@ export async function SiteFooter() {
           </a>
         </div>
 
-        {guides.length > 0 && (
-          <div>
-            <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-brand-400">
-              Hướng dẫn chơi diều
-            </h2>
-            <ul className="space-y-2.5 text-sm">
-              {guides.map((guide) => (
-                <li key={guide.id}>
-                  <Link
-                    href="/huong-dan"
-                    className="text-stone-400 transition-colors hover:text-brand-400"
-                  >
-                    {guide.title}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <Link
-              href="/huong-dan"
-              className="mt-4 inline-block text-sm font-bold text-brand-400 hover:underline"
-            >
-              Xem tất cả hướng dẫn →
-            </Link>
-          </div>
-        )}
       </div>
 
       <div className="border-t border-ink-700">

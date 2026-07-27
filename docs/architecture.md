@@ -99,7 +99,10 @@ Yêu cầu 2026-07-26: cái gì hiện trên web thì admin phải sửa đượ
 | `site_settings` | Tên shop, hotline, Zalo, email, địa chỉ, đoạn hero/giới thiệu/footer, **tiêu đề các khối**. Đúng 1 dòng. | `/admin/cai-dat` |
 | `content_blocks` | Khối lặp trên trang chủ: khuyến mãi, kinh nghiệm, cam kết | `/admin/noi-dung` |
 | `categories` | Danh mục diều — vừa là ô trên trang chủ, vừa là phân loại thật của sản phẩm | `/admin/danh-muc` |
-| `guide_videos` | Bài hướng dẫn + link YouTube, hiện ở `/huong-dan` và cuối footer | `/admin/huong-dan` |
+
+Từng có bảng `guide_videos` + trang `/huong-dan` (bài hướng dẫn kèm link YouTube), dựng và gỡ
+cùng ngày 2026-07-27 theo yêu cầu user. Khối "Kinh nghiệm chơi diều" trên trang chủ là thứ
+KHÁC — nó là `content_blocks` section `'guide'` và vẫn còn.
 
 Ba loại khối trong `content_blocks` có cùng hình dạng (tiêu đề + mô tả + link + icon + ảnh +
 thứ tự) nên gộp một bảng, phân biệt bằng cột `section` — admin chỉ cần một màn quản lý thay vì

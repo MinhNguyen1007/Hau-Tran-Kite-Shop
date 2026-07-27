@@ -19,7 +19,6 @@
 - [ ] Admin thêm/sửa danh mục, xếp sản phẩm vào danh mục, lọc `/san-pham?danh-muc=` ra đúng.
 - [ ] Admin nhập bảng cỡ cho một mẫu: card hiện khoảng giá, trang chi tiết hiện đủ danh sách cỡ.
 - [ ] Admin upload ảnh từ máy cho sản phẩm / danh mục / khối khuyến mãi, ảnh lên đúng bucket.
-- [ ] Admin thêm bài hướng dẫn kèm link YouTube, `/huong-dan` và footer hiện đúng.
 - [ ] Trang liên hệ + thông tin shop.
 - [ ] Bảng `events` + RLS chạy; `logEvent` gọi ở đủ các chỗ trong taxonomy
       (`page_view`, `product_view`, `add_to_wishlist`, `remove_from_wishlist`,
