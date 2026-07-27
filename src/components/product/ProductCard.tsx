@@ -1,8 +1,11 @@
 // Card sản phẩm — Server Component (chỉ render). Nút yêu thích tách ra Client Component riêng.
-// Giá format VND qua formatVnd; ảnh lấy path qua getProductImageUrl. Xem skill product-card.
+// Giá format VND qua formatProductPrice; ảnh lấy path qua getProductImageUrl. Xem skill product-card.
+//
+// KHÔNG có trạng thái hết hàng (bỏ tồn kho 2026-07-27): diều làm thủ công theo đơn,
+// mẫu nào cũng đặt được.
 import Image from 'next/image'
 import Link from 'next/link'
-import { formatVnd } from '@/lib/format'
+import { formatProductPrice } from '@/lib/product-shared'
 import type { Product } from '@/lib/products'
 import { getProductImageUrl } from '@/lib/storage'
 import { toWishlistItem } from '@/lib/wishlist'
@@ -15,7 +18,6 @@ export function ProductCard({
   product: Product
   priority?: boolean
 }) {
-  const soldOut = product.stock === 0
   const href = `/san-pham/${product.slug}`
 
   return (
@@ -28,25 +30,16 @@ export function ProductCard({
             fill
             priority={priority}
             sizes="(max-width: 640px) 64vw, 240px"
-            className={`object-cover ${soldOut ? 'opacity-60' : ''}`}
+            className="object-cover"
           />
         ) : (
           // Placeholder khi chưa có ảnh: nền cam nhạt + hình thoi (gợi con diều), thuần CSS.
-          <div
-            className={`flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-50 to-brand-100 dark:from-ink-800 dark:to-ink-900 ${
-              soldOut ? 'opacity-60' : ''
-            }`}
-          >
+          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-50 to-brand-100 dark:from-ink-800 dark:to-ink-900">
             <div
               className="h-14 w-14 rotate-45 rounded-md border-2 border-brand-300 dark:border-brand-700"
               aria-hidden
             />
           </div>
-        )}
-        {soldOut && (
-          <span className="absolute left-2 top-2 rounded-full bg-ink-950/85 px-2.5 py-1 text-[11px] font-bold text-white">
-            Hết hàng
-          </span>
         )}
       </Link>
 
@@ -57,9 +50,18 @@ export function ProductCard({
         >
           {product.name}
         </Link>
+
         <span className="mt-auto text-base font-extrabold text-brand-600 dark:text-brand-400">
-          {formatVnd(product.priceVnd)}
+          {formatProductPrice(product)}
         </span>
+
+        {/* Nói rõ giá thay đổi theo cỡ, để khoảng giá không bị đọc nhầm thành giá lên xuống. */}
+        {product.sizes.length > 0 && (
+          <span className="-mt-1 text-xs text-stone-500 dark:text-stone-400">
+            {product.sizes.length} cỡ, tuỳ sải cánh
+          </span>
+        )}
+
         <WishlistButton item={toWishlistItem(product)} />
       </div>
     </div>

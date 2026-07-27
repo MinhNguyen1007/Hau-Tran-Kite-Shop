@@ -1,20 +1,27 @@
 ---
 name: product-card
-description: Dùng khi render sản phẩm ra UI — card trong lưới danh sách, trang chi tiết, hoặc bất kỳ chỗ nào hiện ảnh/giá/nút yêu thích. Chốt cách format giá VND, lấy ảnh từ Supabase Storage, và xử lý hết hàng.
+description: Dùng khi render sản phẩm ra UI — card trong lưới danh sách, trang chi tiết, hoặc bất kỳ chỗ nào hiện ảnh/giá/nút yêu thích. Chốt cách format giá VND (khoảng giá theo cỡ), lấy ảnh từ Supabase Storage, và vì sao không có tồn kho.
 ---
 
 # Card sản phẩm
 
-## Giá — luôn VND
+## Giá — luôn VND, và thường là KHOẢNG giá
 
-Lưu trong DB là **integer đồng** (`price_vnd int`), không dùng float, không lưu chuỗi.
-Format lúc render:
+Lưu trong DB là **integer đồng**, không float, không chuỗi. Hai nguồn:
+
+- `product_sizes` — mẫu bán nhiều cỡ, mỗi cỡ một giá. Đây là ca thường gặp với diều.
+- `products.price_vnd` — mẫu bán một mức (vải, dây, phụ kiện). Có bảng cỡ thì giá này bị bỏ qua.
+
+Render bằng `formatProductPrice(product)` trong `src/lib/product-shared.ts`, KHÔNG gọi
+`formatVnd(product.priceVnd)` thẳng — mẫu nhiều cỡ sẽ hiện sai một con số thay vì khoảng giá.
 
 ```ts
-export const formatVnd = (v: number) =>
-  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(v)
-// 450000 → "450.000 ₫"
+formatProductPrice(product)   // "1.000.000 – 3.000.000 ₫" hoặc "450.000 ₫"
 ```
+
+⚠ `Intl.NumberFormat('vi-VN')` ngăn số với ₫ bằng **NBSP (U+00A0)**, không phải dấu cách
+thường. Test so chuỗi bằng literal gõ tay sẽ trượt dù nhìn y hệt — dựng mốc so sánh từ chính
+`formatVnd`.
 
 Không tự nối `.toLocaleString() + ' đ'` rải rác trong component — dùng đúng một helper.
 
@@ -24,17 +31,18 @@ Không tự nối `.toLocaleString() + ' đ'` rải rác trong component — dù
 không lưu full URL — đổi hạ tầng là hỏng hết.
 Lấy URL qua `getPublicUrl()` trong `src/lib/storage.ts`, không gọi Supabase thẳng trong component.
 
-Dùng `next/image` với `width`/`height` cố định + `alt` là tên sản phẩm (không để `alt=""`).
+Hai chỗ chứa ảnh:
+- `products.image_path` — ảnh **bìa**, hiện trên card ngoài lưới.
+- `product_images` — bộ ảnh trang chi tiết (`ProductGallery`).
+
+Dùng `next/image` với `alt` là tên sản phẩm (không để `alt=""` trừ ảnh trang trí thuần).
 Ảnh đầu tiên trong lưới đặt `priority`.
 
-## Trạng thái hết hàng
+## KHÔNG có trạng thái hết hàng
 
-`stock === 0` → nhãn "Hết hàng" trên ảnh, ảnh giảm opacity.
-Không ẩn sản phẩm khỏi lưới — người ta vẫn muốn xem.
-
-**KHÔNG disable nút yêu thích khi hết hàng.** Diều làm thủ công, hết hàng chỉ nghĩa là chưa có
-sẵn; khách ưng mẫu hết hàng rồi nhắn Zalo đặt làm là luồng chính của shop. Chặn lại là chặn
-đúng đơn đáng giá nhất. (Nút thêm giỏ ngày trước có disable — luật đó đã bỏ cùng giỏ hàng.)
+Tồn kho đã bỏ hẳn 2026-07-27 (drop cột `products.stock`). Diều làm thủ công theo đơn: "còn 5
+chiếc" là thông tin sai và làm khách ngại hỏi. Đừng thêm lại nhãn "Hết hàng", đừng disable nút
+gì theo tồn kho — mẫu nào cũng đặt được, đó là điểm mạnh của shop chứ không phải thiếu sót.
 
 ## Cấu trúc
 

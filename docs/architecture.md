@@ -96,13 +96,40 @@ Yêu cầu 2026-07-26: cái gì hiện trên web thì admin phải sửa đượ
 
 | Bảng | Chứa gì | Admin sửa ở |
 |---|---|---|
-| `site_settings` | Tên shop, hotline, Zalo, email, địa chỉ, đoạn hero + giới thiệu. Đúng 1 dòng. | `/admin/cai-dat` |
-| `content_blocks` | Khối lặp trên trang chủ: danh mục, khuyến mãi, kinh nghiệm, cam kết | `/admin/noi-dung` |
+| `site_settings` | Tên shop, hotline, Zalo, email, địa chỉ, đoạn hero/giới thiệu/footer, **tiêu đề các khối**. Đúng 1 dòng. | `/admin/cai-dat` |
+| `content_blocks` | Khối lặp trên trang chủ: khuyến mãi, kinh nghiệm, cam kết | `/admin/noi-dung` |
+| `categories` | Danh mục diều — vừa là ô trên trang chủ, vừa là phân loại thật của sản phẩm | `/admin/danh-muc` |
+| `guide_videos` | Bài hướng dẫn + link YouTube, hiện ở `/huong-dan` và cuối footer | `/admin/huong-dan` |
 
-Bốn khối kia có cùng hình dạng (tiêu đề + mô tả + link + icon + thứ tự) nên gộp một bảng,
-phân biệt bằng cột `section` — admin chỉ cần một màn quản lý thay vì bốn màn na ná nhau.
-`icon` lưu **tên** Phosphor (whitelist ở `content-icons.ts`), tên lạ rơi về icon mặc định
-chứ không vỡ trang.
+Ba loại khối trong `content_blocks` có cùng hình dạng (tiêu đề + mô tả + link + icon + ảnh +
+thứ tự) nên gộp một bảng, phân biệt bằng cột `section` — admin chỉ cần một màn quản lý thay vì
+ba màn na ná nhau. `icon` lưu **tên** Phosphor (whitelist ở `content-icons.ts`), tên lạ rơi về
+icon mặc định chứ không vỡ trang.
+
+`section` từng có giá trị `'category'`; đã bỏ 2026-07-27 khi danh mục thành bảng thật.
+
+**Upload ảnh** (`ImageUploader`): trình duyệt đẩy file THẲNG lên Storage bucket `products`,
+không qua API route. Quyền do RLS của `storage.objects` lo (chỉ `is_admin()` được insert).
+Gỡ ảnh khỏi form CỐ Ý không xoá file trong bucket — sản phẩm khác có thể dùng lại đúng path đó.
+
+---
+
+## 4c. Giá và kích thước
+
+Diều bán theo sải cánh, mỗi cỡ một giá:
+
+```
+products.price_vnd        giá của mẫu bán MỘT mức (vải, dây, phụ kiện)
+product_sizes             mỗi dòng = một cỡ + giá riêng ("3 mét" · 1.000.000)
+```
+
+Có `product_sizes` thì `price_vnd` không hiện ra đâu cả. Card ngoài lưới hiện KHOẢNG giá tính
+từ bảng cỡ (`formatProductPrice` trong `product-shared.ts`), trang chi tiết hiện danh sách đầy
+đủ để khách chọn — cỡ đang chọn đi kèm vào event `contact_click`, đó là thứ shop cần biết nhất
+khi khách nhắn tới.
+
+**KHÔNG có tồn kho** (bỏ 2026-07-27): diều làm thủ công theo đơn, "còn 5 chiếc" là thông tin
+sai và làm khách ngại hỏi.
 
 ---
 

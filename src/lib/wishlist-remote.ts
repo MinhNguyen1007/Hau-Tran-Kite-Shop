@@ -17,23 +17,29 @@ type WishlistRow = {
     name: string
     price_vnd: number
     image_path: string | null
-    stock: number
+    product_sizes: { price_vnd: number }[] | null
   } | null
 }
 
-const SELECT = 'product_id, created_at, products(slug, name, price_vnd, image_path, stock)'
+const SELECT =
+  'product_id, created_at, products(slug, name, price_vnd, image_path, product_sizes(price_vnd))'
 
 function mapRow(row: WishlistRow): WishlistItem | null {
   // products null = sản phẩm đã bị RLS giấu (admin lưu trữ hàng) hoặc xoá cứng.
   // Bỏ dòng đó khỏi UI thay vì hiện một ô trống không bấm được.
   if (!row.products) return null
+
+  // Mẫu nhiều cỡ → lưu khoảng giá; mẫu một mức → priceMaxVnd null. Cùng luật với
+  // toWishlistItem trong wishlist.ts, để bản local và bản DB hiển thị giống hệt nhau.
+  const prices = (row.products.product_sizes ?? []).map((size) => size.price_vnd)
+
   return {
     productId: row.product_id,
     slug: row.products.slug,
     name: row.products.name,
-    priceVnd: row.products.price_vnd,
+    priceVnd: prices.length > 0 ? Math.min(...prices) : row.products.price_vnd,
+    priceMaxVnd: prices.length > 0 ? Math.max(...prices) : null,
     imagePath: row.products.image_path,
-    stock: row.products.stock,
     addedAt: row.created_at,
   }
 }

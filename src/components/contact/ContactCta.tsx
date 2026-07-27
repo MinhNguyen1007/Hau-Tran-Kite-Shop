@@ -14,6 +14,7 @@ export function ContactCta({
   zaloPhone,
   productId,
   source,
+  properties,
   stacked = false,
   className = '',
 }: {
@@ -25,12 +26,14 @@ export function ContactCta({
   // Bấm từ đâu: 'product_detail' | 'wishlist' | 'home'... Vào properties để sau này tách được
   // tỉ lệ chuyển đổi theo từng vị trí đặt nút.
   source: string
+  // Ngữ cảnh thêm, vd cỡ diều khách đang chọn lúc bấm.
+  properties?: Record<string, unknown>
   // true = luôn xếp dọc (cột hẹp ở sidebar). Mặc định nằm ngang từ breakpoint sm.
   stacked?: boolean
   className?: string
 }) {
   function track(channel: 'zalo' | 'phone') {
-    logEvent('contact_click', { productId, properties: { channel, source } })
+    logEvent('contact_click', { productId, properties: { ...properties, channel, source } })
   }
 
   return (

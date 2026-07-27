@@ -11,7 +11,7 @@ export async function AboutStrip() {
 
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-6 md:py-8">
-      <SectionHeading id="gioi-thieu" title="Xưởng diều Hậu Trần" />
+      <SectionHeading id="gioi-thieu" title={settings.aboutHeading} />
 
       <div className="grid items-center gap-6 rounded-2xl border border-stone-200 bg-white p-5 md:grid-cols-[220px_1fr] md:gap-10 md:p-8 dark:border-ink-700 dark:bg-ink-900">
         <Image

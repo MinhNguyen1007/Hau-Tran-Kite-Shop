@@ -15,10 +15,11 @@ type ContentBlockRow = {
   body: string
   href: string
   icon: string
+  image_path: string | null
   active: boolean
 }
 
-const COLUMNS = 'id, section, sort_order, title, subtitle, body, href, icon, active'
+const COLUMNS = 'id, section, sort_order, title, subtitle, body, href, icon, image_path, active'
 
 function mapBlock(row: ContentBlockRow): ContentBlock {
   return {
@@ -30,6 +31,7 @@ function mapBlock(row: ContentBlockRow): ContentBlock {
     body: row.body,
     href: row.href,
     icon: row.icon,
+    imagePath: row.image_path,
     active: row.active,
   }
 }
@@ -43,6 +45,7 @@ function toRow(input: ContentBlockInput) {
     body: input.body,
     href: input.href,
     icon: input.icon,
+    image_path: input.imagePath,
     active: input.active,
   }
 }

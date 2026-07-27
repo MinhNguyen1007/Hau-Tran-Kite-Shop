@@ -19,17 +19,20 @@ import {
 } from '@/lib/content-blocks-shared'
 import { CONTENT_ICON_NAMES } from '@/lib/content-icons'
 import { Field, inputClass } from './FormField'
+import { ImageUploader } from './ImageUploader'
 
 // Ô nào có tác dụng với loại khối nào — khớp với các component trong src/components/home.
-const USES_SUBTITLE: Record<Section, boolean> = { category: false, promo: true, guide: false, trust: false }
-const USES_BODY: Record<Section, boolean> = { category: false, promo: true, guide: true, trust: true }
-const USES_ICON: Record<Section, boolean> = { category: true, promo: false, guide: true, trust: true }
+const USES_SUBTITLE: Record<Section, boolean> = { promo: true, guide: false, trust: false }
+const USES_BODY: Record<Section, boolean> = { promo: true, guide: true, trust: true }
+const USES_ICON: Record<Section, boolean> = { promo: false, guide: true, trust: true }
+const USES_IMAGE: Record<Section, boolean> = { promo: true, guide: false, trust: false }
 
 export function ContentBlockForm({ block }: { block?: ContentBlock }) {
   const router = useRouter()
   const editing = block !== undefined
 
-  const [section, setSection] = useState<Section>(block?.section ?? 'category')
+  const [section, setSection] = useState<Section>(block?.section ?? 'promo')
+  const [imagePath, setImagePath] = useState<string[]>(block?.imagePath ? [block.imagePath] : [])
   const [title, setTitle] = useState(block?.title ?? '')
   const [subtitle, setSubtitle] = useState(block?.subtitle ?? '')
   const [body, setBody] = useState(block?.body ?? '')
@@ -64,6 +67,7 @@ export function ContentBlockForm({ block }: { block?: ContentBlock }) {
       body: USES_BODY[section] ? body.trim() : '',
       href: href.trim(),
       icon: USES_ICON[section] ? icon.trim() : '',
+      imagePath: USES_IMAGE[section] ? (imagePath[0] ?? '') : '',
       active,
     }
 
@@ -166,6 +170,15 @@ export function ContentBlockForm({ block }: { block?: ContentBlock }) {
             ))}
           </select>
         </Field>
+      )}
+
+      {USES_IMAGE[section] && (
+        <ImageUploader
+          paths={imagePath}
+          onChange={setImagePath}
+          label="Ảnh nền"
+          hint="Ảnh nền của ô khuyến mãi. Chữ trên ảnh luôn màu trắng nên ảnh sẽ được phủ một lớp tối. Để trống thì dùng dải màu mặc định."
+        />
       )}
 
       <Field

@@ -147,6 +147,58 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
 
       <hr className="border-stone-200 dark:border-ink-700" />
 
+      <p className="-mb-1 text-sm font-bold uppercase tracking-wide text-stone-500 dark:text-stone-400">
+        Tiêu đề các khối trên trang chủ
+      </p>
+
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+        <Field label="Khối sản phẩm" htmlFor="title-products">
+          <input
+            id="title-products"
+            value={form.productsTitle}
+            onChange={(event) => set('productsTitle', event.target.value)}
+            required
+            maxLength={120}
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="Khối khuyến mãi" htmlFor="title-promo">
+          <input
+            id="title-promo"
+            value={form.promoTitle}
+            onChange={(event) => set('promoTitle', event.target.value)}
+            required
+            maxLength={120}
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="Khối danh mục" htmlFor="title-category">
+          <input
+            id="title-category"
+            value={form.categoryTitle}
+            onChange={(event) => set('categoryTitle', event.target.value)}
+            required
+            maxLength={120}
+            className={inputClass}
+          />
+        </Field>
+
+        <Field label="Khối kinh nghiệm" htmlFor="title-guide">
+          <input
+            id="title-guide"
+            value={form.guideTitle}
+            onChange={(event) => set('guideTitle', event.target.value)}
+            required
+            maxLength={120}
+            className={inputClass}
+          />
+        </Field>
+      </div>
+
+      <hr className="border-stone-200 dark:border-ink-700" />
+
       <Field label="Đoạn chữ dưới banner" htmlFor="hero-note" hint="Dòng mô tả ngay dưới ảnh đầu trang chủ">
         <textarea
           id="hero-note"
@@ -158,7 +210,26 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
         />
       </Field>
 
-      <Field label="Tiêu đề khối giới thiệu" htmlFor="about-title">
+      <Field
+        label="Tên khối giới thiệu"
+        htmlFor="about-heading"
+        hint="Dòng tiêu đề của cả khối, ví dụ “Xưởng diều Hậu Trần”"
+      >
+        <input
+          id="about-heading"
+          value={form.aboutHeading}
+          onChange={(event) => set('aboutHeading', event.target.value)}
+          required
+          maxLength={120}
+          className={inputClass}
+        />
+      </Field>
+
+      <Field
+        label="Câu mở đầu khối giới thiệu"
+        htmlFor="about-title"
+        hint="Dòng chữ to bên cạnh ảnh chủ xưởng"
+      >
         <input
           id="about-title"
           value={form.aboutTitle}
@@ -178,6 +249,21 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
           value={form.aboutBody}
           onChange={(event) => set('aboutBody', event.target.value)}
           rows={8}
+          maxLength={4000}
+          className={inputClass}
+        />
+      </Field>
+
+      <Field
+        label="Đoạn giới thiệu ở cuối trang"
+        htmlFor="footer-about"
+        hint="Cột đầu tiên của footer. Cách nhau MỘT DÒNG TRỐNG để tách thành nhiều đoạn."
+      >
+        <textarea
+          id="footer-about"
+          value={form.footerAbout}
+          onChange={(event) => set('footerAbout', event.target.value)}
+          rows={6}
           maxLength={4000}
           className={inputClass}
         />

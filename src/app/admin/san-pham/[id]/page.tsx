@@ -1,14 +1,18 @@
 import { notFound } from 'next/navigation'
 import { ProductForm } from '@/components/admin/ProductForm'
+import { getCategories } from '@/lib/categories'
 import { getProductById } from '@/lib/products'
+import { requireAdmin } from '@/lib/supabase'
 
 export default async function EditProductPage({
   params,
 }: {
   params: Promise<{ id: string }>
 }) {
+  await requireAdmin()
+
   const { id } = await params
-  const product = await getProductById(id)
+  const [product, categories] = await Promise.all([getProductById(id), getCategories()])
   if (!product) notFound()
 
   return (
@@ -21,7 +25,7 @@ export default async function EditProductPage({
           ? 'Sản phẩm này đang bị gỡ khỏi trang bán hàng.'
           : 'Đang hiển thị trên trang bán hàng.'}
       </p>
-      <ProductForm product={product} />
+      <ProductForm product={product} categories={categories} />
     </div>
   )
 }

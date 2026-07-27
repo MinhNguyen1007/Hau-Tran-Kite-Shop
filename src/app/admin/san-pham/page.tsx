@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { ArchiveButton } from '@/components/admin/ArchiveButton'
-import { formatVnd } from '@/lib/format'
+import { formatProductPrice } from '@/lib/product-shared'
 import { getProductsForAdmin } from '@/lib/products'
 
 export default async function AdminProductsPage() {
@@ -31,8 +31,8 @@ export default async function AdminProductsPage() {
             <thead className="border-b border-stone-200 text-xs uppercase tracking-wide text-stone-600 dark:border-ink-700 dark:text-stone-400">
               <tr>
                 <th className="px-4 py-3 font-bold">Tên</th>
+                <th className="px-4 py-3 font-bold">Danh mục</th>
                 <th className="px-4 py-3 font-bold">Giá</th>
-                <th className="px-4 py-3 font-bold">Tồn</th>
                 <th className="px-4 py-3 font-bold">Trạng thái</th>
                 <th className="px-4 py-3 text-right font-bold">Thao tác</th>
               </tr>
@@ -48,14 +48,21 @@ export default async function AdminProductsPage() {
                       {product.slug}
                     </span>
                   </td>
-                  <td className="px-4 py-3 whitespace-nowrap font-semibold text-ink-900 dark:text-stone-100">
-                    {formatVnd(product.priceVnd)}
+                  <td className="px-4 py-3 text-stone-700 dark:text-stone-300">
+                    {product.categoryName ?? (
+                      <span className="text-stone-500 dark:text-stone-400">— chưa xếp —</span>
+                    )}
                   </td>
-                  <td className="px-4 py-3 tabular-nums text-ink-900 dark:text-stone-100">
-                    {product.stock}
+                  <td className="px-4 py-3 whitespace-nowrap font-semibold text-ink-900 dark:text-stone-100">
+                    {formatProductPrice(product)}
+                    {product.sizes.length > 0 && (
+                      <span className="block text-xs font-normal text-stone-500 dark:text-stone-400">
+                        {product.sizes.length} cỡ
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3">
-                    <Status archived={product.archivedAt !== null} stock={product.stock} />
+                    <Status archived={product.archivedAt !== null} />
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center justify-end gap-4">
@@ -82,12 +89,10 @@ export default async function AdminProductsPage() {
   )
 }
 
-function Status({ archived, stock }: { archived: boolean; stock: number }) {
+// Không còn trạng thái "Hết hàng": bỏ tồn kho 2026-07-27, diều làm theo đơn.
+function Status({ archived }: { archived: boolean }) {
   if (archived) {
     return <span className="text-xs font-bold text-stone-500 dark:text-stone-400">Đã gỡ</span>
   }
-  if (stock === 0) {
-    return <span className="text-xs font-bold text-brand-700 dark:text-brand-400">Hết hàng</span>
-  }
-  return <span className="text-xs font-bold text-stone-600 dark:text-stone-300">Đang bán</span>
+  return <span className="text-xs font-bold text-stone-600 dark:text-stone-300">Đang hiện</span>
 }

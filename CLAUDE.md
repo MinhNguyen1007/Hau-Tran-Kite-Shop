@@ -25,8 +25,14 @@ MVP: auth (admin/user + Google), sản phẩm, danh sách yêu thích, liên h�
 - Phân quyền CHECK Ở BACKEND (RLS + kiểm ở API/Server Action); frontend chỉ ẩn UI.
 - Danh sách yêu thích lưu HAI NƠI: localStorage cho khách vãng lai, bảng `wishlists` cho
   khách đã đăng nhập; merge lúc đăng nhập. Thao tác thêm phải idempotent.
-- Nội dung trang chủ nằm trong DB (`site_settings` + `content_blocks`), KHÔNG hard-code
-  trong component — admin sửa được ở /admin/noi-dung và /admin/cai-dat.
+- Nội dung trang nằm trong DB, KHÔNG hard-code trong component. Admin sửa ở /admin:
+  `site_settings` (thông tin shop + tiêu đề khối), `content_blocks` (khuyến mãi / kinh nghiệm /
+  cam kết), `categories` (danh mục diều), `guide_videos` (bài hướng dẫn + link YouTube).
+- KHÔNG có tồn kho. Diều làm thủ công theo đơn, mẫu nào cũng đặt được.
+- Giá: mẫu nhiều cỡ thì giá nằm ở `product_sizes` (mỗi cỡ một giá), card hiện KHOẢNG giá.
+  Mẫu bán một mức (vải, dây, phụ kiện) thì dùng `products.price_vnd`.
+- Ảnh: admin upload thẳng từ trình duyệt lên Storage (`ImageUploader`), RLS lo quyền.
+  `products.image_path` là ảnh bìa, `product_images` là bộ ảnh trang chi tiết.
 - Event logging nằm trong GIAI ĐOẠN 1, không hoãn sang giai đoạn DE — hành vi khách
   không ghi hôm nay là mất vĩnh viễn, không backfill được. Xem skill `event-logging`.
 
@@ -64,8 +70,9 @@ MVP: auth (admin/user + Google), sản phẩm, danh sách yêu thích, liên h�
 - KHÔNG để logEvent throw hoặc block UI. Analytics hỏng thì im lặng, không làm sập trang.
 - KHÔNG đổi tên event_type đã dùng — dữ liệu lịch sử sẽ lệch không sửa được. Cần loại mới
   thì THÊM, để loại cũ chết tự nhiên.
-- KHÔNG hard-code nội dung hiện trên trang chủ hay số điện thoại vào component — nó thuộc
-  `site_settings` / `content_blocks` để admin sửa được.
+- KHÔNG hard-code nội dung hiện trên trang hay số điện thoại vào component — nó thuộc
+  `site_settings` / `content_blocks` / `categories` / `guide_videos` để admin sửa được.
+- KHÔNG thêm lại tồn kho, nút "Hết hàng", hay trạng thái còn/hết. Đã bỏ có chủ ý.
 - KHÔNG import src/lib/site-settings.ts (hay file nào chạm next/headers) vào Client
   Component — gãy build, và lỗi CHỈ lộ ra lúc `npm run build`, dev server vẫn chạy.
 

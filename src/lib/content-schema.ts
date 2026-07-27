@@ -27,6 +27,12 @@ export const SiteSettingsSchema = z.object({
   heroNote: z.string().trim().max(500),
   aboutTitle: z.string().trim().max(200),
   aboutBody: z.string().trim().max(4000),
+  footerAbout: z.string().trim().max(4000),
+  productsTitle: z.string().trim().min(1, 'Chưa nhập tiêu đề khối sản phẩm').max(120),
+  promoTitle: z.string().trim().min(1, 'Chưa nhập tiêu đề khối khuyến mãi').max(120),
+  categoryTitle: z.string().trim().min(1, 'Chưa nhập tiêu đề khối danh mục').max(120),
+  aboutHeading: z.string().trim().min(1, 'Chưa nhập tiêu đề khối giới thiệu').max(120),
+  guideTitle: z.string().trim().min(1, 'Chưa nhập tiêu đề khối kinh nghiệm').max(120),
 })
 
 export const ContentBlockSchema = z.object({
@@ -43,8 +49,47 @@ export const ContentBlockSchema = z.object({
     .max(300)
     .refine((value) => value === '' || value.startsWith('/'), 'Đường dẫn phải bắt đầu bằng /'),
   icon: z.string().trim().max(60),
+  // Path trong bucket 'products'. Rỗng → null (khối dùng dải màu mặc định).
+  imagePath: z
+    .string()
+    .trim()
+    .max(300)
+    .transform((value) => (value === '' ? null : value))
+    .nullable()
+    .default(null),
   active: z.boolean(),
+})
+
+// Link YouTube để TRỐNG được: user đưa link sau, mục vẫn hiện nhưng không bấm được.
+// Chặn javascript: và các scheme lạ — chỉ nhận http(s).
+export const GuideVideoSchema = z.object({
+  title: z.string().trim().min(1, 'Chưa nhập tiêu đề').max(200),
+  description: z.string().trim().max(1000),
+  youtubeUrl: z.union([z.literal(''), z.url('Link không hợp lệ').startsWith('http')]),
+  sortOrder: z.number().int('Thứ tự phải là số nguyên').min(-9999).max(9999),
+  active: z.boolean(),
+})
+
+export const CategorySchema = z.object({
+  slug: z
+    .string()
+    .trim()
+    .min(1, 'Chưa nhập slug')
+    .max(120)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug chỉ gồm chữ thường, số và dấu gạch ngang'),
+  name: z.string().trim().min(1, 'Chưa nhập tên danh mục').max(120),
+  description: z.string().trim().max(1000),
+  imagePath: z
+    .string()
+    .trim()
+    .max(300)
+    .transform((value) => (value === '' ? null : value))
+    .nullable()
+    .default(null),
+  sortOrder: z.number().int('Thứ tự phải là số nguyên').min(-9999).max(9999),
 })
 
 export type SiteSettingsParsed = z.infer<typeof SiteSettingsSchema>
 export type ContentBlockParsed = z.infer<typeof ContentBlockSchema>
+export type GuideVideoParsed = z.infer<typeof GuideVideoSchema>
+export type CategoryParsed = z.infer<typeof CategorySchema>

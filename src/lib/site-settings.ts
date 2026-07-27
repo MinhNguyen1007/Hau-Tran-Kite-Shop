@@ -17,6 +17,14 @@ export type SiteSettings = {
   heroNote: string
   aboutTitle: string
   aboutBody: string
+  // Đoạn giới thiệu ở footer, nhiều đoạn ngăn nhau bằng dòng trống như aboutBody.
+  footerAbout: string
+  // Tiêu đề các khối trên trang chủ. Trước đây nằm cứng trong component.
+  productsTitle: string
+  promoTitle: string
+  categoryTitle: string
+  aboutHeading: string
+  guideTitle: string
 }
 
 type SiteSettingsRow = {
@@ -31,10 +39,19 @@ type SiteSettingsRow = {
   hero_note: string
   about_title: string
   about_body: string
+  footer_about: string
+  products_title: string
+  promo_title: string
+  category_title: string
+  about_heading: string
+  guide_title: string
 }
 
-const COLUMNS =
-  'shop_name, tagline, hotline, zalo_phone, email, area, address, open_hours, hero_note, about_title, about_body'
+const COLUMNS = `
+  shop_name, tagline, hotline, zalo_phone, email, area, address, open_hours,
+  hero_note, about_title, about_body, footer_about,
+  products_title, promo_title, category_title, about_heading, guide_title
+`
 
 export const SETTINGS_FALLBACK: SiteSettings = {
   shopName: SHOP.name,
@@ -48,6 +65,12 @@ export const SETTINGS_FALLBACK: SiteSettings = {
   heroNote: '',
   aboutTitle: '',
   aboutBody: '',
+  footerAbout: '',
+  productsTitle: 'Các mẫu diều',
+  promoTitle: 'Đang khuyến mãi',
+  categoryTitle: 'Danh mục diều',
+  aboutHeading: 'Xưởng diều Hậu Trần',
+  guideTitle: 'Kinh nghiệm chơi diều',
 }
 
 function mapSettings(row: SiteSettingsRow): SiteSettings {
@@ -63,6 +86,12 @@ function mapSettings(row: SiteSettingsRow): SiteSettings {
     heroNote: row.hero_note,
     aboutTitle: row.about_title,
     aboutBody: row.about_body,
+    footerAbout: row.footer_about,
+    productsTitle: row.products_title,
+    promoTitle: row.promo_title,
+    categoryTitle: row.category_title,
+    aboutHeading: row.about_heading,
+    guideTitle: row.guide_title,
   }
 }
 
@@ -96,6 +125,12 @@ export async function updateSiteSettings(input: SiteSettings): Promise<SiteSetti
       hero_note: input.heroNote,
       about_title: input.aboutTitle,
       about_body: input.aboutBody,
+      footer_about: input.footerAbout,
+      products_title: input.productsTitle,
+      promo_title: input.promoTitle,
+      category_title: input.categoryTitle,
+      about_heading: input.aboutHeading,
+      guide_title: input.guideTitle,
       updated_at: new Date().toISOString(),
     })
     .eq('id', 1)

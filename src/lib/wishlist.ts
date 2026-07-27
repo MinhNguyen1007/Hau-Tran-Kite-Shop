@@ -10,11 +10,14 @@ export type WishlistItem = {
   productId: string
   slug: string
   name: string
-  // Ảnh chụp lúc bấm thích — CHỈ để hiển thị nhanh khi mở lại trang. Giá/tồn kho thật luôn
-  // lấy lại từ DB ở trang chi tiết; danh sách để lâu thì snapshot có thể cũ.
+  // Ảnh chụp lúc bấm thích — CHỈ để hiển thị nhanh khi mở lại trang. Giá thật luôn lấy lại
+  // từ DB ở trang chi tiết; danh sách để lâu thì snapshot có thể cũ.
+  //
+  // Mẫu bán nhiều cỡ thì đây là KHOẢNG giá: priceVnd là mức thấp nhất, priceMaxVnd là mức
+  // cao nhất. Bán một mức thì priceMaxVnd = null.
   priceVnd: number
+  priceMaxVnd: number | null
   imagePath: string | null
-  stock: number
   // ISO. Dùng để xếp mới nhất lên đầu và để merge local ↔ DB có kết quả xác định.
   addedAt: string
 }
@@ -29,15 +32,16 @@ export function toWishlistItem(product: {
   name: string
   priceVnd: number
   imagePath: string | null
-  stock: number
+  sizes?: { priceVnd: number }[]
 }): Omit<WishlistItem, 'addedAt'> {
+  const prices = (product.sizes ?? []).map((size) => size.priceVnd)
   return {
     productId: product.id,
     slug: product.slug,
     name: product.name,
-    priceVnd: product.priceVnd,
+    priceVnd: prices.length > 0 ? Math.min(...prices) : product.priceVnd,
+    priceMaxVnd: prices.length > 0 ? Math.max(...prices) : null,
     imagePath: product.imagePath,
-    stock: product.stock,
   }
 }
 
@@ -109,8 +113,10 @@ function isValidItem(value: unknown): value is WishlistItem {
     typeof line.name === 'string' &&
     typeof line.priceVnd === 'number' &&
     Number.isFinite(line.priceVnd) &&
+    // priceMaxVnd CỐ Ý không bắt buộc: dòng lưu trước 2026-07-27 không có field này.
+    // Thiếu thì coi như bán một mức, còn hơn xoá sạch danh sách của khách vì đổi schema.
+    (typeof line.priceMaxVnd === 'number' || line.priceMaxVnd == null) &&
     (typeof line.imagePath === 'string' || line.imagePath === null) &&
-    typeof line.stock === 'number' &&
     typeof line.addedAt === 'string'
   )
 }
@@ -120,7 +126,11 @@ export function parseWishlist(raw: string | null): Wishlist {
   try {
     const parsed: unknown = JSON.parse(raw)
     if (!Array.isArray(parsed)) return []
-    return parsed.filter(isValidItem).sort(byNewest)
+    // Chuẩn hoá dòng cũ: thiếu priceMaxVnd thì đặt null cho khớp kiểu hiện tại.
+    return parsed
+      .filter(isValidItem)
+      .map((item) => ({ ...item, priceMaxVnd: item.priceMaxVnd ?? null }))
+      .sort(byNewest)
   } catch {
     return []
   }

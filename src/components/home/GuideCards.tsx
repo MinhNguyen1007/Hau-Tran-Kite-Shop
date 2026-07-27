@@ -5,14 +5,15 @@ import Link from 'next/link'
 import { ContentIcon } from '@/components/ui/ContentIcon'
 import { SectionHeading } from '@/components/ui/SectionHeading'
 import { getBlocks } from '@/lib/content-blocks'
+import { getSiteSettings } from '@/lib/site-settings'
 
 export async function GuideCards() {
-  const guides = await getBlocks('guide')
+  const [guides, settings] = await Promise.all([getBlocks('guide'), getSiteSettings()])
   if (guides.length === 0) return null
 
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-6 md:py-8">
-      <SectionHeading id="kinh-nghiem" title="Kinh nghiệm chơi diều" />
+      <SectionHeading id="kinh-nghiem" title={settings.guideTitle} />
 
       <div className="grid gap-3 sm:grid-cols-2 md:gap-4 lg:grid-cols-4">
         {guides.map((guide) => {

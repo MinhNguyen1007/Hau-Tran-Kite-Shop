@@ -1,9 +1,11 @@
-// Mục "Diều mới về": tab lọc + rail cuộn ngang, đúng nhịp của thiết kế tham chiếu.
+// Khối các mẫu diều: tab lọc theo danh mục + rail cuộn ngang, đúng nhịp của thiết kế tham chiếu.
 // Server Component — dựng sẵn nội dung từng tab rồi mới đưa vào ProductTabs (client).
+//
+// Tab lấy từ bảng `categories` thật, không còn đoán nhóm từ slug như kite-categories.ts ngày trước.
 import Link from 'next/link'
 import { ProductCard } from '@/components/product/ProductCard'
 import { SectionHeading } from '@/components/ui/SectionHeading'
-import { CATEGORY_TABS, filterByCategory } from '@/lib/kite-categories'
+import type { Category } from '@/lib/categories'
 import type { Product } from '@/lib/products'
 import { ProductTabs, type ProductTab } from './ProductTabs'
 
@@ -11,7 +13,7 @@ function ProductRail({ products }: { products: Product[] }) {
   if (products.length === 0) {
     return (
       <p className="py-14 text-center text-sm text-stone-500 dark:text-stone-400">
-        Nhóm này chưa có mẫu nào. Gọi cho xưởng để đặt riêng.
+        Nhóm này chưa có mẫu nào. Nhắn Zalo cho xưởng để đặt riêng.
       </p>
     )
   }
@@ -27,16 +29,35 @@ function ProductRail({ products }: { products: Product[] }) {
   )
 }
 
-export function NewArrivals({ products }: { products: Product[] }) {
-  const tabs: ProductTab[] = CATEGORY_TABS.map((tab) => ({
-    id: tab.id,
-    label: tab.label,
-    content: <ProductRail products={filterByCategory(products, tab.id)} />,
-  }))
+export function NewArrivals({
+  products,
+  categories,
+  title,
+}: {
+  products: Product[]
+  categories: Category[]
+  title: string
+}) {
+  // Danh mục rỗng (chưa có sản phẩm nào thuộc nó) bị loại khỏi tab — tab bấm vào chỉ để thấy
+  // "chưa có mẫu nào" là tab vô ích.
+  const usable = categories.filter((category) =>
+    products.some((product) => product.categoryId === category.id),
+  )
+
+  const tabs: ProductTab[] = [
+    { id: 'all', label: 'Tất cả', content: <ProductRail products={products} /> },
+    ...usable.map((category) => ({
+      id: category.id,
+      label: category.name,
+      content: (
+        <ProductRail products={products.filter((p) => p.categoryId === category.id)} />
+      ),
+    })),
+  ]
 
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-6 md:py-8">
-      <SectionHeading title="Diều mới về" />
+      <SectionHeading title={title} />
       <ProductTabs tabs={tabs} />
       <div className="mt-5 text-center">
         <Link

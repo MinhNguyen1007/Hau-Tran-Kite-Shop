@@ -10,7 +10,9 @@ export const metadata: Metadata = {
 
 const ADMIN_NAV = [
   { label: 'Sản phẩm', href: '/admin/san-pham' },
+  { label: 'Danh mục diều', href: '/admin/danh-muc' },
   { label: 'Nội dung trang chủ', href: '/admin/noi-dung' },
+  { label: 'Hướng dẫn', href: '/admin/huong-dan' },
   { label: 'Thông tin shop', href: '/admin/cai-dat' },
   { label: 'Tin nhắn liên hệ', href: '/admin/lien-he' },
 ]

@@ -1,33 +1,20 @@
-// Footer nền tối 4 cột + thanh cam cuối trang, theo thiết kế tham chiếu.
-// TODO(trang): mục Chính sách / Hướng dẫn đang là text tĩnh vì GĐ1 chưa có route tương ứng.
-// Khi dựng các trang đó thì đổi <li> thành <Link>.
+// Footer nền tối + thanh cam cuối trang, theo thiết kế tham chiếu.
+//
+// Cụm "Chính sách" đã BỎ (2026-07-27): shop không bán qua web nên không có chính sách đổi
+// trả / thanh toán để nói. Cụm hướng dẫn giờ là link thật sang /huong-dan.
 import { Envelope, MapPin, Phone, Wind } from '@phosphor-icons/react/ssr'
 import Link from 'next/link'
+import { getGuideVideos } from '@/lib/guide-videos'
 import { NAV_ITEMS, telHref, zaloHref } from '@/lib/shop'
-import { getSiteSettings } from '@/lib/site-settings'
-
-const POLICIES = [
-  'Chính sách đổi trả trong 7 ngày',
-  'Chính sách bảo hành khung tre',
-  'Chính sách vận chuyển toàn quốc',
-  'Chính sách bảo mật thông tin',
-  'Hình thức thanh toán',
-]
-
-const GUIDES = [
-  'Chọn diều theo sức gió nơi bạn ở',
-  'Cách lắp khung và căng dây lần đầu',
-  'Cân bộ sáo cho tiếng vang, tiếng trong',
-  'Bảo quản diều qua mùa mưa',
-  'Thả diều an toàn, tránh xa đường điện',
-]
+import { getSiteSettings, toParagraphs } from '@/lib/site-settings'
 
 export async function SiteFooter() {
-  const settings = await getSiteSettings()
+  const [settings, guides] = await Promise.all([getSiteSettings(), getGuideVideos()])
+  const about = toParagraphs(settings.footerAbout)
 
   return (
     <footer className="mt-16 bg-ink-900 text-stone-300">
-      <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-12 md:grid-cols-2 lg:grid-cols-4">
+      <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-12 md:grid-cols-2 lg:grid-cols-3">
         <div>
           <div className="mb-4 flex items-center gap-2.5">
             <span className="grid h-9 w-9 place-items-center rounded-lg bg-gradient-to-br from-brand-500 to-brand-700 text-gold-300">
@@ -37,13 +24,14 @@ export async function SiteFooter() {
               {settings.shopName}
             </span>
           </div>
-          <p className="text-sm leading-relaxed text-stone-400">
-            Xưởng diều làm thủ công theo lối truyền thống: khung tre vót tay, phất giấy dó, cân
-            sáo bằng tai. Mỗi chiếc diều đều được thử gió trước khi giao.
-          </p>
-          <p className="mt-4 text-sm leading-relaxed text-stone-400">
-            Nhận đặt diều theo kích cỡ và hoạ tiết riêng, làm trong 5 đến 10 ngày tuỳ mẫu.
-          </p>
+          {about.map((paragraph, index) => (
+            <p
+              key={paragraph}
+              className={`text-sm leading-relaxed text-stone-400 ${index > 0 ? 'mt-4' : ''}`}
+            >
+              {paragraph}
+            </p>
+          ))}
         </div>
 
         <div>
@@ -84,27 +72,31 @@ export async function SiteFooter() {
           </a>
         </div>
 
-        <div>
-          <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-brand-400">
-            Chính sách
-          </h2>
-          <ul className="space-y-2.5 text-sm text-stone-400">
-            {POLICIES.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-brand-400">
-            Hướng dẫn chơi diều
-          </h2>
-          <ul className="space-y-2.5 text-sm text-stone-400">
-            {GUIDES.map((item) => (
-              <li key={item}>{item}</li>
-            ))}
-          </ul>
-        </div>
+        {guides.length > 0 && (
+          <div>
+            <h2 className="mb-4 text-sm font-bold uppercase tracking-wide text-brand-400">
+              Hướng dẫn chơi diều
+            </h2>
+            <ul className="space-y-2.5 text-sm">
+              {guides.map((guide) => (
+                <li key={guide.id}>
+                  <Link
+                    href="/huong-dan"
+                    className="text-stone-400 transition-colors hover:text-brand-400"
+                  >
+                    {guide.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            <Link
+              href="/huong-dan"
+              className="mt-4 inline-block text-sm font-bold text-brand-400 hover:underline"
+            >
+              Xem tất cả hướng dẫn →
+            </Link>
+          </div>
+        )}
       </div>
 
       <div className="border-t border-ink-700">

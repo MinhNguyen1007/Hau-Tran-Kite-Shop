@@ -15,8 +15,8 @@ const dieu = {
   slug: 'dieu-canh-coc-lon',
   name: 'Diều cánh cốc lớn',
   priceVnd: 450_000,
+  priceMaxVnd: null,
   imagePath: null,
-  stock: 3,
 }
 
 const sao = {
@@ -24,8 +24,8 @@ const sao = {
   slug: 'sao-dieu-tre',
   name: 'Sáo diều tre',
   priceVnd: 120_000,
+  priceMaxVnd: null,
   imagePath: 'kites/sao.webp',
-  stock: 10,
 }
 
 describe('addItem', () => {
@@ -134,19 +134,41 @@ describe('parseWishlist', () => {
   it('bỏ dòng thiếu addedAt — không xếp thứ tự được thì coi như hỏng', () => {
     expect(parseWishlist(JSON.stringify([dieu]))).toEqual([])
   })
+
+  // Dòng lưu trước 2026-07-27 có `stock` và không có `priceMaxVnd`. Đổi schema mà xoá sạch
+  // danh sách của khách là mất dữ liệu thật, nên phải đọc được cả bản cũ.
+  it('vẫn đọc được dòng lưu theo schema cũ (có stock, thiếu priceMaxVnd)', () => {
+    const legacy = {
+      productId: 'p1',
+      slug: 'dieu-canh-coc-lon',
+      name: 'Diều cánh cốc lớn',
+      priceVnd: 450_000,
+      imagePath: null,
+      stock: 3,
+      addedAt: '2026-07-01T00:00:00.000Z',
+    }
+    const list = parseWishlist(JSON.stringify([legacy]))
+    expect(list).toHaveLength(1)
+    expect(list[0].priceMaxVnd).toBeNull()
+  })
 })
 
 describe('toWishlistItem', () => {
-  it('map Product sang dòng yêu thích', () => {
-    const item = toWishlistItem({
-      id: 'p9',
-      slug: 'dieu-nho',
-      name: 'Diều nhỏ',
-      priceVnd: 90_000,
-      imagePath: null,
-      stock: 5,
-    })
+  const base = { id: 'p9', slug: 'dieu-nho', name: 'Diều nhỏ', priceVnd: 90_000, imagePath: null }
+
+  it('mẫu bán một mức: dùng priceVnd, không có giá trần', () => {
+    const item = toWishlistItem(base)
     expect(item.productId).toBe('p9')
     expect(item.priceVnd).toBe(90_000)
+    expect(item.priceMaxVnd).toBeNull()
+  })
+
+  it('mẫu nhiều cỡ: lấy khoảng giá từ bảng cỡ, bỏ qua priceVnd', () => {
+    const item = toWishlistItem({
+      ...base,
+      sizes: [{ priceVnd: 2_200_000 }, { priceVnd: 1_000_000 }, { priceVnd: 3_000_000 }],
+    })
+    expect(item.priceVnd).toBe(1_000_000)
+    expect(item.priceMaxVnd).toBe(3_000_000)
   })
 })
