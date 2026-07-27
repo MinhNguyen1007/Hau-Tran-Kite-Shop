@@ -61,7 +61,7 @@ export function NewArrivals({
           href="/san-pham"
           className="inline-flex rounded-full border-2 border-brand-500 px-6 py-2.5 text-sm font-bold text-brand-700 transition-colors hover:bg-brand-600 hover:text-white dark:text-brand-400 dark:hover:text-white"
         >
-          Xem tất cả diều
+          Xem tất cả sản phẩm
         </Link>
       </div>
     </section>
