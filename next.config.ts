@@ -14,6 +14,11 @@ const nextConfig: NextConfig = {
         pathname: "/storage/v1/object/public/**",
       },
     ],
+    // Next 16 chặn optimizer fetch ảnh từ IP nội bộ (chống SSRF) — Supabase local nằm ở
+    // 127.0.0.1 nên MỌI ảnh sản phẩm trả 400 "resolved to private ip", dù remotePatterns đúng.
+    // Chỉ mở ở dev; production ảnh nằm trên host Supabase công khai nên không cần, và bật
+    // ngoài đó là tự mở đường cho SSRF.
+    dangerouslyAllowLocalIP: process.env.NODE_ENV !== "production",
   },
 };
 
