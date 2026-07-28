@@ -4,7 +4,6 @@ import { PageView } from "@/components/analytics/PageView";
 import { SiteFooter } from "@/components/layout/SiteFooter";
 import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SHOP } from "@/lib/shop";
-import { THEME_INIT_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
 // Be Vietnam Pro: font thiết kế riêng cho dấu tiếng Việt (Geist thiếu subset vietnamese,
@@ -28,16 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    // suppressHydrationWarning: script dưới đây gắn class .dark vào <html> trước khi React
-    // hydrate, nên markup client cố ý khác server ở đúng thuộc tính class này.
-    <html
-      lang="vi"
-      className={`${beVietnamPro.variable} h-full antialiased`}
-      suppressHydrationWarning
-    >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-      </head>
+    <html lang="vi" className={`${beVietnamPro.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         <PageView />
         <SiteHeader />

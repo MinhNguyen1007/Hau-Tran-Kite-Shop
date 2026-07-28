@@ -1,9 +1,8 @@
 @import "tailwindcss";
 
-/* Bật `dark:` theo class .dark trên <html> thay vì chỉ prefers-color-scheme, để người dùng
-   tự chọn được nền sáng/tối. Script chặn trong layout.tsx gắn class TRƯỚC khi trang paint,
-   nếu chưa từng chọn thì lấy theo hệ thống. */
-@custom-variant dark (&:where(.dark, .dark *));
+/* Nền tối đã GỠ HẲN 2026-07-28 theo yêu cầu user: không còn nút chuyển sáng/tối, không còn
+   biến thể `dark:`, không còn script dò theme trong <head>. Storefront chạy một chế độ sáng
+   duy nhất. Đừng thêm lại `dark:` vào component storefront — sẽ không có gì bật nó lên. */
 
 /* Bảng màu thương hiệu lấy từ banner thật của shop (public/images/shop_background.jpg):
    cam lửa + vàng kim trên nền xanh đêm. MỘT accent duy nhất (brand) cho toàn site —
@@ -38,7 +37,8 @@
      Cùng lý do, toàn bộ chữ/viền xám trong app dùng thang stone. */
   --background: #f5f5f4;
   --foreground: #1c1917;
-  /* color-scheme để thanh cuộn và control gốc của trình duyệt đổi theo, không bị lệch tông. */
+  /* Khoá cứng `light`: không còn nút đổi nền, mà để trình duyệt tự suy theo hệ thống thì
+     máy đang bật dark sẽ tô đen ô input và thanh cuộn trên một trang nền sáng. */
   color-scheme: light;
 }
 
@@ -47,12 +47,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-be-vietnam);
   --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
-}
-
-.dark {
-  --background: #060e1e;
-  --foreground: #e8eaee;
-  color-scheme: dark;
 }
 
 body {

@@ -1,6 +1,6 @@
 // Header 2 tầng theo thiết kế tham chiếu: thanh tiện ích (logo / hotline / tìm kiếm / tài khoản
 // / yêu thích) và thanh điều hướng cam dính trên đầu. Server Component — các đảo client (SearchBox,
-// MobileMenu, WishlistBadge, ThemeToggle) tự import icon của chúng, nên ở đây dùng icon bản /ssr.
+// MobileMenu, WishlistBadge) tự import icon của chúng, nên ở đây dùng icon bản /ssr.
 import { MapPin, Phone, Wind } from '@phosphor-icons/react/ssr'
 import Link from 'next/link'
 import { WishlistBadge } from '@/components/wishlist/WishlistBadge'
@@ -9,7 +9,6 @@ import { getSiteSettings } from '@/lib/site-settings'
 import { AccountLink } from './AccountLink'
 import { MobileMenu } from './MobileMenu'
 import { SearchBox } from './SearchBox'
-import { ThemeToggle } from './ThemeToggle'
 
 export async function SiteHeader() {
   const settings = await getSiteSettings()
@@ -50,7 +49,6 @@ export async function SiteHeader() {
           <div className="ml-auto flex items-center gap-1 lg:ml-0">
             <AccountLink className="hidden sm:flex" />
             <WishlistBadge />
-            <ThemeToggle />
             <MobileMenu />
           </div>
         </div>
