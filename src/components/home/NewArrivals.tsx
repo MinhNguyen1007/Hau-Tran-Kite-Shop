@@ -1,7 +1,11 @@
-// Khối các mẫu diều: tab lọc theo danh mục + rail cuộn ngang, đúng nhịp của thiết kế tham chiếu.
+// Khối các mẫu sản phẩm: hàng pill lọc theo danh mục + LƯỚI sản phẩm.
 // Server Component — dựng sẵn nội dung từng tab rồi mới đưa vào ProductTabs (client).
 //
+// Đổi từ rail cuộn ngang sang lưới 3 cột (mẫu 2026-07-28): rail chỉ khoe được 2-3 mẫu rồi
+// bắt khách kéo, lưới cho thấy hết kho hàng ngay.
+//
 // Tab lấy từ bảng `categories` thật, không còn đoán nhóm từ slug như kite-categories.ts ngày trước.
+import { ArrowRight } from '@phosphor-icons/react/ssr'
 import Link from 'next/link'
 import { ProductCard } from '@/components/product/ProductCard'
 import { SectionHeading } from '@/components/ui/SectionHeading'
@@ -9,19 +13,21 @@ import type { Category } from '@/lib/categories'
 import type { Product } from '@/lib/products'
 import { ProductTabs, type ProductTab } from './ProductTabs'
 
-function ProductRail({ products }: { products: Product[] }) {
+function ProductGrid({ products }: { products: Product[] }) {
   if (products.length === 0) {
     return (
-      <p className="py-14 text-center text-sm text-stone-500 dark:text-stone-400">
+      <p className="rounded-2xl border border-dashed border-stone-300 py-14 text-center text-sm text-stone-500">
         Nhóm này chưa có mẫu nào. Nhắn Zalo cho xưởng để đặt riêng.
       </p>
     )
   }
 
   return (
-    <ul className="no-scrollbar flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 md:gap-4">
+    <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {products.map((product, i) => (
-        <li key={product.id} className="w-[64vw] max-w-[248px] shrink-0 snap-start sm:w-[236px]">
+        <li key={product.id}>
+          {/* Chỉ ảnh đầu tiên đặt priority: đặt cho cả lưới là ép trình duyệt tải song song
+              hàng loạt ảnh lớn, LCP xấu đi chứ không tốt lên. */}
           <ProductCard product={product} priority={i === 0} />
         </li>
       ))}
@@ -42,26 +48,29 @@ export function NewArrivals({
   // hàng tab là cách khách thấy shop bán những gì, giấu nhóm rỗng đi thì trông như shop
   // không làm mặt hàng đó. Tab rỗng có sẵn lời mời nhắn Zalo đặt riêng.
   const tabs: ProductTab[] = [
-    { id: 'all', label: 'Tất cả', content: <ProductRail products={products} /> },
+    { id: 'all', label: 'Tất cả', content: <ProductGrid products={products} /> },
     ...categories.map((category) => ({
       id: category.id,
       label: category.name,
-      content: (
-        <ProductRail products={products.filter((p) => p.categoryId === category.id)} />
-      ),
+      content: <ProductGrid products={products.filter((p) => p.categoryId === category.id)} />,
     })),
   ]
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-4 py-6 md:py-8">
+    <section className="mx-auto w-full max-w-7xl px-4 py-8 md:py-10">
       <SectionHeading title={title} />
       <ProductTabs tabs={tabs} />
-      <div className="mt-5 text-center">
+      <div className="mt-8 text-center">
         <Link
           href="/san-pham"
-          className="inline-flex rounded-full border-2 border-brand-500 px-6 py-2.5 text-sm font-bold text-brand-700 transition-colors hover:bg-brand-600 hover:text-white dark:text-brand-400 dark:hover:text-white"
+          className="group inline-flex items-center gap-2 rounded-full border border-stone-300 bg-white px-6 py-2.5 text-sm font-semibold text-ink-950 transition-colors hover:border-stone-400 hover:bg-stone-50"
         >
           Xem tất cả sản phẩm
+          <ArrowRight
+            size={15}
+            weight="bold"
+            className="transition-transform group-hover:translate-x-1"
+          />
         </Link>
       </div>
     </section>

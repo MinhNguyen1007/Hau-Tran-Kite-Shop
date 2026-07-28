@@ -14,12 +14,12 @@ export default async function AdminContactPage() {
 
   return (
     <div>
-      <h1 className="mb-5 text-xl font-extrabold tracking-tight text-ink-900 dark:text-stone-50">
+      <h1 className="mb-5 text-xl font-extrabold tracking-tight text-ink-900">
         Tin nhắn liên hệ ({messages.length})
       </h1>
 
       {messages.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-stone-300 px-6 py-12 text-center text-sm text-stone-600 dark:border-ink-700 dark:text-stone-400">
+        <p className="rounded-xl border border-dashed border-stone-300 px-6 py-12 text-center text-sm text-stone-600">
           Chưa có tin nhắn nào.
         </p>
       ) : (
@@ -27,29 +27,29 @@ export default async function AdminContactPage() {
           {messages.map((message) => (
             <li
               key={message.id}
-              className="rounded-xl border border-stone-200 bg-white p-4 dark:border-ink-700 dark:bg-ink-900"
+              className="rounded-xl border border-stone-200 bg-white p-4"
             >
               <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                <span className="font-bold text-ink-900 dark:text-stone-50">{message.name}</span>
+                <span className="font-bold text-ink-900">{message.name}</span>
                 <a
                   href={`tel:${message.phone}`}
-                  className="text-sm font-semibold text-brand-700 hover:underline dark:text-brand-400"
+                  className="text-sm font-semibold text-brand-700 hover:underline"
                 >
                   {message.phone}
                 </a>
                 {message.email && (
                   <a
                     href={`mailto:${message.email}`}
-                    className="break-all text-sm text-stone-600 hover:underline dark:text-stone-400"
+                    className="break-all text-sm text-stone-600 hover:underline"
                   >
                     {message.email}
                   </a>
                 )}
-                <span className="ml-auto text-xs text-stone-500 dark:text-stone-400">
+                <span className="ml-auto text-xs text-stone-500">
                   {formatSentAt(message.createdAt)}
                 </span>
               </div>
-              <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-stone-700 dark:text-stone-300">
+              <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-stone-700">
                 {message.message}
               </p>
             </li>

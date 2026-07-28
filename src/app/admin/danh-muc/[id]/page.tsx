@@ -16,10 +16,10 @@ export default async function EditCategoryPage({
 
   return (
     <div>
-      <h1 className="mb-1 text-xl font-extrabold tracking-tight text-ink-900 dark:text-stone-50">
+      <h1 className="mb-1 text-xl font-extrabold tracking-tight text-ink-900">
         Sửa danh mục
       </h1>
-      <p className="mb-5 text-sm text-stone-600 dark:text-stone-400">
+      <p className="mb-5 text-sm text-stone-600">
         {category.archivedAt ? 'Danh mục này đang bị gỡ khỏi trang web.' : 'Đang hiện trên trang web.'}
       </p>
       <CategoryForm category={category} />

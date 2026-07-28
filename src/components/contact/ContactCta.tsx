@@ -43,7 +43,7 @@ export function ContactCta({
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => track('zalo')}
-        className="flex flex-1 items-center justify-center gap-2 rounded-full bg-brand-600 px-5 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-700 active:scale-[0.98]"
+        className="flex flex-1 items-center justify-center gap-2 rounded-full bg-ink-950 px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-ink-800 active:scale-[0.98]"
       >
         <ChatCircleDots size={18} weight="bold" />
         Nhắn Zalo đặt diều
@@ -52,7 +52,7 @@ export function ContactCta({
       <a
         href={telHref(hotline)}
         onClick={() => track('phone')}
-        className="flex flex-1 items-center justify-center gap-2 rounded-full border border-stone-300 px-5 py-3 text-sm font-bold text-stone-800 transition-colors hover:bg-stone-100 dark:border-ink-700 dark:text-stone-200 dark:hover:bg-ink-800"
+        className="flex flex-1 items-center justify-center gap-2 rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-semibold text-ink-950 transition-colors hover:border-stone-400 hover:bg-stone-50"
       >
         <Phone size={18} weight="bold" />
         Gọi {hotline}

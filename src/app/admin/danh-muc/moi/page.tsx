@@ -6,7 +6,7 @@ export default async function NewCategoryPage() {
 
   return (
     <div>
-      <h1 className="mb-5 text-xl font-extrabold tracking-tight text-ink-900 dark:text-stone-50">
+      <h1 className="mb-5 text-xl font-extrabold tracking-tight text-ink-900">
         Thêm danh mục
       </h1>
       <CategoryForm />

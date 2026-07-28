@@ -5,8 +5,9 @@
    duy nhất. Đừng thêm lại `dark:` vào component storefront — sẽ không có gì bật nó lên. */
 
 /* Bảng màu thương hiệu lấy từ banner thật của shop (public/images/shop_background.jpg):
-   cam lửa + vàng kim trên nền xanh đêm. MỘT accent duy nhất (brand) cho toàn site —
-   không xen kẽ sky/blue như bản cũ. */
+   cam lửa + vàng kim trên nền xanh đêm. Từ 2026-07-28 storefront chuyển sang tông trung tính
+   gần như đơn sắc (nền xám nhạt, nút đen, chữ ink) theo mẫu user đưa; cam rút về vai trò
+   accent nhỏ (tim đã thích, badge). Thang brand vẫn giữ vì khu /admin còn dùng dày. */
 @theme {
   --color-brand-50: #fff7ed;
   --color-brand-100: #ffedd5;
@@ -60,6 +61,31 @@ body {
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
+  }
+}
+
+/* Hiện dần lúc tải trang (khối hero). Làm bằng CSS thuần chứ KHÔNG kéo motion/framer-motion
+   vào: hero nhờ vậy vẫn là Server Component và bundle client không phình thêm vì một hiệu ứng
+   chạy đúng một lần. Xếp thứ tự xuất hiện bằng tiện ích tuỳ ý, ví dụ [animation-delay:160ms].
+   Chỉ có duy nhất một khung hình `from` — mốc cuối là chính trạng thái sẵn có của element. */
+@utility reveal {
+  animation: reveal-in 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes reveal-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+    filter: blur(5px);
+  }
+}
+
+/* Ai bật "giảm chuyển động" thì thấy thẳng nội dung. Bỏ animation là an toàn vì fill-mode
+   `both` chỉ giữ khung `from` trong lúc chờ delay; không còn animation thì element về đúng
+   trạng thái mặc định của nó (đã hiện). Khối này nằm ngoài @layer nên thắng utility của Tailwind. */
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    animation: none;
   }
 }
 

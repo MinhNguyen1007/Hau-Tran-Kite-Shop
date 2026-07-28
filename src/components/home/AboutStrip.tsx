@@ -10,10 +10,10 @@ export async function AboutStrip() {
   const paragraphs = toParagraphs(settings.aboutBody)
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-4 py-6 md:py-8">
+    <section className="mx-auto w-full max-w-7xl px-4 py-8 md:py-10">
       <SectionHeading id="gioi-thieu" title={settings.aboutHeading} />
 
-      <div className="grid items-center gap-6 rounded-2xl border border-stone-200 bg-white p-5 md:grid-cols-[220px_1fr] md:gap-10 md:p-8 dark:border-ink-700 dark:bg-ink-900">
+      <div className="grid items-center gap-8 rounded-2xl border border-stone-200 bg-white p-6 md:grid-cols-[220px_1fr] md:gap-12 md:p-10">
         <Image
           src="/images/shop_owner_avatar.jpg"
           alt="Chủ xưởng diều Hậu Trần"
@@ -24,17 +24,17 @@ export async function AboutStrip() {
         />
 
         <div>
-          <p className="text-lg font-bold text-ink-900 md:text-xl dark:text-stone-50">
+          <p className="text-lg font-semibold tracking-tight text-ink-950 md:text-xl">
             {settings.aboutTitle}
           </p>
           {paragraphs.map((paragraph) => (
-            <p key={paragraph} className="mt-3 leading-relaxed text-stone-600 dark:text-stone-400">
+            <p key={paragraph} className="mt-3 text-[15px] leading-relaxed text-stone-600">
               {paragraph}
             </p>
           ))}
           <a
             href={telHref(settings.hotline)}
-            className="mt-5 inline-flex rounded-full bg-brand-600 px-6 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-700 active:scale-[0.98]"
+            className="mt-6 inline-flex rounded-full border border-stone-300 px-6 py-2.5 text-sm font-semibold text-ink-950 transition-colors hover:border-stone-400 hover:bg-stone-50"
           >
             Gọi {settings.hotline}
           </a>

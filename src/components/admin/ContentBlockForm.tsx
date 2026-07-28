@@ -208,7 +208,7 @@ export function ContentBlockForm({ block }: { block?: ContentBlock }) {
         />
       </Field>
 
-      <label className="flex items-center gap-2.5 text-sm font-semibold text-ink-900 dark:text-stone-100">
+      <label className="flex items-center gap-2.5 text-sm font-semibold text-ink-900">
         <input
           type="checkbox"
           checked={active}
@@ -221,7 +221,7 @@ export function ContentBlockForm({ block }: { block?: ContentBlock }) {
       {error && (
         <p
           role="alert"
-          className="flex items-start gap-2 text-sm font-medium text-brand-700 dark:text-brand-400"
+          className="flex items-start gap-2 text-sm font-medium text-brand-700"
         >
           <WarningCircle size={18} weight="fill" className="mt-0.5 shrink-0" />
           {error}
@@ -232,13 +232,13 @@ export function ContentBlockForm({ block }: { block?: ContentBlock }) {
         <button
           type="submit"
           disabled={saving}
-          className="rounded-full bg-brand-600 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-600 dark:disabled:bg-ink-800 dark:disabled:text-stone-400"
+          className="rounded-full bg-brand-600 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-600"
         >
           {saving ? 'Đang lưu…' : editing ? 'Lưu thay đổi' : 'Tạo khối'}
         </button>
         <Link
           href="/admin/noi-dung"
-          className="text-sm font-semibold text-stone-600 hover:underline dark:text-stone-400"
+          className="text-sm font-semibold text-stone-600 hover:underline"
         >
           Huỷ
         </Link>

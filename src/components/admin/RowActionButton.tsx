@@ -56,7 +56,7 @@ export function RowActionButton({
       disabled={busy}
       aria-label={label}
       title={label}
-      className="grid h-8 w-8 place-items-center rounded-lg text-stone-500 transition-colors hover:bg-stone-100 hover:text-brand-700 disabled:opacity-50 dark:text-stone-400 dark:hover:bg-ink-800 dark:hover:text-brand-400"
+      className="grid h-8 w-8 place-items-center rounded-lg text-stone-500 transition-colors hover:bg-stone-100 hover:text-brand-700 disabled:opacity-50"
     >
       <Glyph size={18} />
     </button>

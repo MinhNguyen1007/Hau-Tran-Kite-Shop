@@ -26,7 +26,7 @@ export function MobileMenu() {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Mở menu"
-        className="grid h-10 w-10 place-items-center rounded-lg text-stone-700 transition-colors hover:bg-stone-100 lg:hidden dark:text-stone-200 dark:hover:bg-ink-800"
+        className="grid h-10 w-10 place-items-center rounded-full text-stone-600 transition-colors hover:bg-stone-100 hover:text-ink-950 lg:hidden"
       >
         <List size={22} weight="bold" />
       </button>
@@ -39,16 +39,16 @@ export function MobileMenu() {
             onClick={() => setOpen(false)}
             className="absolute inset-0 bg-ink-950/60"
           />
-          <div className="absolute inset-y-0 right-0 flex w-[82%] max-w-xs flex-col bg-white shadow-xl dark:bg-ink-900">
-            <div className="flex items-center justify-between border-b border-stone-200 px-4 py-3 dark:border-ink-700">
-              <span className="text-sm font-bold uppercase tracking-wide text-brand-700 dark:text-brand-400">
+          <div className="absolute inset-y-0 right-0 flex w-[82%] max-w-xs flex-col bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-stone-200 px-4 py-3">
+              <span className="text-sm font-bold tracking-tight text-ink-950">
                 Danh mục
               </span>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Đóng menu"
-                className="grid h-9 w-9 place-items-center rounded-lg text-stone-600 hover:bg-stone-100 dark:text-stone-300 dark:hover:bg-ink-800"
+                className="grid h-9 w-9 place-items-center rounded-lg text-stone-600 hover:bg-stone-100"
               >
                 <X size={20} weight="bold" />
               </button>
@@ -60,7 +60,7 @@ export function MobileMenu() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setOpen(false)}
-                  className="px-4 py-3 text-[15px] font-medium text-stone-800 transition-colors hover:bg-brand-50 hover:text-brand-700 dark:text-stone-100 dark:hover:bg-ink-800 dark:hover:text-brand-400"
+                  className="px-4 py-3 text-[15px] font-medium text-stone-800 transition-colors hover:bg-stone-100 hover:text-ink-950"
                 >
                   {item.label}
                 </Link>
@@ -71,7 +71,7 @@ export function MobileMenu() {
               <Link
                 href="/tai-khoan"
                 onClick={() => setOpen(false)}
-                className="border-t border-stone-200 px-4 py-3 text-[15px] font-medium text-stone-800 transition-colors hover:bg-brand-50 hover:text-brand-700 dark:border-ink-700 dark:text-stone-100 dark:hover:bg-ink-800 dark:hover:text-brand-400"
+                className="border-t border-stone-200 px-4 py-3 text-[15px] font-medium text-stone-800 transition-colors hover:bg-stone-100 hover:text-ink-950"
               >
                 Tài khoản
               </Link>
@@ -79,7 +79,7 @@ export function MobileMenu() {
 
             <a
               href={HOTLINE_HREF}
-              className="m-4 flex items-center justify-center gap-2 rounded-full bg-brand-600 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-brand-700"
+              className="m-4 flex items-center justify-center gap-2 rounded-full bg-ink-950 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-ink-800"
             >
               <Phone size={18} weight="fill" />
               Gọi {SHOP.hotline}

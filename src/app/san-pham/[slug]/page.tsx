@@ -45,7 +45,7 @@ export default async function ProductDetailPage({
 
       <Link
         href="/san-pham"
-        className="mb-6 inline-block text-sm font-semibold text-brand-700 hover:underline dark:text-brand-400"
+        className="mb-6 inline-block text-sm font-semibold text-ink-950 hover:underline"
       >
         ← Tất cả sản phẩm
       </Link>
@@ -55,25 +55,25 @@ export default async function ProductDetailPage({
 
         <div className="flex flex-col gap-5">
           {product.categoryName && (
-            <span className="w-fit rounded-full bg-brand-50 px-3 py-1 text-xs font-bold text-brand-700 dark:bg-ink-800 dark:text-brand-400">
+            <span className="w-fit rounded-full bg-brand-50 px-3 py-1 text-xs font-bold text-ink-950">
               {product.categoryName}
             </span>
           )}
 
-          <h1 className="text-3xl font-extrabold tracking-tight text-ink-900 dark:text-stone-50">
+          <h1 className="text-3xl font-extrabold tracking-tight text-ink-900">
             {product.name}
           </h1>
 
-          <p className="text-3xl font-extrabold text-brand-600 dark:text-brand-400">
+          <p className="text-3xl font-bold tracking-tight text-ink-950">
             {price ?? (
-              <span className="text-xl font-bold text-stone-600 dark:text-stone-400">
+              <span className="text-xl font-bold text-stone-600">
                 Liên hệ để biết giá
               </span>
             )}
           </p>
 
           {product.description && (
-            <p className="leading-relaxed text-stone-600 dark:text-stone-300">
+            <p className="leading-relaxed text-stone-600">
               {product.description}
             </p>
           )}
@@ -81,8 +81,8 @@ export default async function ProductDetailPage({
           {/* Kích thước là mô tả, KHÔNG phải danh sách chọn: shop làm theo yêu cầu chứ không
               có sẵn từng cỡ, cho chọn là hứa những thứ chưa chắc có. */}
           {product.sizeNote && (
-            <p className="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm leading-relaxed text-stone-700 dark:border-ink-700 dark:bg-ink-900 dark:text-stone-300">
-              <strong className="font-bold text-ink-900 dark:text-stone-100">Kích thước: </strong>
+            <p className="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm leading-relaxed text-stone-700">
+              <strong className="font-bold text-ink-900">Kích thước: </strong>
               {product.sizeNote}
             </p>
           )}

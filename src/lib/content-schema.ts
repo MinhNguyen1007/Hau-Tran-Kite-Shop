@@ -32,6 +32,8 @@ export const SiteSettingsSchema = z.object({
   promoTitle: z.string().trim().min(1, 'Chưa nhập tiêu đề khối khuyến mãi').max(120),
   categoryTitle: z.string().trim().min(1, 'Chưa nhập tiêu đề khối danh mục').max(120),
   aboutHeading: z.string().trim().min(1, 'Chưa nhập tiêu đề khối giới thiệu').max(120),
+  ctaTitle: z.string().trim().min(1, 'Chưa nhập tiêu đề dải liên hệ').max(120),
+  ctaBody: z.string().trim().max(400),
 })
 
 export const ContentBlockSchema = z.object({

@@ -12,9 +12,9 @@ export function ProductGallery({ paths, name }: { paths: string[]; name: string 
 
   if (!current) {
     return (
-      <div className="flex aspect-[4/3] w-full items-center justify-center rounded-2xl border border-stone-200 bg-gradient-to-br from-brand-50 to-brand-100 dark:border-ink-700 dark:from-ink-800 dark:to-ink-900">
+      <div className="flex aspect-[4/3] w-full items-center justify-center rounded-2xl border border-stone-200 bg-stone-100">
         <div
-          className="h-24 w-24 rotate-45 rounded-lg border-2 border-brand-300 dark:border-brand-700"
+          className="h-24 w-24 rotate-45 rounded-lg border-2 border-stone-300"
           aria-hidden
         />
       </div>
@@ -23,7 +23,7 @@ export function ProductGallery({ paths, name }: { paths: string[]; name: string 
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-stone-200 dark:border-ink-700">
+      <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-stone-200">
         <Image
           src={getProductImageUrl(current)}
           alt={name}
@@ -45,8 +45,8 @@ export function ProductGallery({ paths, name }: { paths: string[]; name: string 
                 aria-current={index === active}
                 className={`relative block h-16 w-16 shrink-0 overflow-hidden rounded-lg border-2 transition-colors ${
                   index === active
-                    ? 'border-brand-600 dark:border-brand-400'
-                    : 'border-stone-200 hover:border-brand-300 dark:border-ink-700'
+                    ? 'border-ink-950'
+                    : 'border-stone-200 hover:border-stone-300'
                 }`}
               >
                 <Image

@@ -85,13 +85,13 @@ export function ImageUploader({
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-sm font-semibold text-ink-900 dark:text-stone-100">{label}</span>
+      <span className="text-sm font-semibold text-ink-900">{label}</span>
 
       {paths.length > 0 && (
         <ul className="flex flex-wrap gap-2">
           {paths.map((path, index) => (
             <li key={path} className="relative">
-              <span className="relative block h-24 w-24 overflow-hidden rounded-xl border border-stone-200 dark:border-ink-700">
+              <span className="relative block h-24 w-24 overflow-hidden rounded-xl border border-stone-200">
                 <Image
                   src={getProductImageUrl(path)}
                   alt=""
@@ -110,7 +110,7 @@ export function ImageUploader({
                 type="button"
                 onClick={() => removeAt(index)}
                 aria-label={`Gỡ ảnh ${index + 1}`}
-                className="absolute -right-1.5 -top-1.5 grid h-6 w-6 place-items-center rounded-full bg-white text-stone-600 shadow ring-1 ring-stone-200 transition-colors hover:text-brand-700 dark:bg-ink-800 dark:text-stone-300 dark:ring-ink-700"
+                className="absolute -right-1.5 -top-1.5 grid h-6 w-6 place-items-center rounded-full bg-white text-stone-600 shadow ring-1 ring-stone-200 transition-colors hover:text-brand-700"
               >
                 <Trash size={13} weight="bold" />
               </button>
@@ -132,15 +132,15 @@ export function ImageUploader({
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={busy}
-        className="flex w-fit items-center gap-2 rounded-full border border-stone-300 px-4 py-2 text-sm font-bold text-stone-800 transition-colors hover:bg-stone-100 disabled:opacity-60 dark:border-ink-700 dark:text-stone-200 dark:hover:bg-ink-800"
+        className="flex w-fit items-center gap-2 rounded-full border border-stone-300 px-4 py-2 text-sm font-bold text-stone-800 transition-colors hover:bg-stone-100 disabled:opacity-60"
       >
         <UploadSimple size={16} weight="bold" />
         {busy ? 'Đang tải lên…' : paths.length > 0 && !multiple ? 'Đổi ảnh' : 'Chọn ảnh từ máy'}
       </button>
 
-      {hint && <span className="text-xs text-stone-600 dark:text-stone-400">{hint}</span>}
+      {hint && <span className="text-xs text-stone-600">{hint}</span>}
       {error && (
-        <span role="alert" className="text-xs font-medium text-brand-700 dark:text-brand-400">
+        <span role="alert" className="text-xs font-medium text-brand-700">
           {error}
         </span>
       )}

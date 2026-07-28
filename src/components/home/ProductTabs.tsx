@@ -2,6 +2,9 @@
 
 // Chỉ giữ state tab đang chọn. Nội dung mỗi tab được render sẵn ở Server Component cha và
 // truyền xuống dạng ReactNode, nên ProductCard vẫn là server component (không kéo vào bundle client).
+//
+// Dáng theo mẫu 2026-07-28: hàng pill trôi tự do trên nền trang, pill đang chọn tô đen.
+// Bỏ khung viền bao quanh cả khối của bản trước.
 import { useState, type ReactNode } from 'react'
 
 export type ProductTab = { id: string; label: string; content: ReactNode }
@@ -11,11 +14,11 @@ export function ProductTabs({ tabs }: { tabs: ProductTab[] }) {
   const current = tabs.find((t) => t.id === active) ?? tabs[0]
 
   return (
-    <div className="overflow-hidden rounded-2xl border-2 border-brand-500 bg-white dark:border-brand-700 dark:bg-ink-900">
+    <div>
       <div
         role="tablist"
-        aria-label="Lọc diều theo nhóm"
-        className="no-scrollbar flex gap-1 overflow-x-auto border-b border-stone-200 bg-stone-50 p-1.5 dark:border-ink-700 dark:bg-ink-800"
+        aria-label="Lọc sản phẩm theo nhóm"
+        className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:mx-0 sm:flex-wrap sm:px-0"
       >
         {tabs.map((tab) => {
           const selected = tab.id === current?.id
@@ -28,10 +31,10 @@ export function ProductTabs({ tabs }: { tabs: ProductTab[] }) {
               aria-selected={selected}
               aria-controls={`panel-${tab.id}`}
               onClick={() => setActive(tab.id)}
-              className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-bold transition-colors ${
+              className={`shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-[13px] font-medium transition-colors ${
                 selected
-                  ? 'bg-brand-600 text-white'
-                  : 'text-stone-600 hover:bg-brand-50 hover:text-brand-700 dark:text-stone-300 dark:hover:bg-ink-700 dark:hover:text-brand-400'
+                  ? 'bg-ink-950 text-white'
+                  : 'border border-stone-200 bg-white text-stone-600 hover:border-stone-300 hover:text-ink-950'
               }`}
             >
               {tab.label}
@@ -45,7 +48,7 @@ export function ProductTabs({ tabs }: { tabs: ProductTab[] }) {
           role="tabpanel"
           id={`panel-${current.id}`}
           aria-labelledby={`tab-${current.id}`}
-          className="p-3 md:p-4"
+          className="mt-6"
         >
           {current.content}
         </div>

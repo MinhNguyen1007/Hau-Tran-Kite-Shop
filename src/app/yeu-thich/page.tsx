@@ -13,10 +13,10 @@ export default async function WishlistPage() {
 
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10 md:py-14">
-      <h1 className="mb-2 text-2xl font-extrabold tracking-tight text-ink-900 md:text-3xl dark:text-stone-50">
+      <h1 className="mb-2 text-2xl font-extrabold tracking-tight text-ink-900 md:text-3xl">
         Diều tôi thích
       </h1>
-      <p className="mb-6 text-sm text-stone-600 dark:text-stone-400">
+      <p className="mb-6 text-sm text-stone-600">
         Những mẫu bạn đã lưu. Đăng nhập để danh sách theo bạn sang máy khác.
       </p>
       <WishlistView hotline={settings.hotline} zaloPhone={settings.zaloPhone} />

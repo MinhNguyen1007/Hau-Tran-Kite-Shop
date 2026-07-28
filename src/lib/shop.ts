@@ -20,12 +20,14 @@ export const zaloHref = (phone: string) => `https://zalo.me/${phone.replace(/\s/
 
 export const HOTLINE_HREF = telHref(SHOP.hotline)
 
+// Mục "Kinh nghiệm" đã bỏ 2026-07-28: khối "Kinh nghiệm chơi diều" trên trang chủ bị gỡ ở
+// commit 73465b5 nhưng mục nav trỏ tới nó thì còn, nên bấm vào là nhảy hụt — cuộn lên đầu
+// trang và không có gì xảy ra. Thêm mục mới thì nhớ kiểm có element mang đúng id đó không.
 export const NAV_ITEMS = [
   { label: 'Trang chủ', href: '/' },
   { label: 'Sản phẩm', href: '/san-pham' },
   { label: 'Khuyến mãi', href: '/#khuyen-mai' },
   { label: 'Danh mục', href: '/#danh-muc' },
-  { label: 'Kinh nghiệm', href: '/#kinh-nghiem' },
   { label: 'Giới thiệu', href: '/#gioi-thieu' },
   { label: 'Liên hệ', href: '/lien-he' },
 ] as const

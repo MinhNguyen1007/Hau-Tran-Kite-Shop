@@ -17,10 +17,10 @@ export default async function EditProductPage({
 
   return (
     <div>
-      <h1 className="mb-1 text-xl font-extrabold tracking-tight text-ink-900 dark:text-stone-50">
+      <h1 className="mb-1 text-xl font-extrabold tracking-tight text-ink-900">
         Sửa sản phẩm
       </h1>
-      <p className="mb-5 text-sm text-stone-600 dark:text-stone-400">
+      <p className="mb-5 text-sm text-stone-600">
         {product.archivedAt
           ? 'Sản phẩm này đang bị gỡ khỏi trang bán hàng.'
           : 'Đang hiển thị trên trang bán hàng.'}

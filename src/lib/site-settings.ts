@@ -24,6 +24,9 @@ export type SiteSettings = {
   promoTitle: string
   categoryTitle: string
   aboutHeading: string
+  // Dải kêu gọi liên hệ ở cuối trang chủ.
+  ctaTitle: string
+  ctaBody: string
 }
 
 type SiteSettingsRow = {
@@ -43,12 +46,15 @@ type SiteSettingsRow = {
   promo_title: string
   category_title: string
   about_heading: string
+  cta_title: string
+  cta_body: string
 }
 
 const COLUMNS = `
   shop_name, tagline, hotline, zalo_phone, email, area, address, open_hours,
   hero_note, about_title, about_body, footer_about,
-  products_title, promo_title, category_title, about_heading
+  products_title, promo_title, category_title, about_heading,
+  cta_title, cta_body
 `
 
 export const SETTINGS_FALLBACK: SiteSettings = {
@@ -68,6 +74,8 @@ export const SETTINGS_FALLBACK: SiteSettings = {
   promoTitle: 'Đang khuyến mãi',
   categoryTitle: 'Danh mục diều',
   aboutHeading: 'Xưởng diều Hậu Trần',
+  ctaTitle: 'Chốt đơn trực tiếp với xưởng',
+  ctaBody: 'Nhắn Zalo hoặc gọi để xưởng tư vấn kích cỡ, hoạ tiết và báo giá đúng mẫu bạn muốn.',
 }
 
 function mapSettings(row: SiteSettingsRow): SiteSettings {
@@ -88,6 +96,8 @@ function mapSettings(row: SiteSettingsRow): SiteSettings {
     promoTitle: row.promo_title,
     categoryTitle: row.category_title,
     aboutHeading: row.about_heading,
+    ctaTitle: row.cta_title,
+    ctaBody: row.cta_body,
   }
 }
 
@@ -126,6 +136,8 @@ export async function updateSiteSettings(input: SiteSettings): Promise<SiteSetti
       promo_title: input.promoTitle,
       category_title: input.categoryTitle,
       about_heading: input.aboutHeading,
+      cta_title: input.ctaTitle,
+      cta_body: input.ctaBody,
       updated_at: new Date().toISOString(),
     })
     .eq('id', 1)

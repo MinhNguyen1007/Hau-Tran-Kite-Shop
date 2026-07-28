@@ -17,10 +17,10 @@ export default async function AdminCategoriesPage() {
     <div>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl font-extrabold tracking-tight text-ink-900 dark:text-stone-50">
+          <h1 className="text-xl font-extrabold tracking-tight text-ink-900">
             Danh mục diều ({categories.length})
           </h1>
-          <p className="mt-1 text-sm text-stone-600 dark:text-stone-400">
+          <p className="mt-1 text-sm text-stone-600">
             Mỗi sản phẩm thuộc một danh mục. Danh mục cũng là ô hiện trên trang chủ và tab lọc.
           </p>
         </div>
@@ -35,17 +35,17 @@ export default async function AdminCategoriesPage() {
       </div>
 
       {categories.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-stone-300 px-6 py-12 text-center text-sm text-stone-600 dark:border-ink-700 dark:text-stone-400">
+        <p className="rounded-xl border border-dashed border-stone-300 px-6 py-12 text-center text-sm text-stone-600">
           Chưa có danh mục nào.
         </p>
       ) : (
-        <ul className="divide-y divide-stone-200 overflow-hidden rounded-xl border border-stone-200 bg-white dark:divide-ink-700 dark:border-ink-700 dark:bg-ink-900">
+        <ul className="divide-y divide-stone-200 overflow-hidden rounded-xl border border-stone-200 bg-white">
           {categories.map((category) => (
             <li
               key={category.id}
               className={`flex items-center gap-3 p-3.5 ${category.archivedAt ? 'opacity-60' : ''}`}
             >
-              <span className="relative block h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-brand-50 to-brand-100 dark:from-ink-800 dark:to-ink-900">
+              <span className="relative block h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-gradient-to-br from-brand-50 to-brand-100">
                 {category.imagePath && (
                   <Image
                     src={getProductImageUrl(category.imagePath)}
@@ -60,22 +60,22 @@ export default async function AdminCategoriesPage() {
               <span className="min-w-0 flex-1">
                 <Link
                   href={`/admin/danh-muc/${category.id}`}
-                  className="block truncate text-sm font-bold text-ink-900 hover:text-brand-700 dark:text-stone-50 dark:hover:text-brand-400"
+                  className="block truncate text-sm font-bold text-ink-900 hover:text-brand-700"
                 >
                   {category.name}
                 </Link>
-                <span className="block truncate font-mono text-xs text-stone-500 dark:text-stone-400">
+                <span className="block truncate font-mono text-xs text-stone-500">
                   {category.slug}
                 </span>
               </span>
 
               {category.archivedAt && (
-                <span className="shrink-0 rounded-full bg-stone-200 px-2.5 py-1 text-[11px] font-bold text-stone-700 dark:bg-ink-800 dark:text-stone-300">
+                <span className="shrink-0 rounded-full bg-stone-200 px-2.5 py-1 text-[11px] font-bold text-stone-700">
                   Đã gỡ
                 </span>
               )}
 
-              <span className="shrink-0 text-xs tabular-nums text-stone-500 dark:text-stone-400">
+              <span className="shrink-0 text-xs tabular-nums text-stone-500">
                 #{category.sortOrder}
               </span>
 

@@ -34,10 +34,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 md:py-12">
-      <div className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-stone-200 pb-4 dark:border-ink-700">
+      <div className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-stone-200 pb-4">
         <Link
           href="/admin"
-          className="text-lg font-extrabold tracking-tight text-ink-900 dark:text-stone-50"
+          className="text-lg font-extrabold tracking-tight text-ink-900"
         >
           Quản trị
         </Link>
@@ -46,13 +46,13 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             <Link
               key={item.href}
               href={item.href}
-              className="text-sm font-semibold text-stone-600 transition-colors hover:text-brand-700 dark:text-stone-400 dark:hover:text-brand-400"
+              className="text-sm font-semibold text-stone-600 transition-colors hover:text-brand-700"
             >
               {item.label}
             </Link>
           ))}
         </nav>
-        <span className="ml-auto truncate text-sm text-stone-500 dark:text-stone-400">
+        <span className="ml-auto truncate text-sm text-stone-500">
           {profile.email} · {ROLE_LABEL[profile.role]}
         </span>
       </div>

@@ -54,8 +54,8 @@ export function RoleButton({
       disabled={busy}
       className={
         promoting
-          ? 'flex shrink-0 items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-brand-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-600 dark:disabled:bg-ink-800 dark:disabled:text-stone-400'
-          : 'flex shrink-0 items-center gap-1.5 rounded-full border border-stone-300 px-4 py-2 text-xs font-bold text-stone-700 transition-colors hover:bg-stone-100 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 dark:border-ink-700 dark:text-stone-300 dark:hover:bg-ink-800'
+          ? 'flex shrink-0 items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-brand-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-600'
+          : 'flex shrink-0 items-center gap-1.5 rounded-full border border-stone-300 px-4 py-2 text-xs font-bold text-stone-700 transition-colors hover:bg-stone-100 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50'
       }
     >
       {promoting ? <ArrowUp size={14} weight="bold" /> : <ArrowDown size={14} weight="bold" />}

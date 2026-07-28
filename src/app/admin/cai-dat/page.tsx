@@ -11,10 +11,10 @@ export default async function AdminSettingsPage() {
 
   return (
     <div>
-      <h1 className="text-xl font-extrabold tracking-tight text-ink-900 dark:text-stone-50">
+      <h1 className="text-xl font-extrabold tracking-tight text-ink-900">
         Thông tin shop
       </h1>
-      <p className="mb-6 mt-1 text-sm text-stone-600 dark:text-stone-400">
+      <p className="mb-6 mt-1 text-sm text-stone-600">
         Số điện thoại, email và các đoạn giới thiệu hiện trên toàn bộ trang web.
       </p>
 

@@ -1,5 +1,8 @@
 // Ô "Tài khoản" trên header. Server Component: đọc session ở server nên không nháy từ
 // "Đăng nhập" sang tên người dùng sau khi hydrate như cách làm bằng client component.
+//
+// Chỉ còn ICON cho khớp header dạng pill; tên người dùng chuyển sang aria-label + title để
+// vẫn đọc được bằng trình đọc màn hình và khi rê chuột.
 import { UserCircle } from '@phosphor-icons/react/ssr'
 import Link from 'next/link'
 import { getProfile } from '@/lib/auth'
@@ -15,10 +18,11 @@ export async function AccountLink({ className = '' }: { className?: string }) {
   return (
     <Link
       href={profile ? '/tai-khoan' : '/dang-nhap'}
-      className={`items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-medium text-stone-700 transition-colors hover:bg-stone-100 dark:text-stone-200 dark:hover:bg-ink-800 ${className}`}
+      title={label}
+      aria-label={label}
+      className={`grid h-9 w-9 place-items-center rounded-full text-stone-600 transition-colors hover:bg-stone-100 hover:text-ink-950 ${className}`}
     >
-      <UserCircle size={22} weight={profile ? 'fill' : 'regular'} />
-      <span className="max-w-28 truncate">{label}</span>
+      <UserCircle size={20} weight={profile ? 'fill' : 'bold'} />
     </Link>
   )
 }

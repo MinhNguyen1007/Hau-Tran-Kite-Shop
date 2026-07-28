@@ -40,10 +40,10 @@ export default async function ProductsPage({
       {query && <SearchTracker query={query} resultCount={products.length} />}
 
       <header className="mb-6 md:mb-8">
-        <h1 className="text-2xl font-extrabold tracking-tight text-ink-900 md:text-3xl dark:text-stone-50">
+        <h1 className="text-2xl font-extrabold tracking-tight text-ink-900 md:text-3xl">
           {heading}
         </h1>
-        <p className="mt-2 max-w-prose text-sm text-stone-600 dark:text-stone-400">
+        <p className="mt-2 max-w-prose text-sm text-stone-600">
           {query
             ? `${products.length} mẫu khớp từ khoá.`
             : (activeCategory?.description ||
@@ -68,7 +68,7 @@ export default async function ProductsPage({
         {filtered && (
           <Link
             href="/san-pham"
-            className="mt-3 inline-flex text-sm font-bold text-brand-700 hover:underline dark:text-brand-400"
+            className="mt-3 inline-flex text-sm font-bold text-ink-950 hover:underline"
           >
             Bỏ lọc, xem tất cả
           </Link>
@@ -76,11 +76,11 @@ export default async function ProductsPage({
       </header>
 
       {products.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-stone-300 px-4 py-20 text-center dark:border-ink-700">
-          <p className="font-semibold text-ink-900 dark:text-stone-100">
+        <div className="rounded-2xl border border-dashed border-stone-300 px-4 py-20 text-center">
+          <p className="font-semibold text-ink-900">
             {filtered ? 'Không tìm thấy mẫu nào.' : 'Chưa có sản phẩm nào.'}
           </p>
-          <p className="mt-2 text-sm text-stone-500 dark:text-stone-400">
+          <p className="mt-2 text-sm text-stone-500">
             Xưởng nhận đặt riêng theo kích cỡ và hoạ tiết, nhắn Zalo để được tư vấn mẫu.
           </p>
         </div>
@@ -102,8 +102,8 @@ function CategoryChip({ href, label, active }: { href: string; label: string; ac
       aria-current={active ? 'page' : undefined}
       className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-bold transition-colors ${
         active
-          ? 'bg-brand-600 text-white'
-          : 'border border-stone-300 text-stone-700 hover:border-brand-600 hover:text-brand-700 dark:border-ink-700 dark:text-stone-300 dark:hover:text-brand-400'
+          ? 'bg-ink-950 text-white'
+          : 'border border-stone-300 text-stone-700 hover:border-stone-400 hover:text-ink-950'
       }`}
     >
       {label}

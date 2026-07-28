@@ -157,7 +157,7 @@ export function ProductForm({
         hint="Ảnh đầu tiên là ảnh bìa hiện ngoài lưới. Các ảnh sau hiện ở trang chi tiết. Tối đa 5MB mỗi ảnh."
       />
 
-      <hr className="border-stone-200 dark:border-ink-700" />
+      <hr className="border-stone-200" />
 
       <Field
         label="Kích thước làm được"
@@ -191,7 +191,7 @@ export function ProductForm({
       </Field>
 
       {/* Tách khỏi ô giá để admin GIỮ giá đã ghi mà vẫn tạm ẩn được, khỏi xoá rồi gõ lại. */}
-      <label className="-mt-2 flex items-center gap-2.5 text-sm font-semibold text-ink-900 dark:text-stone-100">
+      <label className="-mt-2 flex items-center gap-2.5 text-sm font-semibold text-ink-900">
         <input
           type="checkbox"
           checked={showPrice}
@@ -201,9 +201,9 @@ export function ProductForm({
         Hiện giá trên trang khách
       </label>
 
-      <p className="-mt-2 text-sm text-stone-600 dark:text-stone-400">
+      <p className="-mt-2 text-sm text-stone-600">
         Khách sẽ thấy:{' '}
-        <strong className="font-bold text-brand-700 dark:text-brand-400">
+        <strong className="font-bold text-brand-700">
           {showPrice && priceText.trim() !== '' ? priceText.trim() : 'không hiện giá'}
         </strong>
       </p>
@@ -211,7 +211,7 @@ export function ProductForm({
       {error && (
         <p
           role="alert"
-          className="flex items-start gap-2 text-sm font-medium text-brand-700 dark:text-brand-400"
+          className="flex items-start gap-2 text-sm font-medium text-brand-700"
         >
           <WarningCircle size={18} weight="fill" className="mt-0.5 shrink-0" />
           {error}
@@ -222,13 +222,13 @@ export function ProductForm({
         <button
           type="submit"
           disabled={saving}
-          className="rounded-full bg-brand-600 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-600 dark:disabled:bg-ink-800 dark:disabled:text-stone-400"
+          className="rounded-full bg-brand-600 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-600"
         >
           {saving ? 'Đang lưu…' : editing ? 'Lưu thay đổi' : 'Tạo sản phẩm'}
         </button>
         <Link
           href="/admin/san-pham"
-          className="text-sm font-semibold text-stone-600 hover:underline dark:text-stone-400"
+          className="text-sm font-semibold text-stone-600 hover:underline"
         >
           Huỷ
         </Link>

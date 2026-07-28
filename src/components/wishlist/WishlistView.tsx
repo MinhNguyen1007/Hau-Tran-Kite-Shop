@@ -18,17 +18,17 @@ export function WishlistView({ hotline, zaloPhone }: { hotline: string; zaloPhon
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_20rem] lg:items-start">
-      <ul className="divide-y divide-stone-200 overflow-hidden rounded-xl border border-stone-200 bg-white dark:divide-ink-700 dark:border-ink-700 dark:bg-ink-900">
+      <ul className="divide-y divide-stone-200 overflow-hidden rounded-xl border border-stone-200 bg-white">
         {items.map((item) => (
           <WishlistLine key={item.productId} item={item} onRemove={() => remove(item.productId)} />
         ))}
       </ul>
 
-      <aside className="rounded-xl border border-stone-200 bg-white p-5 lg:sticky lg:top-16 dark:border-ink-700 dark:bg-ink-900">
-        <h2 className="text-base font-extrabold text-ink-900 dark:text-stone-50">Đặt diều</h2>
+      <aside className="rounded-xl border border-stone-200 bg-white p-5 lg:sticky lg:top-16">
+        <h2 className="text-base font-extrabold text-ink-900">Đặt diều</h2>
 
-        <p className="mt-2 text-sm leading-relaxed text-stone-600 dark:text-stone-400">
-          Bạn đang thích <strong className="font-bold text-ink-900 dark:text-stone-100">{count} mẫu</strong>.
+        <p className="mt-2 text-sm leading-relaxed text-stone-600">
+          Bạn đang thích <strong className="font-bold text-ink-900">{count} mẫu</strong>.
           Nhắn Zalo hoặc gọi cho shop, đọc tên mẫu để được tư vấn kích thước, sáo và giá giao tận nơi.
         </p>
 
@@ -43,7 +43,7 @@ export function WishlistView({ hotline, zaloPhone }: { hotline: string; zaloPhon
 
         <Link
           href="/san-pham"
-          className="mt-4 flex w-full items-center justify-center gap-1.5 text-sm font-semibold text-brand-700 hover:underline dark:text-brand-400"
+          className="mt-4 flex w-full items-center justify-center gap-1.5 text-sm font-semibold text-ink-950 hover:underline"
         >
           <ArrowLeft size={16} weight="bold" />
           Xem thêm diều
@@ -71,9 +71,9 @@ function WishlistLine({ item, onRemove }: { item: WishlistItem; onRemove: () => 
             className="object-cover"
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-brand-50 to-brand-100 dark:from-ink-800 dark:to-ink-900">
+          <div className="flex h-full w-full items-center justify-center bg-stone-100">
             <div
-              className="h-8 w-8 rotate-45 rounded border-2 border-brand-300 dark:border-brand-700"
+              className="h-8 w-8 rotate-45 rounded border-2 border-stone-300"
               aria-hidden
             />
           </div>
@@ -84,7 +84,7 @@ function WishlistLine({ item, onRemove }: { item: WishlistItem; onRemove: () => 
         <div className="flex items-start justify-between gap-3">
           <Link
             href={href}
-            className="line-clamp-2 text-sm font-semibold leading-snug text-ink-900 hover:text-brand-700 dark:text-stone-100 dark:hover:text-brand-400"
+            className="line-clamp-2 text-sm font-semibold leading-snug text-ink-900 hover:text-ink-950"
           >
             {item.name}
           </Link>
@@ -92,7 +92,7 @@ function WishlistLine({ item, onRemove }: { item: WishlistItem; onRemove: () => 
             type="button"
             onClick={onRemove}
             aria-label={`Bỏ ${item.name} khỏi danh sách yêu thích`}
-            className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-stone-500 transition-colors hover:bg-stone-100 hover:text-brand-700 dark:text-stone-400 dark:hover:bg-ink-800 dark:hover:text-brand-400"
+            className="grid h-8 w-8 shrink-0 place-items-center rounded-lg text-stone-500 transition-colors hover:bg-stone-100 hover:text-ink-950"
           >
             <Trash size={18} />
           </button>
@@ -100,7 +100,7 @@ function WishlistLine({ item, onRemove }: { item: WishlistItem; onRemove: () => 
 
         {/* Rỗng = shop không công khai giá mẫu này. Bỏ trống chỗ đó thay vì hiện "0 ₫". */}
         {item.priceText && (
-          <span className="text-sm font-bold text-brand-600 dark:text-brand-400">
+          <span className="text-sm font-semibold text-ink-950">
             {item.priceText}
           </span>
         )}
@@ -111,17 +111,17 @@ function WishlistLine({ item, onRemove }: { item: WishlistItem; onRemove: () => 
 
 function EmptyWishlist() {
   return (
-    <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-stone-300 bg-white px-6 py-16 text-center dark:border-ink-700 dark:bg-ink-900">
-      <span className="grid h-14 w-14 place-items-center rounded-full bg-brand-50 text-brand-600 dark:bg-ink-800 dark:text-brand-400">
+    <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-stone-300 bg-white px-6 py-16 text-center">
+      <span className="grid h-14 w-14 place-items-center rounded-full bg-stone-100 text-stone-600">
         <Heart size={26} weight="bold" />
       </span>
-      <p className="text-base font-bold text-ink-900 dark:text-stone-50">Chưa có mẫu diều nào</p>
-      <p className="max-w-sm text-sm text-stone-600 dark:text-stone-400">
+      <p className="text-base font-bold text-ink-900">Chưa có mẫu diều nào</p>
+      <p className="max-w-sm text-sm text-stone-600">
         Bấm trái tim ở mẫu diều bạn ưng, danh sách sẽ được giữ lại ở đây để tiện hỏi shop.
       </p>
       <Link
         href="/san-pham"
-        className="mt-1 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-700 active:scale-[0.98]"
+        className="mt-1 rounded-full bg-ink-950 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-ink-800 active:scale-[0.98]"
       >
         Xem diều
       </Link>
@@ -133,18 +133,18 @@ function EmptyWishlist() {
 function WishlistSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_20rem] lg:items-start">
-      <div className="divide-y divide-stone-200 overflow-hidden rounded-xl border border-stone-200 bg-white dark:divide-ink-700 dark:border-ink-700 dark:bg-ink-900">
+      <div className="divide-y divide-stone-200 overflow-hidden rounded-xl border border-stone-200 bg-white">
         {[0, 1].map((row) => (
           <div key={row} className="flex animate-pulse gap-4 p-4">
-            <div className="h-20 w-20 shrink-0 rounded-lg bg-stone-200 sm:h-24 sm:w-24 dark:bg-ink-800" />
+            <div className="h-20 w-20 shrink-0 rounded-lg bg-stone-200 sm:h-24 sm:w-24" />
             <div className="flex flex-1 flex-col gap-3 py-1">
-              <div className="h-4 w-2/3 rounded bg-stone-200 dark:bg-ink-800" />
-              <div className="h-4 w-24 rounded bg-stone-200 dark:bg-ink-800" />
+              <div className="h-4 w-2/3 rounded bg-stone-200" />
+              <div className="h-4 w-24 rounded bg-stone-200" />
             </div>
           </div>
         ))}
       </div>
-      <div className="h-56 animate-pulse rounded-xl border border-stone-200 bg-white dark:border-ink-700 dark:bg-ink-900" />
+      <div className="h-56 animate-pulse rounded-xl border border-stone-200 bg-white" />
     </div>
   )
 }

@@ -16,7 +16,7 @@ export default async function EditContentBlockPage({
 
   return (
     <div>
-      <h1 className="mb-6 text-xl font-extrabold tracking-tight text-ink-900 dark:text-stone-50">
+      <h1 className="mb-6 text-xl font-extrabold tracking-tight text-ink-900">
         Sửa khối nội dung
       </h1>
       <ContentBlockForm block={block} />

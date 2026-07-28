@@ -145,9 +145,9 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
         />
       </Field>
 
-      <hr className="border-stone-200 dark:border-ink-700" />
+      <hr className="border-stone-200" />
 
-      <p className="-mb-1 text-sm font-bold uppercase tracking-wide text-stone-500 dark:text-stone-400">
+      <p className="-mb-1 text-sm font-bold uppercase tracking-wide text-stone-500">
         Tiêu đề các khối trên trang chủ
       </p>
 
@@ -187,7 +187,7 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
 
       </div>
 
-      <hr className="border-stone-200 dark:border-ink-700" />
+      <hr className="border-stone-200" />
 
       <Field label="Đoạn chữ dưới banner" htmlFor="hero-note" hint="Dòng mô tả ngay dưới ảnh đầu trang chủ">
         <textarea
@@ -245,6 +245,32 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
       </Field>
 
       <Field
+        label="Tiêu đề dải liên hệ cuối trang chủ"
+        htmlFor="cta-title"
+        hint="Khối kêu gọi nhắn Zalo / gọi, nằm ngay trên footer"
+      >
+        <input
+          id="cta-title"
+          value={form.ctaTitle}
+          onChange={(event) => set('ctaTitle', event.target.value)}
+          required
+          maxLength={120}
+          className={inputClass}
+        />
+      </Field>
+
+      <Field label="Mô tả dải liên hệ" htmlFor="cta-body">
+        <textarea
+          id="cta-body"
+          value={form.ctaBody}
+          onChange={(event) => set('ctaBody', event.target.value)}
+          rows={3}
+          maxLength={400}
+          className={inputClass}
+        />
+      </Field>
+
+      <Field
         label="Đoạn giới thiệu ở cuối trang"
         htmlFor="footer-about"
         hint="Cột đầu tiên của footer. Cách nhau MỘT DÒNG TRỐNG để tách thành nhiều đoạn."
@@ -262,7 +288,7 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
       {error && (
         <p
           role="alert"
-          className="flex items-start gap-2 text-sm font-medium text-brand-700 dark:text-brand-400"
+          className="flex items-start gap-2 text-sm font-medium text-brand-700"
         >
           <WarningCircle size={18} weight="fill" className="mt-0.5 shrink-0" />
           {error}
@@ -273,7 +299,7 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
         <button
           type="submit"
           disabled={saving}
-          className="rounded-full bg-brand-600 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-600 dark:disabled:bg-ink-800 dark:disabled:text-stone-400"
+          className="rounded-full bg-brand-600 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-600"
         >
           {saving ? 'Đang lưu…' : 'Lưu cấu hình'}
         </button>
@@ -281,7 +307,7 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
         {saved && (
           <span
             role="status"
-            className="flex items-center gap-1.5 text-sm font-semibold text-brand-700 dark:text-brand-400"
+            className="flex items-center gap-1.5 text-sm font-semibold text-brand-700"
           >
             <CheckCircle size={18} weight="fill" />
             Đã lưu

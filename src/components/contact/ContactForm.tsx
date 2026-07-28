@@ -51,18 +51,18 @@ export function ContactForm() {
 
   if (status === 'sent') {
     return (
-      <div className="flex flex-col items-start gap-3 rounded-xl border border-brand-200 bg-brand-50 p-6 dark:border-brand-800 dark:bg-ink-900">
-        <span className="flex items-center gap-2 text-base font-bold text-brand-700 dark:text-brand-400">
+      <div className="flex flex-col items-start gap-3 rounded-xl border border-stone-200 bg-stone-50 p-6">
+        <span className="flex items-center gap-2 text-base font-bold text-ink-950">
           <CheckCircle size={22} weight="fill" />
           Đã gửi tin nhắn
         </span>
-        <p className="text-sm text-stone-700 dark:text-stone-300">
+        <p className="text-sm text-stone-700">
           Shop sẽ gọi lại trong ngày. Nếu gấp, bạn gọi thẳng hotline giúp shop.
         </p>
         <button
           type="button"
           onClick={() => setStatus('idle')}
-          className="text-sm font-semibold text-brand-700 hover:underline dark:text-brand-400"
+          className="text-sm font-semibold text-ink-950 hover:underline"
         >
           Gửi tin khác
         </button>
@@ -94,7 +94,7 @@ export function ContactForm() {
       />
 
       <div className="flex flex-col gap-2">
-        <label htmlFor="contact-message" className="text-sm font-semibold text-ink-900 dark:text-stone-100">
+        <label htmlFor="contact-message" className="text-sm font-semibold text-ink-900">
           Nội dung
         </label>
         <textarea
@@ -104,14 +104,14 @@ export function ContactForm() {
           rows={5}
           maxLength={2000}
           placeholder="Bạn muốn đặt diều cỡ nào, hoạ tiết ra sao?"
-          className="rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-stone-500 focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/30 dark:border-ink-700 dark:bg-ink-900 dark:text-stone-100 dark:placeholder:text-stone-400"
+          className="rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-stone-500 focus:border-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400/20"
         />
       </div>
 
       {error && (
         <p
           role="alert"
-          className="flex items-start gap-2 text-sm font-medium text-brand-700 dark:text-brand-400"
+          className="flex items-start gap-2 text-sm font-medium text-red-600"
         >
           <WarningCircle size={18} weight="fill" className="mt-0.5 shrink-0" />
           {error}
@@ -121,7 +121,7 @@ export function ContactForm() {
       <button
         type="submit"
         disabled={sending}
-        className="mt-1 self-start rounded-full bg-brand-600 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-600 dark:disabled:bg-ink-800 dark:disabled:text-stone-400"
+        className="mt-1 self-start rounded-full bg-ink-950 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-ink-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-600"
       >
         {sending ? 'Đang gửi…' : 'Gửi tin nhắn'}
       </button>
@@ -143,7 +143,7 @@ function Field({
   const id = `contact-${name}`
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor={id} className="text-sm font-semibold text-ink-900 dark:text-stone-100">
+      <label htmlFor={id} className="text-sm font-semibold text-ink-900">
         {label}
       </label>
       <input
@@ -151,9 +151,9 @@ function Field({
         name={name}
         type={type}
         {...inputProps}
-        className="rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-stone-500 focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/30 dark:border-ink-700 dark:bg-ink-900 dark:text-stone-100 dark:placeholder:text-stone-400"
+        className="rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-stone-500 focus:border-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400/20"
       />
-      {hint && <span className="text-xs text-stone-600 dark:text-stone-400">{hint}</span>}
+      {hint && <span className="text-xs text-stone-600">{hint}</span>}
     </div>
   )
 }
