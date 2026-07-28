@@ -27,7 +27,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="vi" className={`${beVietnamPro.variable} h-full antialiased`}>
+    // data-scroll-behavior: Next 16 tự cuộn về đầu trang khi đổi route. Trang này khai
+    // `scroll-behavior: smooth` trong globals.css, nên phải báo cho Next biết là cố ý —
+    // thiếu thuộc tính này thì console cảnh báo và cú cuộn lúc đổi route bị bỏ qua.
+    <html
+      lang="vi"
+      data-scroll-behavior="smooth"
+      className={`${beVietnamPro.variable} h-full antialiased`}
+    >
       <body className="flex min-h-full flex-col">
         <PageView />
         <SiteHeader />

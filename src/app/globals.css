@@ -43,6 +43,21 @@
   color-scheme: light;
 }
 
+/* Ba mục nav "Khuyến mãi" / "Danh mục" / "Giới thiệu" là link neo trong cùng trang, trước đây
+   bấm vào là trình duyệt nhảy phắt xuống — trông như nút hỏng so với ba mục chuyển route thật.
+   Cuộn mượt để cú nhảy đó thành một chuyển động thấy được.
+
+   Bọc trong `no-preference` chứ không đặt thẳng: người bật "giảm chuyển động" thường bật vì
+   chuyển động gây chóng mặt, mà cuộn cả trang là chuyển động lớn nhất trên trang.
+
+   Đi kèm `data-scroll-behavior="smooth"` ở <html> (layout.tsx) — Next 16 cần thuộc tính đó
+   mới biết trang cố ý cuộn mượt, không thì nó cảnh báo và sẽ bỏ qua khi chuyển route. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
