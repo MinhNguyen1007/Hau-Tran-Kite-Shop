@@ -1,8 +1,7 @@
 // Đọc hồ sơ + role của người đang đăng nhập. Role KHÔNG nằm trong JWT (tự sửa được)
 // mà ở public.profiles, nên phải query — xem skill auth-rls.
+import { hasAdminAccess, type Role } from './roles'
 import { createServerSupabase } from './supabase'
-
-export type Role = 'user' | 'admin'
 
 export type Profile = {
   id: string
@@ -38,5 +37,5 @@ export async function getProfile(): Promise<Profile | null> {
 
 export async function isAdmin(): Promise<boolean> {
   const profile = await getProfile()
-  return profile?.role === 'admin'
+  return profile !== null && hasAdminAccess(profile.role)
 }

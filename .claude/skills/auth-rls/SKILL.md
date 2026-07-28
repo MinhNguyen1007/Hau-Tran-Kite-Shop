@@ -11,22 +11,49 @@ description: Dùng khi viết migration Supabase, tạo bảng mới, viết RLS
 - **RLS là lớp cuối, không phải lớp duy nhất.** Thao tác admin phải kiểm role ở API NỮA
   (xem skill `api-route`). Lý do: RLS không bảo vệ được khi code lỡ dùng service role key.
 - **Role lưu ở đâu:** bảng `public.profiles` (1-1 với `auth.users`), cột `role text`
-  check in `('user','admin')`, default `'user'`. Không lưu role trong JWT claim tự sửa được.
+  check in `('user','admin','owner')`, default `'user'`. Không lưu role trong JWT claim tự sửa được.
+- **Ba bậc:** `owner` (chủ shop, DUY NHẤT — unique index chặn cái thứ hai) làm được mọi thứ
+  admin làm CỘNG quản lý tài khoản; `admin` (admin phụ) toàn quyền nội dung nhưng không đụng
+  vai trò của ai; `user` là khách.
 
 ## Helper
 
 ```sql
+-- owner TÍNH LÀ admin, nên mọi policy cũ gọi is_admin() giữ nguyên nghĩa.
 create or replace function public.is_admin()
 returns boolean
 language sql stable security definer set search_path = public as $$
   select exists (
     select 1 from public.profiles
-    where id = auth.uid() and role = 'admin'
+    where id = auth.uid() and role in ('admin', 'owner')
+  );
+$$;
+
+create or replace function public.is_owner()
+returns boolean
+language sql stable security definer set search_path = public as $$
+  select exists (
+    select 1 from public.profiles
+    where id = auth.uid() and role = 'owner'
   );
 $$;
 ```
 
 `security definer` là bắt buộc — nếu không, chính policy trên `profiles` sẽ đệ quy vô hạn.
+
+Phía TypeScript: `hasAdminAccess()` / `hasOwnerAccess()` trong `src/lib/roles.ts`.
+ĐỪNG viết `role === 'admin'` — sót `owner` một chỗ là khoá chủ shop ra ngoài.
+
+## Policy đổi vai trò (hai vế chặn hai hướng khác nhau)
+
+```sql
+create policy "profiles_update_owner" on public.profiles
+  for update
+  using (public.is_owner() and role <> 'owner')       -- dòng CŨ: không ai hạ/sửa được chủ shop
+  with check (public.is_owner() and role <> 'owner'); -- dòng MỚI: không ai tạo chủ thứ hai
+```
+
+`using` xét dòng cũ, `with check` xét dòng mới. Thiếu một vế là hở một hướng lạm quyền.
 
 ## Pattern policy
 

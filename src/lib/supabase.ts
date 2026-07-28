@@ -4,6 +4,7 @@
 import { createServerClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
+import { hasAdminAccess, hasOwnerAccess, type Role } from './roles'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -38,9 +39,9 @@ export async function getCurrentUser() {
   return user
 }
 
-// Kiểm quyền admin Ở TẦNG API (lớp 1). RLS trong DB là lớp 2 — route admin phải kiểm CẢ HAI.
-// Ném 'UNAUTHORIZED' nếu chưa đăng nhập, 'FORBIDDEN' nếu không phải admin.
-export async function requireAdmin() {
+// Kiểm quyền Ở TẦNG API (lớp 1). RLS trong DB là lớp 2 — route admin phải kiểm CẢ HAI.
+// Ném 'UNAUTHORIZED' nếu chưa đăng nhập, 'FORBIDDEN' nếu thiếu quyền.
+async function requireRole(allowed: (role: Role) => boolean) {
   const supabase = await createServerSupabase()
   const {
     data: { user },
@@ -52,8 +53,20 @@ export async function requireAdmin() {
     .select('role')
     .eq('id', user.id)
     .single()
-  if (error || data?.role !== 'admin') throw new Error('FORBIDDEN')
+  if (error || !allowed((data as { role: Role } | null)?.role ?? 'user')) {
+    throw new Error('FORBIDDEN')
+  }
   return user
+}
+
+// Admin phụ VÀ chủ shop đều qua được — dùng cho mọi route quản trị nội dung.
+export async function requireAdmin() {
+  return requireRole(hasAdminAccess)
+}
+
+// Chỉ chủ shop. Dùng cho route đổi vai trò: admin phụ không được tự nâng mình hay hạ người khác.
+export async function requireOwner() {
+  return requireRole(hasOwnerAccess)
 }
 
 // Client SERVICE ROLE — BỎ QUA RLS. Chỉ dùng server-side cho tác vụ hệ thống cần ghi

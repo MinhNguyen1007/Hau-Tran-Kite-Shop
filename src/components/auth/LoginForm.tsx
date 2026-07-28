@@ -1,9 +1,15 @@
 'use client'
 
-// Hai đường đăng nhập: Google (đường chính) và magic link qua email (đường dự phòng, và là
-// đường DUY NHẤT test được ở local khi chưa có credential Google — xem supabase/config.toml).
+// Ba đường đăng nhập:
+//   - Google — đường chính của khách.
+//   - Magic link qua email — đường dự phòng, và là đường DUY NHẤT test được ở local khi chưa
+//     có credential Google (xem supabase/config.toml).
+//   - Tài khoản + mật khẩu — dành cho tài khoản quản trị, mặc định ẨN sau một liên kết nhỏ.
+//     Khách mua diều không bao giờ cần tới nó; bày cả ba ô ra cùng lúc chỉ làm khách phân vân.
 import { EnvelopeSimple, GoogleLogo, WarningCircle } from '@phosphor-icons/react'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { toLoginEmail } from '@/lib/login-identifier'
 import { createBrowserSupabase } from '@/lib/supabase-browser'
 
 // Thông báo lỗi do callback route đẩy về qua query string.
@@ -13,8 +19,12 @@ const CALLBACK_ERRORS: Record<string, string> = {
 }
 
 export function LoginForm({ next, callbackError }: { next: string; callbackError?: string }) {
+  const router = useRouter()
   const [email, setEmail] = useState('')
-  const [pending, setPending] = useState<'google' | 'email' | null>(null)
+  const [identifier, setIdentifier] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPasswordForm, setShowPasswordForm] = useState(false)
+  const [pending, setPending] = useState<'google' | 'email' | 'password' | null>(null)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState<string | null>(
     callbackError ? (CALLBACK_ERRORS[callbackError] ?? 'Đăng nhập không thành công.') : null,
@@ -64,6 +74,32 @@ export function LoginForm({ next, callbackError }: { next: string; callbackError
     setPending(null)
   }
 
+  async function signInWithPassword(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    setPending('password')
+    setError(null)
+
+    const supabase = createBrowserSupabase()
+    const { error: passwordError } = await supabase.auth.signInWithPassword({
+      // "adminhautran" được ghép thành email nội bộ; gõ email thật thì giữ nguyên.
+      email: toLoginEmail(identifier),
+      password,
+    })
+
+    if (passwordError) {
+      // CỐ Ý không nói rõ sai tên tài khoản hay sai mật khẩu: tách hai câu là cho phép dò ra
+      // tên tài khoản quản trị nào có thật.
+      setError('Tài khoản hoặc mật khẩu không đúng.')
+      setPending(null)
+      return
+    }
+
+    // Không dùng window.location: router.refresh() để Server Component đọc lại session mới,
+    // rồi mới điều hướng — không thì trang đích render bằng session cũ và đá về đăng nhập.
+    router.refresh()
+    router.replace(next)
+  }
+
   if (sent) {
     return (
       <div className="flex flex-col items-start gap-3 rounded-xl border border-brand-200 bg-brand-50 p-6 dark:border-brand-800 dark:bg-ink-900">
@@ -84,6 +120,84 @@ export function LoginForm({ next, callbackError }: { next: string; callbackError
           className="text-sm font-semibold text-brand-700 hover:underline dark:text-brand-400"
         >
           Dùng email khác
+        </button>
+      </div>
+    )
+  }
+
+  const errorBlock = error && (
+    <p
+      role="alert"
+      className="flex items-start gap-2 text-sm font-medium text-brand-700 dark:text-brand-400"
+    >
+      <WarningCircle size={18} weight="fill" className="mt-0.5 shrink-0" />
+      {error}
+    </p>
+  )
+
+  if (showPasswordForm) {
+    return (
+      <div className="flex flex-col gap-5">
+        <form onSubmit={signInWithPassword} className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="login-identifier"
+              className="text-sm font-semibold text-ink-900 dark:text-stone-100"
+            >
+              Tài khoản
+            </label>
+            <input
+              id="login-identifier"
+              type="text"
+              required
+              autoComplete="username"
+              autoCapitalize="none"
+              spellCheck={false}
+              value={identifier}
+              onChange={(event) => setIdentifier(event.target.value)}
+              placeholder="adminhautran"
+              className="rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-stone-500 focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/30 dark:border-ink-700 dark:bg-ink-900 dark:text-stone-100 dark:placeholder:text-stone-400"
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="login-password"
+              className="text-sm font-semibold text-ink-900 dark:text-stone-100"
+            >
+              Mật khẩu
+            </label>
+            <input
+              id="login-password"
+              type="password"
+              required
+              autoComplete="current-password"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              className="rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-ink-900 focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/30 dark:border-ink-700 dark:bg-ink-900 dark:text-stone-100"
+            />
+          </div>
+
+          <button
+            type="submit"
+            disabled={pending !== null}
+            className="mt-1 rounded-full bg-brand-600 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-600 dark:disabled:bg-ink-800 dark:disabled:text-stone-400"
+          >
+            {pending === 'password' ? 'Đang đăng nhập…' : 'Đăng nhập'}
+          </button>
+        </form>
+
+        {errorBlock}
+
+        <button
+          type="button"
+          onClick={() => {
+            setShowPasswordForm(false)
+            setError(null)
+          }}
+          className="self-start text-sm font-semibold text-brand-700 hover:underline dark:text-brand-400"
+        >
+          Quay lại đăng nhập bằng Google hoặc email
         </button>
       </div>
     )
@@ -136,15 +250,18 @@ export function LoginForm({ next, callbackError }: { next: string; callbackError
         </button>
       </form>
 
-      {error && (
-        <p
-          role="alert"
-          className="flex items-start gap-2 text-sm font-medium text-brand-700 dark:text-brand-400"
-        >
-          <WarningCircle size={18} weight="fill" className="mt-0.5 shrink-0" />
-          {error}
-        </p>
-      )}
+      {errorBlock}
+
+      <button
+        type="button"
+        onClick={() => {
+          setShowPasswordForm(true)
+          setError(null)
+        }}
+        className="self-start border-t border-stone-200 pt-4 text-sm font-semibold text-stone-600 hover:text-brand-700 hover:underline dark:border-ink-700 dark:text-stone-400 dark:hover:text-brand-400"
+      >
+        Đăng nhập bằng tài khoản và mật khẩu
+      </button>
     </div>
   )
 }

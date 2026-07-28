@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound, redirect } from 'next/navigation'
 import { getProfile } from '@/lib/auth'
+import { hasAdminAccess, hasOwnerAccess, ROLE_LABEL } from '@/lib/roles'
 
 export const metadata: Metadata = {
   title: 'Quản trị',
@@ -16,6 +17,10 @@ const ADMIN_NAV = [
   { label: 'Tin nhắn liên hệ', href: '/admin/lien-he' },
 ]
 
+// Quản lý tài khoản là việc riêng của chủ shop — admin phụ không thấy mục này. Ẩn nav chỉ
+// là phần nhìn; trang và API đằng sau đều tự requireOwner().
+const OWNER_NAV = [{ label: 'Tài khoản', href: '/admin/tai-khoan' }]
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Chốt chặn của cả khu /admin. Mỗi route API bên dưới VẪN tự requireAdmin() — layout chỉ
   // che giao diện, không bảo vệ được dữ liệu khi ai đó gọi thẳng API.
@@ -23,7 +28,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!profile) redirect('/dang-nhap?tiep-tuc=/admin')
 
   // 404 chứ không phải 403: user thường không cần biết là có khu quản trị ở đây.
-  if (profile.role !== 'admin') notFound()
+  if (!hasAdminAccess(profile.role)) notFound()
+
+  const nav = hasOwnerAccess(profile.role) ? [...ADMIN_NAV, ...OWNER_NAV] : ADMIN_NAV
 
   return (
     <div className="mx-auto w-full max-w-6xl px-4 py-8 md:py-12">
@@ -35,7 +42,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           Quản trị
         </Link>
         <nav className="flex flex-wrap gap-x-5 gap-y-2">
-          {ADMIN_NAV.map((item) => (
+          {nav.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -46,7 +53,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           ))}
         </nav>
         <span className="ml-auto truncate text-sm text-stone-500 dark:text-stone-400">
-          {profile.email}
+          {profile.email} · {ROLE_LABEL[profile.role]}
         </span>
       </div>
 

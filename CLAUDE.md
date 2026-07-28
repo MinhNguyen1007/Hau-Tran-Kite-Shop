@@ -23,6 +23,10 @@ MVP: auth (admin/user + Google), sản phẩm, danh sách yêu thích, liên h�
 - Mọi call ra ngoài (db/auth/storage/analytics) gói trong src/lib/ để đổi hạ tầng
   chỉ thay adapter, không sửa tính năng.
 - Phân quyền CHECK Ở BACKEND (RLS + kiểm ở API/Server Action); frontend chỉ ẩn UI.
+- BA BẬC quyền: `owner` (chủ shop, DUY NHẤT một tài khoản) > `admin` (admin phụ do owner
+  nâng lên) > `user`. Admin phụ toàn quyền nội dung nhưng KHÔNG quản lý tài khoản. Chủ shop
+  đăng nhập bằng tên tài khoản + mật khẩu (`npm run tao-chu-shop -- <tên> <mật khẩu>`);
+  tên tài khoản ghép thành email nội bộ trong `src/lib/login-identifier.ts`.
 - Danh sách yêu thích lưu HAI NƠI: localStorage cho khách vãng lai, bảng `wishlists` cho
   khách đã đăng nhập; merge lúc đăng nhập. Thao tác thêm phải idempotent.
 - Nội dung trang nằm trong DB, KHÔNG hard-code trong component. Admin sửa ở /admin:
@@ -66,6 +70,9 @@ MVP: auth (admin/user + Google), sản phẩm, danh sách yêu thích, liên h�
 - KHÔNG tự nhận/lưu số thẻ, CVV trong bất kỳ hoàn cảnh nào.
 - KHÔNG commit secret (.env, Google/Supabase keys). Dùng .env + .gitignore.
 - KHÔNG dựa RLS rồi bỏ kiểm quyền ở API — kiểm CẢ HAI cho route admin.
+- KHÔNG viết `role === 'admin'` trong component hay route. Dùng `hasAdminAccess()` /
+  `hasOwnerAccess()` trong `src/lib/roles.ts` — so sánh thẳng là sót `owner` ở đâu đó rồi
+  khoá chính chủ shop ra khỏi khu quản trị.
 - KHÔNG hard-delete dữ liệu thật trong lúc dev.
 - KHÔNG code tính năng mới (trang, nút, form) mà quên gắn logEvent — xem `event-logging`.
 - KHÔNG để logEvent throw hoặc block UI. Analytics hỏng thì im lặng, không làm sập trang.

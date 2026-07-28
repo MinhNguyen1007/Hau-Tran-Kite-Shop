@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { getProfile } from '@/lib/auth'
+import { hasAdminAccess } from '@/lib/roles'
 import { HOTLINE_HREF, SHOP } from '@/lib/shop'
 
 export const metadata: Metadata = {
@@ -37,7 +38,7 @@ export default async function AccountPage() {
           </div>
         </div>
 
-        {profile.role === 'admin' && (
+        {hasAdminAccess(profile.role) && (
           <Link
             href="/admin"
             className="self-start rounded-full bg-brand-600 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-700 active:scale-[0.98]"
