@@ -1,12 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { LoginForm } from '@/components/auth/LoginForm'
+import { RegisterForm } from '@/components/auth/RegisterForm'
 import { getProfile } from '@/lib/auth'
 import { SHOP } from '@/lib/shop'
 
 export const metadata: Metadata = {
-  title: `Đăng nhập | ${SHOP.name}`,
+  title: `Đăng ký | ${SHOP.name}`,
   robots: { index: false, follow: false },
 }
 
@@ -16,36 +16,34 @@ function safeNextPath(value: string | undefined): string {
   return value
 }
 
-export default async function LoginPage({
+export default async function RegisterPage({
   searchParams,
 }: {
-  searchParams: Promise<{ 'tiep-tuc'?: string; loi?: string }>
+  searchParams: Promise<{ 'tiep-tuc'?: string }>
 }) {
   const params = await searchParams
   const next = safeNextPath(params['tiep-tuc'])
 
-  // Đã đăng nhập rồi thì vào thẳng, không bắt đăng nhập lại.
+  // Đã đăng nhập rồi thì vào thẳng, không bắt đăng ký lại.
   const profile = await getProfile()
   if (profile) redirect(next)
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col px-4 py-12 md:py-20">
-      <h1 className="text-2xl font-extrabold tracking-tight text-ink-900">
-        Đăng nhập
-      </h1>
+      <h1 className="text-2xl font-bold tracking-tight text-ink-950">Đăng ký</h1>
       <p className="mb-8 mt-2 text-sm leading-relaxed text-stone-600">
-        Đăng nhập để theo dõi đơn hàng đã đặt tại {SHOP.name}.
+        Tạo tài khoản để lưu danh sách yêu thích và xem lại trên máy khác.
       </p>
 
-      <LoginForm next={next} callbackError={params.loi} />
+      <RegisterForm next={next} />
 
       <p className="mt-6 border-t border-stone-200 pt-5 text-sm text-stone-600">
-        Chưa có tài khoản?{' '}
+        Đã có tài khoản?{' '}
         <Link
-          href={`/dang-ky?tiep-tuc=${encodeURIComponent(next)}`}
+          href={`/dang-nhap?tiep-tuc=${encodeURIComponent(next)}`}
           className="font-semibold text-ink-950 hover:underline"
         >
-          Đăng ký
+          Đăng nhập
         </Link>
       </p>
     </div>

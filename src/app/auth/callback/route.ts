@@ -1,5 +1,8 @@
-// Đích quay về sau khi xác thực. Dùng chung cho CẢ Google OAuth lẫn magic link:
-// @supabase/ssr chạy luồng PKCE nên hai đường đều đổ về đây kèm ?code=...
+// Đích quay về sau khi xác thực Google OAuth: @supabase/ssr chạy luồng PKCE nên Google đổ về
+// đây kèm ?code=... rồi mới đổi lấy session.
+//
+// Trước đây magic link cũng đi qua route này; đường đó đã bỏ 2026-07-28. Đăng nhập bằng tài
+// khoản + mật khẩu KHÔNG qua đây (signInWithPassword trả session thẳng ở client).
 import { NextResponse } from 'next/server'
 import { createServerSupabase } from '@/lib/supabase'
 

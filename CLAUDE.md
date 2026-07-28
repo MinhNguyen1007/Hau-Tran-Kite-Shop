@@ -61,7 +61,7 @@ MVP: auth (admin/user + Google), sản phẩm, danh sách yêu thích, liên h�
 ## How To Test
 - Unit: Vitest — npm run test
 - Trước khi commit: npm run lint && npm run typecheck && npm run test
-- Smoke test tay: đăng nhập magic link → bấm tim một mẫu diều → mở /yeu-thich thấy nó →
+- Smoke test tay: đăng nhập (tài khoản + mật khẩu) → bấm tim một mẫu diều → mở /yeu-thich thấy nó →
   đăng nhập ở tab ẩn danh và kiểm danh sách local được merge lên DB.
 
 ## NEVER DO (bất biến)
