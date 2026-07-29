@@ -163,17 +163,6 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
           />
         </Field>
 
-        <Field label="Khối khuyến mãi" htmlFor="title-promo">
-          <input
-            id="title-promo"
-            value={form.promoTitle}
-            onChange={(event) => set('promoTitle', event.target.value)}
-            required
-            maxLength={120}
-            className={inputClass}
-          />
-        </Field>
-
         <Field label="Khối danh mục" htmlFor="title-category">
           <input
             id="title-category"
@@ -270,25 +259,10 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
         />
       </Field>
 
-      <Field
-        label="Đoạn giới thiệu ở cuối trang"
-        htmlFor="footer-about"
-        hint="Cột đầu tiên của footer. Cách nhau MỘT DÒNG TRỐNG để tách thành nhiều đoạn."
-      >
-        <textarea
-          id="footer-about"
-          value={form.footerAbout}
-          onChange={(event) => set('footerAbout', event.target.value)}
-          rows={6}
-          maxLength={4000}
-          className={inputClass}
-        />
-      </Field>
-
       {error && (
         <p
           role="alert"
-          className="flex items-start gap-2 text-sm font-medium text-brand-700"
+          className="flex items-start gap-2 text-sm font-medium text-red-600"
         >
           <WarningCircle size={18} weight="fill" className="mt-0.5 shrink-0" />
           {error}
@@ -299,7 +273,7 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
         <button
           type="submit"
           disabled={saving}
-          className="rounded-full bg-brand-600 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-600"
+          className="rounded-full bg-ink-950 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-ink-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-600"
         >
           {saving ? 'Đang lưu…' : 'Lưu cấu hình'}
         </button>
@@ -307,7 +281,7 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
         {saved && (
           <span
             role="status"
-            className="flex items-center gap-1.5 text-sm font-semibold text-brand-700"
+            className="flex items-center gap-1.5 text-sm font-semibold text-ink-950"
           >
             <CheckCircle size={18} weight="fill" />
             Đã lưu

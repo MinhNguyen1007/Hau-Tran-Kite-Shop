@@ -7,6 +7,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ContactCta } from '@/components/contact/ContactCta'
 import { useWishlist } from '@/components/wishlist/useWishlist'
+import { ZaloProductButton } from '@/components/wishlist/ZaloProductButton'
 import { getProductImageUrl } from '@/lib/storage'
 import type { WishlistItem } from '@/lib/wishlist'
 
@@ -18,9 +19,14 @@ export function WishlistView({ hotline, zaloPhone }: { hotline: string; zaloPhon
 
   return (
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[1fr_20rem] lg:items-start">
-      <ul className="divide-y divide-stone-200 overflow-hidden rounded-xl border border-stone-200 bg-white">
+      <ul className="divide-y divide-stone-200 overflow-hidden rounded-2xl border border-stone-200 bg-white">
         {items.map((item) => (
-          <WishlistLine key={item.productId} item={item} onRemove={() => remove(item.productId)} />
+          <WishlistLine
+            key={item.productId}
+            item={item}
+            zaloPhone={zaloPhone}
+            onRemove={() => remove(item.productId)}
+          />
         ))}
       </ul>
 
@@ -53,7 +59,15 @@ export function WishlistView({ hotline, zaloPhone }: { hotline: string; zaloPhon
   )
 }
 
-function WishlistLine({ item, onRemove }: { item: WishlistItem; onRemove: () => void }) {
+function WishlistLine({
+  item,
+  zaloPhone,
+  onRemove,
+}: {
+  item: WishlistItem
+  zaloPhone: string
+  onRemove: () => void
+}) {
   const href = `/san-pham/${item.slug}`
 
   return (
@@ -100,10 +114,15 @@ function WishlistLine({ item, onRemove }: { item: WishlistItem; onRemove: () => 
 
         {/* Rỗng = shop không công khai giá mẫu này. Bỏ trống chỗ đó thay vì hiện "0 ₫". */}
         {item.priceText && (
-          <span className="text-sm font-semibold text-ink-950">
-            {item.priceText}
-          </span>
+          <span className="text-sm font-semibold text-ink-950">{item.priceText}</span>
         )}
+
+        {/* Hỏi thẳng về đúng mẫu này, khỏi phải quay lên nút chung rồi tự gõ lại tên. */}
+        <ZaloProductButton
+          zaloPhone={zaloPhone}
+          productId={item.productId}
+          productName={item.name}
+        />
       </div>
     </li>
   )

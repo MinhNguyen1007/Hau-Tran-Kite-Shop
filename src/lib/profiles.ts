@@ -49,6 +49,97 @@ export async function getProfilesForOwner(): Promise<ManagedProfile[]> {
     .sort((a, b) => ROLE_ORDER[a.role] - ROLE_ORDER[b.role])
 }
 
+// ---------------------------------------------------------------------------
+// Hồ sơ của chính người đang đăng nhập (trang /tai-khoan). Khác khối trên: khách thường
+// cũng gọi được, và RLS chỉ cho đụng đúng dòng của mình.
+// ---------------------------------------------------------------------------
+
+export type MyProfile = {
+  id: string
+  email: string | null
+  fullName: string
+  phone: string
+  address: string
+  avatarPath: string | null
+  role: Role
+}
+
+export type MyProfileInput = {
+  fullName: string
+  phone: string
+  address: string
+  avatarPath: string | null
+}
+
+const MY_COLUMNS = 'id, email, full_name, phone, address, avatar_path, role'
+
+type MyProfileRow = {
+  id: string
+  email: string | null
+  full_name: string | null
+  phone: string | null
+  address: string | null
+  avatar_path: string | null
+  role: Role
+}
+
+function mapMyProfile(row: MyProfileRow): MyProfile {
+  return {
+    id: row.id,
+    email: row.email,
+    // Cột để null được (tài khoản tạo trước khi có mấy ô này), nhưng UI luôn làm việc với
+    // chuỗi — bớt một nhánh null ở mọi ô nhập.
+    fullName: row.full_name ?? '',
+    phone: row.phone ?? '',
+    address: row.address ?? '',
+    avatarPath: row.avatar_path,
+    role: row.role,
+  }
+}
+
+export async function getMyProfile(): Promise<MyProfile | null> {
+  const supabase = await createServerSupabase()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .select(MY_COLUMNS)
+    .eq('id', user.id)
+    .maybeSingle()
+  if (error) throw error
+  if (!data) return null
+
+  return mapMyProfile(data as MyProfileRow)
+}
+
+// KHÔNG nhận role: trigger profiles_prevent_role_change ở DB cũng chặn, nhưng không gửi lên
+// thì không có gì để chặn ngay từ đầu.
+export async function updateMyProfile(input: MyProfileInput): Promise<MyProfile | null> {
+  const supabase = await createServerSupabase()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({
+      full_name: input.fullName,
+      phone: input.phone,
+      address: input.address,
+      avatar_path: input.avatarPath,
+    })
+    .eq('id', user.id)
+    .select(MY_COLUMNS)
+    .maybeSingle()
+  if (error) throw error
+
+  return data ? mapMyProfile(data as MyProfileRow) : null
+}
+
 // Chỉ nhận 'user' | 'admin': vai trò owner KHÔNG bao giờ gán qua đường này. Muốn đổi chủ
 // shop thì chạy script tạo chủ, không phải bấm nút trên web.
 export async function setProfileRole(

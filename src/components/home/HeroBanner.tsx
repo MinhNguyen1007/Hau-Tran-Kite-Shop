@@ -10,13 +10,11 @@
 import { ArrowRight, Phone } from '@phosphor-icons/react/ssr'
 import Image from 'next/image'
 import Link from 'next/link'
-import { ContentIcon } from '@/components/ui/ContentIcon'
-import { getBlocks } from '@/lib/content-blocks'
 import { telHref } from '@/lib/shop'
 import { getSiteSettings } from '@/lib/site-settings'
 
 export async function HeroBanner() {
-  const [settings, trust] = await Promise.all([getSiteSettings(), getBlocks('trust')])
+  const settings = await getSiteSettings()
 
   return (
     <section className="mx-auto grid w-full max-w-7xl items-center gap-10 px-4 pb-12 pt-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12 lg:pb-16 lg:pt-12">
@@ -53,25 +51,8 @@ export async function HeroBanner() {
           </a>
         </div>
 
-        {/* Dải cam kết — trước nằm ở section riêng dưới hero, mẫu mới gộp thẳng vào đây.
-            Nội dung vẫn do admin sửa ở /admin/noi-dung (section 'trust'). */}
-        {trust.length > 0 && (
-          <ul className="reveal mt-10 flex flex-wrap gap-x-8 gap-y-4 [animation-delay:320ms]">
-            {trust.map((item) => (
-              <li key={item.id} className="flex items-center gap-2.5">
-                <ContentIcon name={item.icon} size={18} className="shrink-0 text-stone-500" />
-                <span className="leading-tight">
-                  <span className="block text-[13px] font-semibold text-ink-950">
-                    {item.title}
-                  </span>
-                  <span className="block text-[11px] text-stone-500">
-                    {item.body || `Gọi ${settings.hotline}`}
-                  </span>
-                </span>
-              </li>
-            ))}
-          </ul>
-        )}
+        {/* Dải cam kết đã XOÁ 2026-07-28 cùng bảng content_blocks: bảng đó không còn dòng
+            nào, panel admin của nó rỗng nên user cho gỡ hẳn. Đừng dựng lại. */}
       </div>
 
       <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white">

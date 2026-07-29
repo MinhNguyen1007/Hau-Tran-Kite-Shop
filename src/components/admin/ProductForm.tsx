@@ -191,19 +191,19 @@ export function ProductForm({
       </Field>
 
       {/* Tách khỏi ô giá để admin GIỮ giá đã ghi mà vẫn tạm ẩn được, khỏi xoá rồi gõ lại. */}
-      <label className="-mt-2 flex items-center gap-2.5 text-sm font-semibold text-ink-900">
+      <label className="-mt-2 flex items-center gap-2.5 text-sm font-semibold text-ink-950">
         <input
           type="checkbox"
           checked={showPrice}
           onChange={(event) => setShowPrice(event.target.checked)}
-          className="h-4 w-4 accent-brand-600"
+          className="h-4 w-4 accent-ink-950"
         />
         Hiện giá trên trang khách
       </label>
 
       <p className="-mt-2 text-sm text-stone-600">
         Khách sẽ thấy:{' '}
-        <strong className="font-bold text-brand-700">
+        <strong className="font-bold text-ink-950">
           {showPrice && priceText.trim() !== '' ? priceText.trim() : 'không hiện giá'}
         </strong>
       </p>
@@ -211,7 +211,7 @@ export function ProductForm({
       {error && (
         <p
           role="alert"
-          className="flex items-start gap-2 text-sm font-medium text-brand-700"
+          className="flex items-start gap-2 text-sm font-medium text-red-600"
         >
           <WarningCircle size={18} weight="fill" className="mt-0.5 shrink-0" />
           {error}
@@ -222,7 +222,7 @@ export function ProductForm({
         <button
           type="submit"
           disabled={saving}
-          className="rounded-full bg-brand-600 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-brand-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-600"
+          className="rounded-full bg-ink-950 px-6 py-2.5 text-sm font-bold text-white transition-colors hover:bg-ink-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-600"
         >
           {saving ? 'Đang lưu…' : editing ? 'Lưu thay đổi' : 'Tạo sản phẩm'}
         </button>

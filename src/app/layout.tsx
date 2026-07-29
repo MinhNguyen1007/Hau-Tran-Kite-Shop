@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
 import { Be_Vietnam_Pro } from "next/font/google";
 import { PageView } from "@/components/analytics/PageView";
-import { SiteFooter } from "@/components/layout/SiteFooter";
-import { SiteHeader } from "@/components/layout/SiteHeader";
 import { SHOP } from "@/lib/shop";
 import "./globals.css";
 
@@ -21,6 +19,9 @@ export const metadata: Metadata = {
     "Diều cánh cốc khung tre vót tay, phất giấy dó, cân sáo bằng tai. Nhận đặt riêng kích cỡ và hoạ tiết, giao toàn quốc.",
 };
 
+// Root layout CỐ Ý không có SiteHeader/SiteFooter: khu /admin có vỏ riêng (sidebar tối +
+// topbar) và không được đội thêm header storefront. Header/footer nằm ở (shop)/layout.tsx.
+// Root chỉ giữ những thứ mọi route đều cần: html, font, css, PageView.
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -37,9 +38,7 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col">
         <PageView />
-        <SiteHeader />
-        <main className="flex flex-1 flex-col">{children}</main>
-        <SiteFooter />
+        {children}
       </body>
     </html>
   );

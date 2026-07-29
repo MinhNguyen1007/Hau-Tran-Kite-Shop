@@ -229,6 +229,20 @@ export async function setProductArchived(id: string, archived: boolean): Promise
 
 // Slug trùng là lỗi unique của Postgres (23505). Đổi sang CONFLICT để route trả 409
 // thay vì 500, và để câu báo lỗi nói đúng chỗ sai cho admin.
+// XOÁ HẲN. Chỉ dùng cho mẫu ĐÃ GỠ — route gọi hàm này kiểm điều kiện đó trước, để việc xoá
+// luôn là hai bước cố ý (gỡ → xoá) chứ không phải một cú bấm nhầm.
+//
+// Kéo theo (FK khai sẵn trong migration): `product_images` và `wishlists` xoá theo
+// (on delete cascade), còn `events.product_id` chuyển thành null (on delete set null) — nhật
+// ký hành vi KHÔNG mất dòng nào, chỉ mất chỗ trỏ tới mẫu. Ảnh trong Storage thì vẫn nằm đó;
+// gỡ ảnh là việc riêng, không gộp vào đây để một lỗi Storage không chặn được thao tác xoá.
+export async function deleteProduct(id: string): Promise<boolean> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.from('products').delete().eq('id', id).select('id')
+  if (error) throw error
+  return (data ?? []).length > 0
+}
+
 export function isDuplicateSlugError(error: unknown): boolean {
   return typeof error === 'object' && error !== null && 'code' in error && error.code === '23505'
 }

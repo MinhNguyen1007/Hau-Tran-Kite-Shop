@@ -10,8 +10,8 @@ export async function AboutStrip() {
   const paragraphs = toParagraphs(settings.aboutBody)
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-4 py-8 md:py-10">
-      <SectionHeading id="gioi-thieu" title={settings.aboutHeading} />
+    <section id="gioi-thieu" className="mx-auto w-full max-w-7xl scroll-mt-24 px-4 py-8 md:py-10">
+      <SectionHeading title={settings.aboutHeading} />
 
       <div className="grid items-center gap-8 rounded-2xl border border-stone-200 bg-white p-6 md:grid-cols-[220px_1fr] md:gap-12 md:p-10">
         <Image

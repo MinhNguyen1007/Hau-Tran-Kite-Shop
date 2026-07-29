@@ -85,7 +85,7 @@ export function ImageUploader({
 
   return (
     <div className="flex flex-col gap-2">
-      <span className="text-sm font-semibold text-ink-900">{label}</span>
+      <span className="text-sm font-semibold text-ink-950">{label}</span>
 
       {paths.length > 0 && (
         <ul className="flex flex-wrap gap-2">
@@ -110,7 +110,7 @@ export function ImageUploader({
                 type="button"
                 onClick={() => removeAt(index)}
                 aria-label={`Gỡ ảnh ${index + 1}`}
-                className="absolute -right-1.5 -top-1.5 grid h-6 w-6 place-items-center rounded-full bg-white text-stone-600 shadow ring-1 ring-stone-200 transition-colors hover:text-brand-700"
+                className="absolute -right-1.5 -top-1.5 grid h-6 w-6 place-items-center rounded-full bg-white text-stone-600 shadow ring-1 ring-stone-200 transition-colors hover:underline"
               >
                 <Trash size={13} weight="bold" />
               </button>
@@ -140,7 +140,7 @@ export function ImageUploader({
 
       {hint && <span className="text-xs text-stone-600">{hint}</span>}
       {error && (
-        <span role="alert" className="text-xs font-medium text-brand-700">
+        <span role="alert" className="text-xs font-medium text-red-600">
           {error}
         </span>
       )}

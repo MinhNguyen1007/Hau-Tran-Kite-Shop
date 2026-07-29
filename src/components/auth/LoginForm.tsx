@@ -10,7 +10,28 @@ import { GoogleLogo, WarningCircle } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toLoginEmail } from '@/lib/login-identifier'
+import { hasAdminAccess, type Role } from '@/lib/roles'
 import { createBrowserSupabase } from '@/lib/supabase-browser'
+
+// Admin đăng nhập là để làm việc: đổ thẳng vào khu quản trị thay vì bắt bấm thêm một nút ở
+// trang tài khoản. Chỉ áp dụng khi không ai chỉ định đích — vào từ link ?tiep-tuc=/yeu-thich
+// thì phải tới đúng chỗ đó.
+async function destination(
+  supabase: ReturnType<typeof createBrowserSupabase>,
+  next: string,
+): Promise<string> {
+  if (next !== '/tai-khoan') return next
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) return next
+
+  // Role nằm ở public.profiles chứ không phải JWT (JWT tự sửa được) — xem skill auth-rls.
+  const { data } = await supabase.from('profiles').select('role').eq('id', user.id).maybeSingle()
+  const role = (data?.role as Role | undefined) ?? 'user'
+  return hasAdminAccess(role) ? '/admin' : next
+}
 
 // Thông báo lỗi do callback route đẩy về qua query string. Route đó giờ chỉ còn phục vụ
 // luồng Google (đổi code lấy session).
@@ -70,7 +91,7 @@ export function LoginForm({ next, callbackError }: { next: string; callbackError
     // Không dùng window.location: router.refresh() để Server Component đọc lại session mới,
     // rồi mới điều hướng — không thì trang đích render bằng session cũ và đá về đăng nhập.
     router.refresh()
-    router.replace(next)
+    router.replace(await destination(supabase, next))
   }
 
   return (

@@ -45,7 +45,7 @@ export function ArchiveButton({
       type="button"
       onClick={handleClick}
       disabled={busy}
-      className="text-sm font-semibold text-stone-600 transition-colors hover:text-brand-700 disabled:cursor-not-allowed disabled:text-stone-400"
+      className="text-sm font-semibold text-stone-600 transition-colors hover:text-ink-950 disabled:cursor-not-allowed disabled:text-stone-400"
     >
       {busy ? '…' : archived ? 'Khôi phục' : 'Gỡ'}
     </button>

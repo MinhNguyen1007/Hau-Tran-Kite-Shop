@@ -4,7 +4,7 @@
 // Gom một chỗ để ba form không trôi mỗi cái một kiểu ô nhập.
 
 export const inputClass =
-  'w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-ink-900 placeholder:text-stone-500 focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/30'
+  'w-full rounded-xl border border-stone-300 bg-white px-3.5 py-2.5 text-sm text-ink-950 placeholder:text-stone-500 focus:border-ink-950 focus:outline-none focus:ring-2 focus:ring-ink-950/15'
 
 export function Field({
   label,
@@ -19,7 +19,7 @@ export function Field({
 }) {
   return (
     <div className="flex flex-col gap-2">
-      <label htmlFor={htmlFor} className="text-sm font-semibold text-ink-900">
+      <label htmlFor={htmlFor} className="text-sm font-semibold text-ink-950">
         {label}
       </label>
       {children}

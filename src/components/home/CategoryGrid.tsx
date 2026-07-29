@@ -17,8 +17,9 @@ export async function CategoryGrid() {
   if (categories.length === 0) return null
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-4 py-8 md:py-10">
-      <SectionHeading id="danh-muc" title={settings.categoryTitle} />
+    // scroll-mt: header dính trên đầu, không chừa chỗ thì nhảy neo bị header che mất tiêu đề.
+    <section id="danh-muc" className="mx-auto w-full max-w-7xl scroll-mt-24 px-4 py-8 md:py-10">
+      <SectionHeading title={settings.categoryTitle} />
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         {categories.map((category) => (

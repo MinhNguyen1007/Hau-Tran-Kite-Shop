@@ -26,7 +26,8 @@ export const HOTLINE_HREF = telHref(SHOP.hotline)
 export const NAV_ITEMS = [
   { label: 'Trang chủ', href: '/' },
   { label: 'Sản phẩm', href: '/san-pham' },
-  { label: 'Khuyến mãi', href: '/#khuyen-mai' },
+  // 'Khuyến mãi' đã gỡ 2026-07-28 cùng lúc với khối khuyến mãi trên trang chủ: giữ lại mục
+  // nav trỏ vào một khối không còn tồn tại là đúng cái bẫy ghi ở trên.
   { label: 'Danh mục', href: '/#danh-muc' },
   { label: 'Giới thiệu', href: '/#gioi-thieu' },
   { label: 'Liên hệ', href: '/lien-he' },

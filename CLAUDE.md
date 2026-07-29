@@ -9,8 +9,9 @@ gọi điện** cho shop để chốt đơn. Web không nhận đơn, không nh�
 Lý do (nghiệp vụ thật, không phải giới hạn kỹ thuật): chủ shop còn nhận nhiều đơn khác nên
 phải trao đổi trực tiếp mới chốt được, và để chặn đơn ảo.
 
-MVP: auth (admin/user + Google), sản phẩm, danh sách yêu thích, liên hệ, **event logging**,
-**admin quản lý được mọi thứ hiện trên web** (sản phẩm, nội dung trang chủ, thông tin shop).
+MVP: auth (admin/user + Google), sản phẩm, danh sách yêu thích, trang cá nhân khách,
+**event logging**, **admin quản lý được mọi thứ hiện trên web** (sản phẩm, danh mục, nội dung
+trang chủ, thông tin shop).
 
 ## Tech Stack
 - Next.js (App Router) + TypeScript + Tailwind
@@ -30,8 +31,14 @@ MVP: auth (admin/user + Google), sản phẩm, danh sách yêu thích, liên h�
 - Danh sách yêu thích lưu HAI NƠI: localStorage cho khách vãng lai, bảng `wishlists` cho
   khách đã đăng nhập; merge lúc đăng nhập. Thao tác thêm phải idempotent.
 - Nội dung trang nằm trong DB, KHÔNG hard-code trong component. Admin sửa ở /admin:
-  `site_settings` (thông tin shop + tiêu đề khối), `content_blocks` (khuyến mãi / kinh nghiệm /
-  cam kết), `categories` (danh mục diều).
+  `site_settings` + `content_blocks` (khuyến mãi / cam kết) gộp chung trong **/admin/cai-dat**,
+  `categories` ở /admin/danh-muc. Màn "Nội dung trang chủ" riêng đã bỏ 2026-07-28.
+- Hai route group: `src/app/(shop)` (có SiteHeader/SiteFooter) và `src/app/(admin)` (vỏ riêng:
+  sidebar tối + topbar). Route group KHÔNG đổi URL. **Trang khách mới phải đặt trong `(shop)/`**,
+  không thì mất header.
+- Trang cá nhân khách `/tai-khoan`: họ tên, số điện thoại, địa chỉ, ảnh đại diện (bucket
+  `avatars`, mỗi khách ghi vào đúng thư mục `<uid>/`). Mấy trường này để chủ shop có sẵn thông
+  tin lúc khách nhắn Zalo, KHÔNG phải để giao hàng tự động.
 - KHÔNG có tồn kho. Diều làm thủ công theo đơn, mẫu nào cũng đặt được.
 - Giá và kích thước là CHỮ TỰ DO (`price_text`, `size_note`), không phải số, không phải
   danh sách chọn. Shop báo khoảng ("3 triệu – 5 triệu", "làm từ 3m đến 5m") chứ không có
@@ -81,6 +88,11 @@ MVP: auth (admin/user + Google), sản phẩm, danh sách yêu thích, liên h�
 - KHÔNG hard-code nội dung hiện trên trang hay số điện thoại vào component — nó thuộc
   `site_settings` / `content_blocks` / `categories` để admin sửa được.
 - KHÔNG thêm lại tồn kho, nút "Hết hàng", hay trạng thái còn/hết. Đã bỏ có chủ ý.
+- KHÔNG dựng lại form liên hệ / bảng `contact_messages` / màn đọc tin nhắn. Bỏ hẳn
+  2026-07-28: mọi liên hệ đi qua Zalo và gọi điện, ô nhập chỉ là chỗ khách gõ rồi chờ hồi
+  âm không tới. Loại event `contact_submitted` vẫn giữ trong taxonomy cho dữ liệu cũ.
+- KHÔNG dùng cam `brand-*` trong khu /admin. Từ 2026-07-28 admin đi CÙNG TONE storefront
+  (trắng - xám - đen, nút `ink-950`); thang brand chỉ còn cho nút tim và badge yêu thích.
 - KHÔNG import src/lib/site-settings.ts (hay file nào chạm next/headers) vào Client
   Component — gãy build, và lỗi CHỈ lộ ra lúc `npm run build`, dev server vẫn chạy.
 

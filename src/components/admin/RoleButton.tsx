@@ -54,7 +54,7 @@ export function RoleButton({
       disabled={busy}
       className={
         promoting
-          ? 'flex shrink-0 items-center gap-1.5 rounded-full bg-brand-600 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-brand-700 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-600'
+          ? 'flex shrink-0 items-center gap-1.5 rounded-full bg-ink-950 px-4 py-2 text-xs font-bold text-white transition-colors hover:bg-ink-800 active:scale-[0.98] disabled:cursor-not-allowed disabled:bg-stone-300 disabled:text-stone-600'
           : 'flex shrink-0 items-center gap-1.5 rounded-full border border-stone-300 px-4 py-2 text-xs font-bold text-stone-700 transition-colors hover:bg-stone-100 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50'
       }
     >

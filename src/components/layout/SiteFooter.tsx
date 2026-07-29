@@ -11,7 +11,7 @@ import { Envelope, MapPin, Phone, Wind } from '@phosphor-icons/react/ssr'
 import Link from 'next/link'
 import { getCategories } from '@/lib/categories'
 import { telHref, zaloHref } from '@/lib/shop'
-import { getSiteSettings, toParagraphs } from '@/lib/site-settings'
+import { getSiteSettings } from '@/lib/site-settings'
 
 function FooterColumn({
   heading,
@@ -42,7 +42,6 @@ function FooterLink({ href, children }: { href: string; children: React.ReactNod
 
 export async function SiteFooter() {
   const [settings, categories] = await Promise.all([getSiteSettings(), getCategories()])
-  const about = toParagraphs(settings.footerAbout)
 
   return (
     <footer className="mt-8 border-t border-stone-200 bg-white">
@@ -56,12 +55,6 @@ export async function SiteFooter() {
               {settings.shopName}
             </span>
           </div>
-
-          {/* Chỉ lấy đoạn ĐẦU: cột footer hẹp, dán cả bài giới thiệu vào là cột dài gấp ba
-              các cột bên cạnh. Bài đầy đủ nằm ở khối giới thiệu trên trang chủ. */}
-          {about[0] && (
-            <p className="max-w-xs text-sm leading-relaxed text-stone-600">{about[0]}</p>
-          )}
 
           <ul className="mt-5 space-y-2.5 text-sm">
             <li>
@@ -121,7 +114,6 @@ export async function SiteFooter() {
 
         <FooterColumn heading="Về shop">
           <FooterLink href="/#gioi-thieu">Giới thiệu xưởng</FooterLink>
-          <FooterLink href="/#khuyen-mai">Khuyến mãi</FooterLink>
           <FooterLink href="/#danh-muc">Danh mục</FooterLink>
         </FooterColumn>
       </div>
