@@ -30,8 +30,10 @@ export default async function AdminProductsPage({
   const categorySlug = (params['danh-muc'] ?? '').trim()
   const activeCategory = categories.find((category) => category.slug === categorySlug) ?? null
 
-  const matchesKeyword = (name: string, slug: string) =>
-    keyword === '' || name.toLowerCase().includes(keyword) || slug.toLowerCase().includes(keyword)
+  // Tìm theo TÊN hoặc MÃ, không theo slug: slug là thứ hiện trên URL, admin không nhớ nó.
+  // Mã khớp cả khi gõ vài ký tự đầu — CopyId chỉ hiện 8 ký tự nên gõ đủ 36 là chuyện hiếm.
+  const matchesKeyword = (name: string, id: string) =>
+    keyword === '' || name.toLowerCase().includes(keyword) || id.toLowerCase().includes(keyword)
 
   const inCategory = (categoryId: string | null) => {
     if (categorySlug === '') return true
@@ -40,7 +42,7 @@ export default async function AdminProductsPage({
   }
 
   const rows = products.filter(
-    (product) => matchesKeyword(product.name, product.slug) && inCategory(product.categoryId),
+    (product) => matchesKeyword(product.name, product.id) && inCategory(product.categoryId),
   )
 
   const unsortedCount = products.filter((product) => product.categoryId === null).length
@@ -67,7 +69,7 @@ export default async function AdminProductsPage({
           name="tim"
           defaultValue={params.tim ?? ''}
           label="Tìm sản phẩm"
-          placeholder="Tìm theo tên hoặc slug..."
+          placeholder="Tìm theo tên hoặc mã sản phẩm..."
           hidden={categorySlug === '' ? {} : { 'danh-muc': categorySlug }}
         />
       </div>

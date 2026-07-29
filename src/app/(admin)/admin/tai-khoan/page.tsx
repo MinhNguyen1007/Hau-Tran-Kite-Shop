@@ -1,4 +1,5 @@
 import { Crown, ShieldCheck, User } from '@phosphor-icons/react/ssr'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import { CopyId } from '@/components/admin/CopyId'
 import { PageHeader, Panel } from '@/components/admin/Panel'
@@ -8,6 +9,7 @@ import { getProfile } from '@/lib/auth'
 import { toDisplayName } from '@/lib/login-identifier'
 import { getProfilesForOwner } from '@/lib/profiles'
 import { hasOwnerAccess, ROLE_LABEL, type Role } from '@/lib/roles'
+import { getAvatarUrl } from '@/lib/storage'
 import { requireOwner } from '@/lib/supabase'
 
 // Ngày theo múi giờ Việt Nam, không theo múi giờ máy chủ.
@@ -103,7 +105,12 @@ export default async function AdminAccountsPage({
 
                   return (
                     <tr key={account.id} className="transition-colors hover:bg-stone-50">
-                      <td className="px-4 py-3 font-semibold text-ink-950 md:px-5">{login}</td>
+                      <td className="px-4 py-3 md:px-5">
+                        <div className="flex items-center gap-3">
+                          <Avatar path={account.avatarPath} label={login} />
+                          <span className="truncate font-semibold text-ink-950">{login}</span>
+                        </div>
+                      </td>
                       <td className="px-4 py-3 text-stone-700">
                         {fullName || <span className="text-stone-400">Chưa đặt</span>}
                       </td>
@@ -159,5 +166,26 @@ export default async function AdminAccountsPage({
         </p>
       )}
     </div>
+  )
+}
+
+// Ảnh đại diện khách tự tải lên ở /tai-khoan. Chưa có ảnh thì hiện chữ cái đầu chứ KHÔNG
+// phải icon người chung chung: cả cột toàn icon giống hệt nhau thì mắt không bám được dòng.
+function Avatar({ path, label }: { path: string | null; label: string }) {
+  if (!path) {
+    // Bỏ ký tự mở đầu không phải chữ/số, vì tài khoản thiếu email hiện là "(chưa có email)"
+    // và lấy thẳng ký tự đầu sẽ ra dấu ngoặc.
+    const initial = label.trim().replace(/^[^\p{L}\p{N}]+/u, '').slice(0, 1) || '?'
+    return (
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-stone-100 text-xs font-bold uppercase text-stone-600">
+        {initial}
+      </span>
+    )
+  }
+
+  return (
+    <span className="relative block h-9 w-9 shrink-0 overflow-hidden rounded-full bg-stone-100">
+      <Image src={getAvatarUrl(path)} alt="" fill sizes="36px" className="object-cover" />
+    </span>
   )
 }

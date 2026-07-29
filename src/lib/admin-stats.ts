@@ -72,6 +72,13 @@ export type ActivityItem = {
   type: string
   productId: string | null
   occurredAt: string
+  // null = khách chưa đăng nhập. sessionId luôn có, dùng để phân biệt hai khách vãng lai
+  // ngồi cạnh nhau — không phải để nhận dạng người, chỉ để dòng nhật ký không lẫn vào nhau.
+  userId: string | null
+  sessionId: string
+  // Chi tiết riêng theo loại: path (page_view), query/resultCount (search), channel
+  // (contact_click). Để nguyên jsonb, người đọc tự bóc — thêm cột cho từng loại là sai hướng.
+  properties: Record<string, unknown>
 }
 
 export type AdminInsights = {
@@ -116,7 +123,7 @@ export async function getAdminInsights(): Promise<AdminInsights> {
 
   const { data, error } = await supabase
     .from('events')
-    .select('id, event_type, product_id, occurred_at')
+    .select('id, event_type, product_id, occurred_at, user_id, session_id, properties')
     .gte('occurred_at', since)
     .order('occurred_at', { ascending: false })
     .limit(MAX_EVENTS)
@@ -128,6 +135,9 @@ export async function getAdminInsights(): Promise<AdminInsights> {
         event_type: string
         product_id: string | null
         occurred_at: string
+        user_id: string | null
+        session_id: string
+        properties: Record<string, unknown> | null
       }[])
 
   const viewsByDay = new Map<string, number>()
@@ -174,6 +184,9 @@ export async function getAdminInsights(): Promise<AdminInsights> {
       type: row.event_type,
       productId: row.product_id,
       occurredAt: row.occurred_at,
+      userId: row.user_id,
+      sessionId: row.session_id,
+      properties: row.properties ?? {},
     })),
   }
 }

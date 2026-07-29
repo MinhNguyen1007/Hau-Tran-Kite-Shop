@@ -4,22 +4,43 @@ import Link from 'next/link'
 import { CopyId } from '@/components/admin/CopyId'
 import { PageHeader, Panel } from '@/components/admin/Panel'
 import { RowActionButton } from '@/components/admin/RowActionButton'
+import { SearchField } from '@/components/admin/SearchField'
 import { getCategoriesForAdmin } from '@/lib/categories'
 import { getProductImageUrl } from '@/lib/storage'
 import { requireAdmin } from '@/lib/supabase'
 
-export default async function AdminCategoriesPage() {
+export default async function AdminCategoriesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tim?: string }>
+}) {
   // Layout /admin đã chặn người lạ, nhưng kiểm lại ở đây: layout chỉ che giao diện,
   // trang này tự đọc dữ liệu nên tự chịu trách nhiệm về quyền (xem CLAUDE.md).
   await requireAdmin()
 
-  const categories = await getCategoriesForAdmin()
+  const [categories, params] = await Promise.all([getCategoriesForAdmin(), searchParams])
+
+  // Tìm theo TÊN hoặc MÃ, giống trang sản phẩm — không theo slug. Lọc trong bộ nhớ: sáu
+  // nhóm diều thì truy vấn lại DB chỉ để lọc chuỗi là thừa.
+  const keyword = (params.tim ?? '').trim().toLowerCase()
+  const rows =
+    keyword === ''
+      ? categories
+      : categories.filter(
+          (category) =>
+            category.name.toLowerCase().includes(keyword) ||
+            category.id.toLowerCase().includes(keyword),
+        )
 
   return (
     <div>
       <PageHeader
         title="Danh mục diều"
-        description={`${categories.length} nhóm. Mỗi sản phẩm thuộc một danh mục; danh mục cũng là ô hiện trên trang chủ và tab lọc.`}
+        description={
+          keyword === ''
+            ? `${categories.length} nhóm. Mỗi sản phẩm thuộc một danh mục; danh mục cũng là ô hiện trên trang chủ và tab lọc.`
+            : `${rows.length} nhóm khớp từ khoá “${keyword}”.`
+        }
       >
         <Link
           href="/admin/danh-muc/moi"
@@ -30,16 +51,39 @@ export default async function AdminCategoriesPage() {
         </Link>
       </PageHeader>
 
+      <div className="mb-4">
+        <SearchField
+          action="/admin/danh-muc"
+          name="tim"
+          defaultValue={params.tim ?? ''}
+          label="Tìm danh mục"
+          placeholder="Tìm theo tên hoặc mã danh mục..."
+        />
+      </div>
+
       <Panel bodyClassName="">
-        {categories.length === 0 ? (
+        {rows.length === 0 ? (
           <div className="px-4 py-14 text-center">
-            <p className="text-sm text-stone-600">Chưa có danh mục nào.</p>
-            <Link
-              href="/admin/danh-muc/moi"
-              className="mt-3 inline-block rounded-full bg-ink-950 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-ink-800"
-            >
-              Thêm danh mục đầu tiên
-            </Link>
+            <p className="text-sm text-stone-600">
+              {categories.length === 0
+                ? 'Chưa có danh mục nào.'
+                : `Không có nhóm nào khớp với “${params.tim}”.`}
+            </p>
+            {categories.length === 0 ? (
+              <Link
+                href="/admin/danh-muc/moi"
+                className="mt-3 inline-block rounded-full bg-ink-950 px-5 py-2.5 text-sm font-bold text-white transition-colors hover:bg-ink-800"
+              >
+                Thêm danh mục đầu tiên
+              </Link>
+            ) : (
+              <Link
+                href="/admin/danh-muc"
+                className="mt-3 inline-block rounded-full border border-stone-300 px-5 py-2.5 text-sm font-bold text-ink-950 transition-colors hover:bg-stone-100"
+              >
+                Bỏ tìm
+              </Link>
+            )}
           </div>
         ) : (
           // Bảng ngang, mỗi thông tin một cột — giống trang Sản phẩm và trang Tài khoản.
@@ -56,7 +100,7 @@ export default async function AdminCategoriesPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-stone-200">
-                {categories.map((category) => (
+                {rows.map((category) => (
                   <tr
                     key={category.id}
                     className={`transition-colors hover:bg-stone-50 ${

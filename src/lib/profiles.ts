@@ -8,6 +8,7 @@ export type ManagedProfile = {
   id: string
   email: string | null
   fullName: string | null
+  avatarPath: string | null
   role: Role
   createdAt: string
 }
@@ -16,17 +17,19 @@ type ProfileRow = {
   id: string
   email: string | null
   full_name: string | null
+  avatar_path: string | null
   role: Role
   created_at: string
 }
 
-const COLUMNS = 'id, email, full_name, role, created_at'
+const COLUMNS = 'id, email, full_name, avatar_path, role, created_at'
 
 function mapProfile(row: ProfileRow): ManagedProfile {
   return {
     id: row.id,
     email: row.email,
     fullName: row.full_name,
+    avatarPath: row.avatar_path,
     role: row.role,
     createdAt: row.created_at,
   }
@@ -47,6 +50,51 @@ export async function getProfilesForOwner(): Promise<ManagedProfile[]> {
   return (data ?? [])
     .map((row) => mapProfile(row as ProfileRow))
     .sort((a, b) => ROLE_ORDER[a.role] - ROLE_ORDER[b.role])
+}
+
+// ---------------------------------------------------------------------------
+// Danh tính người đứng sau mỗi dòng nhật ký, cho bảng "Hoạt động gần đây" ở /admin.
+// ---------------------------------------------------------------------------
+
+export type ActorProfile = {
+  id: string
+  email: string | null
+  fullName: string | null
+  avatarPath: string | null
+}
+
+// KHÔNG requireOwner ở đây: admin phụ cũng mở được trang tổng quan. Trả về bao nhiêu là do
+// RLS quyết định — policy profiles_select_self_or_owner nên CHỦ SHOP đọc được đủ tên, còn
+// admin phụ chỉ thấy dòng của chính mình, người khác rơi về nhãn chung "Khách đã đăng nhập".
+// Đó là CỐ Ý chứ không phải thiếu sót: admin phụ không quản lý tài khoản thì cũng không có
+// lý do đọc danh sách khách. Muốn admin phụ thấy tên thì phải nới policy, không phải sửa ở đây.
+export async function getActorProfiles(ids: string[]): Promise<Map<string, ActorProfile>> {
+  const unique = [...new Set(ids)]
+  if (unique.length === 0) return new Map()
+
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, email, full_name, avatar_path')
+    .in('id', unique)
+
+  // Nuốt lỗi chứ không throw: thiếu tên người thì dòng nhật ký vẫn đọc được, còn ném lỗi
+  // là trắng cả trang tổng quan — cùng lý do với safeCount trong admin-stats.
+  if (error) return new Map()
+
+  const rows = (data ?? []) as {
+    id: string
+    email: string | null
+    full_name: string | null
+    avatar_path: string | null
+  }[]
+
+  return new Map(
+    rows.map((row) => [
+      row.id,
+      { id: row.id, email: row.email, fullName: row.full_name, avatarPath: row.avatar_path },
+    ]),
+  )
 }
 
 // ---------------------------------------------------------------------------

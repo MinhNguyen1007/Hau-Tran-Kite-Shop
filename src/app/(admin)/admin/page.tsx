@@ -7,9 +7,13 @@ import Link from 'next/link'
 import { DonutChart, RankedBars, ViewsAreaChart } from '@/components/admin/Charts'
 import { LiveRefresh } from '@/components/admin/LiveRefresh'
 import { PageHeader, Panel } from '@/components/admin/Panel'
+import type { ActivityItem } from '@/lib/admin-stats'
 import { getAdminInsights, getAdminOverview } from '@/lib/admin-stats'
+import { toDisplayName } from '@/lib/login-identifier'
 import type { Product } from '@/lib/products'
 import { getProductsForAdmin } from '@/lib/products'
+import type { ActorProfile } from '@/lib/profiles'
+import { getActorProfiles } from '@/lib/profiles'
 import { getProductImageUrl } from '@/lib/storage'
 
 export default async function AdminHomePage() {
@@ -19,7 +23,15 @@ export default async function AdminHomePage() {
     getProductsForAdmin(),
   ])
 
+  // Phải chờ insights xong mới biết cần tra danh tính của ai, nên truy vấn này đứng riêng
+  // chứ không gộp vào Promise.all ở trên.
+  const actors = await getActorProfiles(
+    insights.recent.map((item) => item.userId).filter((id) => id !== null),
+  )
+
   const byId = new Map(products.map((product) => [product.id, product]))
+  // Nhật ký page_view chỉ ghi đường dẫn, nên cần bảng tra slug ngược về tên mẫu.
+  const bySlug = new Map(products.map((product) => [product.slug, product.name]))
   const name = (productId: string | null) =>
     productId ? (byId.get(productId)?.name ?? 'Mẫu đã xoá') : null
 
@@ -140,7 +152,8 @@ export default async function AdminHomePage() {
                   <ActivityRow
                     key={item.id}
                     type={item.type}
-                    productName={name(item.productId)}
+                    actor={describeActor(item, actors)}
+                    target={describeTarget(item, name(item.productId), bySlug)}
                     occurredAt={item.occurredAt}
                   />
                 ))}
@@ -186,13 +199,82 @@ export default async function AdminHomePage() {
 
 // Nhãn tiếng Việt cho từng loại event. Loại nào chưa khai thì hiện thẳng mã — thà thấy
 // 'checkout_started' còn hơn nuốt mất một dòng lịch sử.
+// Chữ thường vì nhãn đứng SAU tên người: "Nguyễn Minh · xem mẫu".
 const EVENT_LABEL: Record<string, { label: string; icon: Icon }> = {
-  page_view: { label: 'Xem một trang', icon: Eye },
-  product_view: { label: 'Xem mẫu', icon: Package },
-  add_to_wishlist: { label: 'Thả tim mẫu', icon: Heart },
-  remove_from_wishlist: { label: 'Bỏ tim mẫu', icon: Heart },
-  contact_click: { label: 'Bấm Zalo / gọi', icon: CursorClick },
-  search: { label: 'Tìm kiếm', icon: MagnifyingGlass },
+  page_view: { label: 'xem một trang', icon: Eye },
+  product_view: { label: 'xem mẫu', icon: Package },
+  add_to_wishlist: { label: 'thả tim mẫu', icon: Heart },
+  remove_from_wishlist: { label: 'bỏ tim mẫu', icon: Heart },
+  contact_click: { label: 'bấm Zalo / gọi', icon: CursorClick },
+  search: { label: 'tìm kiếm', icon: MagnifyingGlass },
+}
+
+// Đường dẫn quen thuộc đổi thành tên người đọc hiểu. Đường dẫn lạ thì hiện nguyên si chứ
+// không bịa nhãn — thấy '/khuyen-mai' còn biết là trang cũ nào đó còn sót link.
+const PAGE_LABEL: Record<string, string> = {
+  '/': 'Trang chủ',
+  '/san-pham': 'Danh sách sản phẩm',
+  '/yeu-thich': 'Danh sách yêu thích',
+  '/lien-he': 'Trang liên hệ',
+  '/tai-khoan': 'Trang cá nhân',
+  '/dang-nhap': 'Trang đăng nhập',
+  '/dang-ky': 'Trang đăng ký',
+}
+
+const CHANNEL_LABEL: Record<string, string> = { zalo: 'Qua Zalo', phone: 'Gọi điện' }
+
+const PRODUCT_PATH = '/san-pham/'
+
+// properties là jsonb tự do nên mọi thứ lấy ra đều phải kiểm kiểu, không tin sẵn.
+function readText(value: unknown): string | null {
+  if (typeof value !== 'string') return null
+  const trimmed = value.trim()
+  return trimmed === '' ? null : trimmed
+}
+
+// Ai làm: tên thật > tên tài khoản > nhãn chung. Khách chưa đăng nhập KHÔNG cố đoán ra
+// danh tính — sáu ký tự đầu của session chỉ để hai khách vãng lai cùng lúc không lẫn vào nhau.
+function describeActor(item: ActivityItem, actors: Map<string, ActorProfile>): string {
+  if (!item.userId) return `Khách vãng lai #${item.sessionId.slice(0, 6)}`
+
+  const actor = actors.get(item.userId)
+  // Không tra được nghĩa là RLS chặn (admin phụ chỉ đọc được dòng của chính mình), không
+  // phải tài khoản đã xoá. Xem getActorProfiles.
+  if (!actor) return 'Khách đã đăng nhập'
+
+  const fullName = actor.fullName?.trim()
+  return fullName ? fullName : toDisplayName(actor.email)
+}
+
+// Làm gì với cái gì: mẫu diều nào, trang nào, tìm từ khoá gì, bấm kênh nào.
+function describeTarget(
+  item: ActivityItem,
+  productName: string | null,
+  bySlug: Map<string, string>,
+): string | null {
+  if (productName) return productName
+
+  const path = readText(item.properties.path)
+  if (path) {
+    const known = PAGE_LABEL[path]
+    if (known) return known
+    if (path.startsWith(PRODUCT_PATH)) {
+      const slug = path.slice(PRODUCT_PATH.length)
+      return bySlug.get(slug) ?? `Mẫu ${slug}`
+    }
+    return path
+  }
+
+  const query = readText(item.properties.query)
+  if (query) {
+    const count = item.properties.resultCount
+    return typeof count === 'number' ? `“${query}” · ${count} kết quả` : `“${query}”`
+  }
+
+  const channel = readText(item.properties.channel)
+  if (channel) return CHANNEL_LABEL[channel] ?? channel
+
+  return null
 }
 
 const timeFormatter = new Intl.DateTimeFormat('vi-VN', {
@@ -205,31 +287,31 @@ const timeFormatter = new Intl.DateTimeFormat('vi-VN', {
 
 function ActivityRow({
   type,
-  productName,
+  actor,
+  target,
   occurredAt,
 }: {
   type: string
-  productName: string | null
+  actor: string
+  target: string | null
   occurredAt: string
 }) {
   const entry = EVENT_LABEL[type]
   const RowIcon = entry?.icon ?? Eye
 
   return (
-    <li className="flex items-center gap-3 px-4 py-2.5 md:px-5">
-      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-stone-100 text-ink-950">
+    <li className="flex items-start gap-3 px-4 py-2.5 md:px-5">
+      <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-stone-100 text-ink-950">
         <RowIcon size={15} weight="bold" />
       </span>
       <span className="min-w-0 flex-1">
         <span className="block truncate text-sm text-ink-950">
-          {entry?.label ?? type}
-          {productName && <span className="text-stone-600"> · {productName}</span>}
+          <span className="font-semibold">{actor}</span>
+          <span className="text-stone-600"> · {entry?.label ?? type}</span>
         </span>
+        {target && <span className="block truncate text-xs text-stone-600">{target}</span>}
       </span>
-      <time
-        dateTime={occurredAt}
-        className="shrink-0 text-xs tabular-nums text-stone-500"
-      >
+      <time dateTime={occurredAt} className="mt-0.5 shrink-0 text-xs tabular-nums text-stone-500">
         {timeFormatter.format(new Date(occurredAt))}
       </time>
     </li>
