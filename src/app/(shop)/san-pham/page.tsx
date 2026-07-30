@@ -4,14 +4,12 @@ import { SearchTracker } from '@/components/analytics/SearchTracker'
 import { ProductCard } from '@/components/product/ProductCard'
 import { getCategories } from '@/lib/categories'
 import { getProducts } from '@/lib/products'
-import { getSiteSettings } from '@/lib/site-settings'
 
-export async function generateMetadata(): Promise<Metadata> {
-  const settings = await getSiteSettings()
-  return {
-    title: `Sản phẩm | ${settings.shopName}`,
-    description: 'Diều cánh cốc thủ công: khung tre, phất giấy dó, làm theo lối truyền thống.',
-  }
+// Hằng chứ không còn generateMetadata: tên shop giờ do title.template ở root layout ghép vào,
+// nên trang này không cần đọc site_settings chỉ để dựng cái tiêu đề nữa.
+export const metadata: Metadata = {
+  title: 'Sản phẩm',
+  description: 'Diều cánh cốc thủ công: khung tre, phất giấy dó, làm theo lối truyền thống.',
 }
 
 export default async function ProductsPage({

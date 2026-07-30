@@ -16,9 +16,10 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>
 }): Promise<Metadata> {
   const { slug } = await params
-  const [product, settings] = await Promise.all([getProductBySlug(slug), getSiteSettings()])
+  const product = await getProductBySlug(slug)
+  // Tên shop do title.template ở root layout ghép vào, lấy từ site_settings.
   return {
-    title: product ? `${product.name} | ${settings.shopName}` : 'Không tìm thấy sản phẩm',
+    title: product ? product.name : 'Không tìm thấy sản phẩm',
   }
 }
 

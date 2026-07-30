@@ -2,6 +2,7 @@
 //
 // shop.ts vẫn giữ bản HẰNG SỐ và ở đây dùng làm giá trị dự phòng: header/footer nằm trên mọi
 // trang, DB hỏng mà cả web trắng thì tệ hơn nhiều so với việc hiện tạm số hotline cũ.
+import { cache } from 'react'
 import { createServerSupabase } from './supabase'
 import { SHOP } from './shop'
 
@@ -93,7 +94,13 @@ function mapSettings(row: SiteSettingsRow): SiteSettings {
 }
 
 // KHÔNG ném lỗi: gọi từ layout nên một lần DB hỏng sẽ làm trắng toàn bộ site.
-export async function getSiteSettings(): Promise<SiteSettings> {
+//
+// Bọc `cache()`: một lần dựng trang gọi hàm này ở NHIỀU chỗ độc lập nhau — generateMetadata ở
+// root layout, SiteHeader, SiteFooter, rồi page tự gọi thêm. React gộp lại còn ĐÚNG MỘT truy
+// vấn cho mỗi request. Không bọc thì mỗi trang storefront bắn 3-4 truy vấn giống hệt nhau.
+// Chỉ gộp trong phạm vi một request, không phải cache giữa các request nên admin sửa xong
+// tải lại là thấy ngay.
+export const getSiteSettings = cache(async function getSiteSettings(): Promise<SiteSettings> {
   try {
     const supabase = await createServerSupabase()
     const { data, error } = await supabase.from('site_settings').select(COLUMNS).eq('id', 1).maybeSingle()
@@ -102,7 +109,7 @@ export async function getSiteSettings(): Promise<SiteSettings> {
   } catch {
     return SETTINGS_FALLBACK
   }
-}
+})
 
 // Người gọi PHẢI requireAdmin() trước — RLS là lớp thứ hai, không phải lớp duy nhất.
 // Ở đây thì ném lỗi thật: admin bấm Lưu mà hỏng thì phải biết, không được im lặng.

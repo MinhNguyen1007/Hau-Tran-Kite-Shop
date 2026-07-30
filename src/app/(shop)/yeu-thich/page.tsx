@@ -3,7 +3,8 @@ import { WishlistView } from '@/components/wishlist/WishlistView'
 import { getSiteSettings } from '@/lib/site-settings'
 
 export const metadata: Metadata = {
-  title: 'Diều tôi thích | Diều Cánh Cốc Hậu Trần',
+  // Tên shop do title.template ở root layout tự ghép vào, lấy từ site_settings.
+  title: 'Diều tôi thích',
   // Danh sách riêng của từng khách, không có gì để Google index.
   robots: { index: false, follow: true },
 }

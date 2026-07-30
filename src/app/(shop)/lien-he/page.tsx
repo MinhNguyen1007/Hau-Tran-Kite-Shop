@@ -8,7 +8,7 @@ import { getSiteSettings } from '@/lib/site-settings'
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings()
   return {
-    title: `Liên hệ | ${settings.shopName}`,
+    title: 'Liên hệ',
     description: `Đặt diều cánh cốc theo yêu cầu. Nhắn Zalo hoặc gọi ${settings.hotline} để shop tư vấn mẫu và chốt đơn.`,
   }
 }

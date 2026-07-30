@@ -64,7 +64,14 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
         />
       </Field>
 
-      <Field label="Câu mô tả ngắn" htmlFor="shop-tagline">
+      {/* Ô này từ 2026-07-30 là NGUỒN của thẻ <description> — chữ hiện dưới tên web trong kết
+          quả tìm kiếm Google. Trước đó nó không hiện ở đâu cả (pill ở hero đã bỏ), gõ vào
+          không đổi được gì. Có đếm ký tự vì Google cắt quanh 160. */}
+      <Field
+        label="Câu mô tả ngắn"
+        htmlFor="shop-tagline"
+        hint="Hiện dưới tên web trong kết quả tìm kiếm Google, và ghép vào tiêu đề tab trang chủ. Viết đủ ý trong khoảng 120–160 ký tự."
+      >
         <input
           id="shop-tagline"
           value={form.tagline}
@@ -72,6 +79,12 @@ export function SettingsForm({ settings }: { settings: SiteSettings }) {
           maxLength={200}
           className={inputClass}
         />
+        <span
+          className={`text-xs ${form.tagline.length > 0 && form.tagline.length < 60 ? 'font-semibold text-amber-700' : 'text-stone-600'}`}
+        >
+          {form.tagline.length}/200 ký tự
+          {form.tagline.length > 0 && form.tagline.length < 60 && ' — hơi ngắn, Google sẽ tự bịa phần còn lại từ nội dung trang'}
+        </span>
       </Field>
 
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">

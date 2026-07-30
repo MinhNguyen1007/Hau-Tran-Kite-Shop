@@ -4,10 +4,11 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { ProfileForm } from '@/components/account/ProfileForm'
 import { getMyProfile } from '@/lib/profiles'
-import { HOTLINE_HREF, SHOP } from '@/lib/shop'
+import { telHref } from '@/lib/shop'
+import { getSiteSettings } from '@/lib/site-settings'
 
 export const metadata: Metadata = {
-  title: `Tài khoản | ${SHOP.name}`,
+  title: 'Tài khoản',
   robots: { index: false, follow: false },
 }
 
@@ -18,6 +19,10 @@ export default async function AccountPage() {
   // không phải lớp bảo mật (xem CLAUDE.md).
   const profile = await getMyProfile()
   if (!profile) redirect('/dang-nhap?tiep-tuc=/tai-khoan')
+
+  // Hotline đọc từ site_settings, KHÔNG lấy hằng SHOP: admin đổi số trong /admin/cai-dat mà
+  // trang này vẫn hiện số cũ thì khách gọi vào số không còn dùng.
+  const settings = await getSiteSettings()
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-10 md:py-14">
@@ -52,8 +57,8 @@ export default async function AccountPage() {
 
       <p className="mt-4 rounded-2xl border border-dashed border-stone-300 px-5 py-4 text-sm leading-relaxed text-stone-600">
         Muốn đặt diều, gọi hoặc nhắn Zalo{' '}
-        <a href={HOTLINE_HREF} className="font-bold text-ink-950">
-          {SHOP.hotline}
+        <a href={telHref(settings.hotline)} className="font-bold text-ink-950">
+          {settings.hotline}
         </a>{' '}
         để shop tư vấn mẫu và chốt đơn.
       </p>

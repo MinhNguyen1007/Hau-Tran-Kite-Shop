@@ -4,10 +4,10 @@ import { redirect } from 'next/navigation'
 import { LoginForm } from '@/components/auth/LoginForm'
 import { getProfile } from '@/lib/auth'
 import { hasAdminAccess } from '@/lib/roles'
-import { SHOP } from '@/lib/shop'
+import { getSiteSettings } from '@/lib/site-settings'
 
 export const metadata: Metadata = {
-  title: `Đăng nhập | ${SHOP.name}`,
+  title: 'Đăng nhập',
   robots: { index: false, follow: false },
 }
 
@@ -32,13 +32,18 @@ export default async function LoginPage({
     redirect(next === '/tai-khoan' && hasAdminAccess(profile.role) ? '/admin' : next)
   }
 
+  const settings = await getSiteSettings()
+
   return (
     <div className="mx-auto flex w-full max-w-md flex-col px-4 py-12 md:py-20">
       <h1 className="text-2xl font-extrabold tracking-tight text-ink-900">
         Đăng nhập
       </h1>
+      {/* KHÔNG hứa "theo dõi đơn hàng": web này không nhận đơn, mọi đơn chốt qua Zalo
+          (quyết định nghiệp vụ 2026-07-26). Câu cũ là chữ sót lại từ thời còn giỏ hàng. */}
       <p className="mb-8 mt-2 text-sm leading-relaxed text-stone-600">
-        Đăng nhập để theo dõi đơn hàng đã đặt tại {SHOP.name}.
+        Đăng nhập để giữ danh sách diều yêu thích của bạn ở {settings.shopName}, xem được trên
+        mọi thiết bị.
       </p>
 
       <LoginForm next={next} callbackError={params.loi} />

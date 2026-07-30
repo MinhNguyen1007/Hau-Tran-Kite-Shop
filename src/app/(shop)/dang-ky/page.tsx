@@ -3,10 +3,9 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { RegisterForm } from '@/components/auth/RegisterForm'
 import { getProfile } from '@/lib/auth'
-import { SHOP } from '@/lib/shop'
 
 export const metadata: Metadata = {
-  title: `Đăng ký | ${SHOP.name}`,
+  title: 'Đăng ký',
   robots: { index: false, follow: false },
 }
 
