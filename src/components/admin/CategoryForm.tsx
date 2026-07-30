@@ -9,6 +9,7 @@ import type { Category } from '@/lib/categories'
 import { Field, inputClass } from './FormField'
 import { ImageUploader } from './ImageUploader'
 import { slugify } from './slugify'
+import { UnsavedGuard } from './UnsavedGuard'
 
 export function CategoryForm({ category }: { category?: Category }) {
   const router = useRouter()
@@ -25,6 +26,12 @@ export function CategoryForm({ category }: { category?: Category }) {
 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Xem ghi chú cùng tên trong ProductForm: lưu xong là hết "chưa lưu".
+  const [saved, setSaved] = useState(false)
+
+  const snapshot = JSON.stringify([name, slug, description, imagePath, sortOrder])
+  const [initialSnapshot] = useState(snapshot)
+  const dirty = !saved && snapshot !== initialSnapshot
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -61,6 +68,7 @@ export function CategoryForm({ category }: { category?: Category }) {
         return
       }
 
+      setSaved(true)
       router.push('/admin/danh-muc')
       // Danh sách là Server Component nên phải refresh, không thì thấy dữ liệu cũ trong cache.
       router.refresh()
@@ -72,6 +80,7 @@ export function CategoryForm({ category }: { category?: Category }) {
 
   return (
     <form onSubmit={handleSubmit} className="flex max-w-2xl flex-col gap-5">
+      <UnsavedGuard dirty={dirty} />
       <Field label="Tên danh mục" htmlFor="category-name" hint="Ví dụ: Diều cánh cốc, Diều đuôi cá">
         <input
           id="category-name"
@@ -115,7 +124,7 @@ export function CategoryForm({ category }: { category?: Category }) {
         paths={imagePath}
         onChange={setImagePath}
         label="Ảnh danh mục"
-        hint="Hiện làm nền ô danh mục trên trang chủ. Để trống thì dùng nền cam mặc định."
+        hint="Hiện làm nền ô danh mục trên trang chủ. Để trống thì dùng nền mặc định. Ảnh chỉ được gắn vào danh mục sau khi bấm nút lưu ở cuối trang."
       />
 
       <Field label="Thứ tự" htmlFor="category-order" hint="Số nhỏ hiện trước. Nên cách nhau 10 để dễ chèn thêm.">
@@ -155,6 +164,13 @@ export function CategoryForm({ category }: { category?: Category }) {
         >
           Huỷ
         </Link>
+
+        {dirty && (
+          <span className="ml-auto flex items-center gap-1.5 text-xs font-semibold text-stone-600">
+            <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-red-500" />
+            Chưa lưu
+          </span>
+        )}
       </div>
     </form>
   )

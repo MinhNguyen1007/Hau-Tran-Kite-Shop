@@ -11,6 +11,7 @@ import type { Product } from '@/lib/products'
 import { Field, inputClass } from './FormField'
 import { ImageUploader } from './ImageUploader'
 import { slugify } from './slugify'
+import { UnsavedGuard } from './UnsavedGuard'
 
 export function ProductForm({
   product,
@@ -42,6 +43,25 @@ export function ProductForm({
 
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  // Lưu xong là hết "chưa lưu", kể cả khi router.push chưa kịp rời trang — không thì cảnh báo
+  // nổ lên ngay sau một lần lưu thành công.
+  const [saved, setSaved] = useState(false)
+
+  // So sánh bằng chuỗi hoá: form này chỉ có chữ, boolean và danh sách path ảnh, không có
+  // object lồng nhau nên so chuỗi là đủ và không sợ lệch thứ tự khoá.
+  const snapshot = JSON.stringify([
+    name,
+    slug,
+    description,
+    categoryId,
+    priceText,
+    showPrice,
+    sizeNote,
+    images,
+  ])
+  // Initializer của useState chỉ chạy lần đầu → chốt đúng trạng thái lúc mở form.
+  const [initialSnapshot] = useState(snapshot)
+  const dirty = !saved && snapshot !== initialSnapshot
 
   function handleNameChange(value: string) {
     setName(value)
@@ -82,6 +102,7 @@ export function ProductForm({
         return
       }
 
+      setSaved(true)
       router.push('/admin/san-pham')
       // Danh sách là Server Component nên phải refresh, không thì thấy dữ liệu cũ trong cache.
       router.refresh()
@@ -93,6 +114,7 @@ export function ProductForm({
 
   return (
     <form onSubmit={handleSubmit} className="flex max-w-2xl flex-col gap-5">
+      <UnsavedGuard dirty={dirty} />
       <Field label="Tên sản phẩm" htmlFor="product-name">
         <input
           id="product-name"
@@ -154,7 +176,7 @@ export function ProductForm({
         onChange={setImages}
         multiple
         label="Ảnh sản phẩm"
-        hint="Ảnh đầu tiên là ảnh bìa hiện ngoài lưới. Các ảnh sau hiện ở trang chi tiết. Tối đa 5MB mỗi ảnh."
+        hint="Ảnh đầu tiên là ảnh bìa hiện ngoài lưới. Các ảnh sau hiện ở trang chi tiết. Tối đa 5MB mỗi ảnh. Ảnh chỉ được gắn vào sản phẩm sau khi bấm nút lưu ở cuối trang."
       />
 
       <hr className="border-stone-200" />
@@ -232,6 +254,15 @@ export function ProductForm({
         >
           Huỷ
         </Link>
+
+        {/* Chấm này mang trạng thái THẬT (form đang lệch với bản đã lưu), không phải chấm
+            trang trí. Cần nó vì ảnh upload xong trông y như đã lưu. */}
+        {dirty && (
+          <span className="ml-auto flex items-center gap-1.5 text-xs font-semibold text-stone-600">
+            <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-red-500" />
+            Chưa lưu
+          </span>
+        )}
       </div>
     </form>
   )
