@@ -3,7 +3,15 @@
 //
 // Đọc qua client thường (không service role) nên RLS vẫn chặn: events chỉ trả dòng khi
 // is_admin(). Layout /admin đã requireAdmin, đây là lớp thứ hai.
+//
+// Nguồn là view `customer_events`, KHÔNG phải bảng `events`: hành vi của ban quản trị
+// (đường dẫn /admin, và mọi event do tài khoản admin/owner tạo) không được tính vào thống kê
+// — xem migration 20260730120000_customer_events.sql. Bảng events vẫn ghi đủ; đừng "tối ưu"
+// về `.from('events')`, làm thế là số liệu khách phồng trở lại.
 import { createServerSupabase } from './supabase'
+
+// Một chỗ duy nhất định nghĩa nguồn số liệu, để hai truy vấn dưới không bao giờ lệch nhau.
+const CUSTOMER_EVENTS = 'customer_events'
 
 export type AdminOverview = {
   visibleProducts: number
@@ -30,7 +38,7 @@ export async function getAdminOverview(): Promise<AdminOverview> {
 
   const countEventsSince = (type: string) =>
     supabase
-      .from('events')
+      .from(CUSTOMER_EVENTS)
       .select('id', { count: 'exact', head: true })
       .eq('event_type', type)
       .gte('occurred_at', since)
@@ -122,7 +130,7 @@ export async function getAdminInsights(): Promise<AdminInsights> {
   const since = new Date(Date.now() - LOOKBACK_DAYS * 24 * 60 * 60 * 1000).toISOString()
 
   const { data, error } = await supabase
-    .from('events')
+    .from(CUSTOMER_EVENTS)
     .select('id, event_type, product_id, occurred_at, user_id, session_id, properties')
     .gte('occurred_at', since)
     .order('occurred_at', { ascending: false })

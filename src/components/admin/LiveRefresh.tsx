@@ -12,6 +12,10 @@
 //     event liền nhau, refresh từng cái là trang nhấp nháy liên tục.
 //  2. Hẹn giờ 60 giây — lưới an toàn cho lúc realtime không bật được (container realtime tắt,
 //     mạng chặn websocket). Không có nó thì trang đứng im mà chẳng ai biết vì sao.
+//
+// Nghe BẢNG `events` chứ không phải view `customer_events` (Realtime chỉ phát trên bảng, đổi
+// sang view là kênh im lặng vĩnh viễn mà không báo lỗi). Nghĩa là admin tự duyệt /admin cũng
+// kích một lần refresh — vô hại, vì số tính lại đã lọc hành vi admin nên không đổi.
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserSupabase } from '@/lib/supabase-browser'
