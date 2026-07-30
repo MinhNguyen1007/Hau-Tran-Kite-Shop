@@ -7,6 +7,8 @@ export type Profile = {
   id: string
   email: string | null
   fullName: string | null
+  // Path trong bucket 'avatars', không phải URL. Header dựng URL qua getAvatarUrl().
+  avatarPath: string | null
   role: Role
 }
 
@@ -20,7 +22,7 @@ export async function getProfile(): Promise<Profile | null> {
 
   const { data } = await supabase
     .from('profiles')
-    .select('full_name, role')
+    .select('full_name, avatar_path, role')
     .eq('id', user.id)
     .maybeSingle()
 
@@ -30,6 +32,7 @@ export async function getProfile(): Promise<Profile | null> {
     // Trigger handle_new_user chép full_name từ metadata Google. Magic link không có tên
     // nên rơi về null — UI hiển thị email thay thế.
     fullName: (data?.full_name as string | null) ?? null,
+    avatarPath: (data?.avatar_path as string | null) ?? null,
     // Thiếu dòng profiles (trigger lỗi, dữ liệu cũ) thì coi như user thường, không phải admin.
     role: (data?.role as Role | undefined) ?? 'user',
   }
