@@ -12,25 +12,30 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { NAV_ITEMS } from '@/lib/shop'
+import type { NavLink } from '@/lib/shop'
 
-// Id của các khối được neo tới, lấy thẳng từ NAV_ITEMS để thêm mục mới là tự có scroll-spy.
-const ANCHOR_IDS = NAV_ITEMS.filter((item) => item.href.includes('#')).map(
-  (item) => item.href.split('#')[1],
-)
-
-export function MainNav() {
+export function MainNav({ items }: { items: NavLink[] }) {
   const pathname = usePathname()
   const [activeAnchor, setActiveAnchor] = useState<string | null>(null)
+
+  // Danh sách mục giờ đến từ DB qua prop nên phải tính lại mỗi lần nó đổi. Dựng KHOÁ dạng chuỗi
+  // cho dependency: mảng prop là object mới sau mỗi lần render của header, để thẳng vào deps là
+  // effect tháo/gắn observer liên tục dù nội dung y hệt.
+  const anchorKey = items
+    .filter((item) => item.href.includes('#'))
+    .map((item) => item.href.split('#')[1])
+    .join('|')
 
   useEffect(() => {
     // Neo chỉ tồn tại ở trang chủ. Không cần dọn state khi rời trang: phần render đã chặn
     // bằng `pathname === '/'`, mà gọi setState thẳng trong effect là thêm một lượt render thừa.
     if (pathname !== '/') return
 
-    const sections = ANCHOR_IDS.map((id) => document.getElementById(id)).filter(
-      (element): element is HTMLElement => element !== null,
-    )
+    const sections = anchorKey
+      .split('|')
+      .filter(Boolean)
+      .map((id) => document.getElementById(id))
+      .filter((element): element is HTMLElement => element !== null)
     if (sections.length === 0) return
 
     // Khối "đang xem" = khối CUỐI CÙNG có mép trên đã đi qua vạch ngay dưới header.
@@ -56,12 +61,15 @@ export function MainNav() {
 
     sections.forEach((section) => observer.observe(section))
     return () => observer.disconnect()
-  }, [pathname])
+  }, [pathname, anchorKey])
+
+  // Admin tắt hết các mục thì không vẽ khay xám rỗng lơ lửng giữa header.
+  if (items.length === 0) return null
 
   return (
     <nav aria-label="Điều hướng chính" className="hidden lg:mx-auto lg:block">
       <ul className="flex items-center gap-0.5 rounded-full bg-stone-100 p-1">
-        {NAV_ITEMS.map((item) => {
+        {items.map((item) => {
           const [path, anchor] = item.href.split('#')
           const active = anchor
             ? // Mục neo: chỉ sáng khi đang ở trang chủ VÀ khối của nó đang trong tầm mắt.

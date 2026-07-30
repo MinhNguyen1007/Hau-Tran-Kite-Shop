@@ -11,6 +11,7 @@ import { Wind } from '@phosphor-icons/react/ssr'
 import Link from 'next/link'
 import { WishlistBadge } from '@/components/wishlist/WishlistBadge'
 import { getProfile } from '@/lib/auth'
+import { getNavLinks } from '@/lib/nav-items'
 import { getSiteSettings } from '@/lib/site-settings'
 import { AccountLink } from './AccountLink'
 import { AdminLink } from './AdminLink'
@@ -21,7 +22,14 @@ import { SearchBox } from './SearchBox'
 export async function SiteHeader() {
   // Đọc hồ sơ MỘT lần rồi truyền xuống: AccountLink và AdminLink đều cần, mỗi cái tự gọi là
   // hai lượt getUser() + hai truy vấn cho mỗi trang.
-  const [settings, profile] = await Promise.all([getSiteSettings(), getProfile()])
+  //
+  // Menu cũng đọc ở đây rồi truyền xuống: MainNav và MobileMenu là Client Component, mà
+  // nav-items.ts chạm next/headers — import thẳng vào đó là GÃY BUILD.
+  const [settings, profile, navLinks] = await Promise.all([
+    getSiteSettings(),
+    getProfile(),
+    getNavLinks(),
+  ])
 
   return (
     <header className="sticky top-0 z-50 px-3 pt-3">
@@ -42,7 +50,7 @@ export async function SiteHeader() {
           </span>
         </Link>
 
-        <MainNav />
+        <MainNav items={navLinks} />
 
         <div className="ml-auto flex items-center gap-1.5">
           <SearchBox />
@@ -50,7 +58,7 @@ export async function SiteHeader() {
           <AccountLink profile={profile} />
           {/* Chỉ hiện với admin — khách thường không thấy gì thêm. */}
           <AdminLink profile={profile} />
-          <MobileMenu />
+          <MobileMenu items={navLinks} />
         </div>
       </div>
     </header>

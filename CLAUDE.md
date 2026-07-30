@@ -31,8 +31,10 @@ trang chủ, thông tin shop).
 - Danh sách yêu thích lưu HAI NƠI: localStorage cho khách vãng lai, bảng `wishlists` cho
   khách đã đăng nhập; merge lúc đăng nhập. Thao tác thêm phải idempotent.
 - Nội dung trang nằm trong DB, KHÔNG hard-code trong component. Admin sửa ở /admin:
-  `site_settings` + `content_blocks` (khuyến mãi / cam kết) gộp chung trong **/admin/cai-dat**,
-  `categories` ở /admin/danh-muc. Màn "Nội dung trang chủ" riêng đã bỏ 2026-07-28.
+  `site_settings` + `nav_items` (menu chính) gộp chung trong **/admin/cai-dat**,
+  `categories` ở /admin/danh-muc. Màn "Nội dung trang chủ" riêng đã bỏ 2026-07-28,
+  bảng `content_blocks` xoá hẳn 2026-07-28. Đường dẫn menu kiểm qua
+  `checkNavHref()` trong `src/lib/nav-destinations.ts` — chặn link ngoài và neo không tồn tại.
 - Hai route group: `src/app/(shop)` (có SiteHeader/SiteFooter) và `src/app/(admin)` (vỏ riêng:
   sidebar tối + topbar). Route group KHÔNG đổi URL. **Trang khách mới phải đặt trong `(shop)/`**,
   không thì mất header.
@@ -86,7 +88,8 @@ trang chủ, thông tin shop).
 - KHÔNG đổi tên event_type đã dùng — dữ liệu lịch sử sẽ lệch không sửa được. Cần loại mới
   thì THÊM, để loại cũ chết tự nhiên.
 - KHÔNG hard-code nội dung hiện trên trang hay số điện thoại vào component — nó thuộc
-  `site_settings` / `content_blocks` / `categories` để admin sửa được.
+  `site_settings` / `nav_items` / `categories` để admin sửa được. `FALLBACK_NAV_ITEMS` trong
+  `shop.ts` chỉ là lưới an toàn khi DB hỏng, KHÔNG phải nguồn sự thật của menu.
 - KHÔNG thêm lại tồn kho, nút "Hết hàng", hay trạng thái còn/hết. Đã bỏ có chủ ý.
 - KHÔNG dựng lại form liên hệ / bảng `contact_messages` / màn đọc tin nhắn. Bỏ hẳn
   2026-07-28: mọi liên hệ đi qua Zalo và gọi điện, ô nhập chỉ là chỗ khách gõ rồi chờ hồi

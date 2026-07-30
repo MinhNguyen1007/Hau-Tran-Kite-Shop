@@ -20,15 +20,22 @@ export const zaloHref = (phone: string) => `https://zalo.me/${phone.replace(/\s/
 
 export const HOTLINE_HREF = telHref(SHOP.hotline)
 
-// Mục "Kinh nghiệm" đã bỏ 2026-07-28: khối "Kinh nghiệm chơi diều" trên trang chủ bị gỡ ở
-// commit 73465b5 nhưng mục nav trỏ tới nó thì còn, nên bấm vào là nhảy hụt — cuộn lên đầu
-// trang và không có gì xảy ra. Thêm mục mới thì nhớ kiểm có element mang đúng id đó không.
-export const NAV_ITEMS = [
+export type NavLink = { label: string; href: string }
+
+// Menu chính giờ nằm trong bảng `nav_items`, admin sửa ở /admin/cai-dat — đọc qua
+// getNavLinks() trong src/lib/nav-items.ts.
+//
+// Mảng dưới đây chỉ còn là DỰ PHÒNG cho lúc truy vấn hỏng, giống hằng SHOP ở trên: mất menu
+// là mất đường đi của cả web, tệ hơn nhiều so với hiện tạm 5 mục cũ. Nó KHÔNG phải nguồn
+// sự thật nữa — sửa ở đây không đổi được menu đang chạy.
+//
+// 'Kinh nghiệm' và 'Khuyến mãi' đã gỡ 2026-07-28 cùng lúc với khối của chúng trên trang chủ.
+// Mục nav trỏ vào khối không còn tồn tại thì bấm vào nhảy hụt — luật kiểm neo nằm ở
+// src/lib/nav-destinations.ts để bẫy đó không lặp lại.
+export const FALLBACK_NAV_ITEMS: readonly NavLink[] = [
   { label: 'Trang chủ', href: '/' },
   { label: 'Sản phẩm', href: '/san-pham' },
-  // 'Khuyến mãi' đã gỡ 2026-07-28 cùng lúc với khối khuyến mãi trên trang chủ: giữ lại mục
-  // nav trỏ vào một khối không còn tồn tại là đúng cái bẫy ghi ở trên.
   { label: 'Danh mục', href: '/#danh-muc' },
   { label: 'Giới thiệu', href: '/#gioi-thieu' },
   { label: 'Liên hệ', href: '/lien-he' },
-] as const
+]

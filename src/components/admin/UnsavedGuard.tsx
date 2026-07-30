@@ -21,7 +21,19 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { shouldWarnBeforeLeaving } from '@/lib/unsaved-nav'
 
-export function UnsavedGuard({ dirty }: { dirty: boolean }) {
+// Câu mô tả mặc định nói về ảnh, vì đó là thứ mất đau nhất (file đã lên Storage mà không có
+// dòng DB nào trỏ tới). Form không có ảnh truyền `message` riêng — cảnh báo mất ảnh ở một form
+// chỉ có chữ thì người đọc dừng lại tìm cái ảnh không tồn tại.
+const DEFAULT_MESSAGE =
+  'Ảnh vừa chọn đã tải lên nhưng chưa gắn vào mục này. Rời trang lúc này là mất hết thay đổi, phải nhập và chọn ảnh lại từ đầu.'
+
+export function UnsavedGuard({
+  dirty,
+  message = DEFAULT_MESSAGE,
+}: {
+  dirty: boolean
+  message?: string
+}) {
   const router = useRouter()
   const [pendingHref, setPendingHref] = useState<string | null>(null)
 
@@ -108,10 +120,7 @@ export function UnsavedGuard({ dirty }: { dirty: boolean }) {
           <WarningCircle size={20} weight="fill" className="shrink-0 text-red-600" />
           Thay đổi chưa được lưu
         </h2>
-        <p className="mt-2 text-sm leading-relaxed text-stone-600">
-          Ảnh vừa chọn đã tải lên nhưng chưa gắn vào mục này. Rời trang lúc này là mất hết
-          thay đổi, phải nhập và chọn ảnh lại từ đầu.
-        </p>
+        <p className="mt-2 text-sm leading-relaxed text-stone-600">{message}</p>
 
         <div className="mt-5 flex flex-wrap gap-2.5">
           <button

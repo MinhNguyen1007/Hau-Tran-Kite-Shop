@@ -1,5 +1,7 @@
+import { NavMenuForm } from '@/components/admin/NavMenuForm'
 import { PageHeader, Panel } from '@/components/admin/Panel'
 import { SettingsForm } from '@/components/admin/SettingsForm'
+import { getNavItemsForAdmin } from '@/lib/nav-items'
 import { getSiteSettings } from '@/lib/site-settings'
 import { requireAdmin } from '@/lib/supabase'
 
@@ -12,17 +14,31 @@ export default async function AdminSettingsPage() {
   // trang này tự đọc dữ liệu nên tự chịu trách nhiệm về quyền (xem CLAUDE.md).
   await requireAdmin()
 
-  const settings = await getSiteSettings()
+  const [settings, navItems] = await Promise.all([getSiteSettings(), getNavItemsForAdmin()])
 
   return (
-    <div>
+    <div className="flex flex-col gap-6">
       <PageHeader
         title="Thông tin shop"
-        description="Số điện thoại, email, các đoạn giới thiệu và tiêu đề những khối hiện trên trang chủ."
+        description="Số điện thoại, email, các đoạn giới thiệu, menu chính và tiêu đề những khối hiện trên trang chủ."
       />
 
       <Panel>
         <SettingsForm settings={settings} />
+      </Panel>
+
+      {/* Menu để RIÊNG một panel chứ không nhét vào SettingsForm: nó là một DANH SÁCH có thứ tự,
+          lưu bằng route khác (/api/admin/menu), và trộn vào form 15 ô kia thì một chữ gõ sai ở
+          menu chặn luôn việc lưu số điện thoại. */}
+      <Panel
+        title="Menu chính trên header"
+        bodyClassName="p-4 md:p-5"
+      >
+        <p className="mb-4 text-sm leading-relaxed text-stone-600">
+          Các mục hiện ở giữa thanh header và trong menu trên điện thoại. Kéo thứ tự bằng hai nút
+          mũi tên; bỏ dấu “Hiện trên menu” để tạm ẩn một mục mà không mất chữ đã ghi.
+        </p>
+        <NavMenuForm items={navItems} />
       </Panel>
     </div>
   )

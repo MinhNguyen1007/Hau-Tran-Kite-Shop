@@ -5,9 +5,9 @@
 import { List, Phone, X } from '@phosphor-icons/react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { HOTLINE_HREF, NAV_ITEMS, SHOP } from '@/lib/shop'
+import { HOTLINE_HREF, type NavLink, SHOP } from '@/lib/shop'
 
-export function MobileMenu() {
+export function MobileMenu({ items }: { items: NavLink[] }) {
   const [open, setOpen] = useState(false)
 
   // Khoá scroll nền khi drawer mở; luôn trả lại giá trị cũ lúc unmount.
@@ -55,7 +55,7 @@ export function MobileMenu() {
             </div>
 
             <nav className="flex flex-1 flex-col overflow-y-auto py-2">
-              {NAV_ITEMS.map((item) => (
+              {items.map((item) => (
                 <Link
                   key={item.href}
                   href={item.href}
