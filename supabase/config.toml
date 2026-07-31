@@ -228,7 +228,14 @@ web3 = 30
 # secret = ""
 
 [auth.email]
-# Allow/disallow new user signups via email to your project.
+# ⚠ ĐỪNG ĐỔI THÀNH false ĐỂ CHẶN ĐĂNG KÝ EMAIL. Đã thử 2026-07-31 và nó KHOÁ CHỦ SHOP RA NGOÀI:
+# cờ này tắt cả provider email chứ không riêng phần đăng ký, dù comment gốc của Supabase ghi là
+# "signups". Đo được: POST /auth/v1/signup trả 400 `email_provider_disabled` (đúng ý), nhưng
+# POST /auth/v1/token?grant_type=password cũng trả 422 `email_provider_disabled`
+# "Email logins are disabled" — mà đó là đường đăng nhập DUY NHẤT của `adminhautran`.
+# GoTrue không có cờ "cấm đăng ký email nhưng cho đăng nhập email".
+# Chỗ chặn đăng ký thật nằm ở trigger `chi_cho_dang_ky_google` trên auth.users
+# (migration 20260731120000_chi_dang_ky_google.sql).
 enable_signup = true
 # If enabled, a user will be required to confirm any email change on both the old, and new email
 # addresses. If disabled, only the new email is required to confirm.
@@ -345,19 +352,22 @@ skip_nonce_check = false
 # If enabled, it will allow the user to successfully authenticate when the provider does not return an email address.
 email_optional = false
 
-# Đăng nhập Google — cách đăng nhập chính của shop.
-# BẬT NHƯ SAU (cần làm tay một lần, Claude không tự làm được):
-#   1. Google Cloud Console → APIs & Services → Credentials → Create OAuth client ID
-#      → Web application.
-#   2. Authorized redirect URI điền ĐÚNG: http://127.0.0.1:55321/auth/v1/callback
-#      (cổng 55321 là cổng API Supabase local, xem [api] ở đầu file).
-#   3. Bỏ client_id/secret vừa tạo vào .env.local:
-#        SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID=...
-#        SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET=...
-#   4. Đổi enabled = false thành true ở dưới, rồi `supabase stop && supabase start`.
-# Trong lúc chưa có credential: dùng magic link ở /dang-nhap, đọc mail tại http://127.0.0.1:55324
+# Đăng nhập Google — cách đăng nhập chính của shop. Credential đã tạo 2026-07-31:
+# project Google Cloud `kite-shop-504107`, OAuth client "Kite Shop web" (Web application),
+# redirect URI `http://127.0.0.1:55321/auth/v1/callback` — trỏ vào SUPABASE (cổng API local,
+# xem [api] ở đầu file), KHÔNG phải vào Next.js ở cổng 3000. Và `127.0.0.1` chứ không phải
+# `localhost`: Google từ chối `localhost` cho loại client này.
+#
+# Hai biến dưới đây đọc từ .env.local (không commit). Thiếu chúng thì `supabase start` gãy —
+# nếu cần tạm tắt Google, đổi `enabled` về false chứ đừng xoá biến.
+# Đổi file này xong PHẢI `supabase stop && supabase start`, config.toml chỉ đọc lúc khởi động.
+#
+# App đang ở publishing status "Testing" → CHỈ email trong Test users (Google Auth Platform →
+# Audience) đăng nhập được, ai khác nhận "Access blocked". Mở cho khách thật thì bấm Publish app.
+# GĐ2 (cloud): thêm redirect URI thứ hai `https://<project-ref>.supabase.co/auth/v1/callback`
+# vào CÙNG client này, và dán id/secret vào Supabase Dashboard — xem docs/deploy.md.
 [auth.external.google]
-enabled = false
+enabled = true
 client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
 # DO NOT commit your OAuth provider secret to git.
 secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
