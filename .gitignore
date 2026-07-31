@@ -15,6 +15,9 @@ dist/
 # secrets
 *.pem
 *.key
+# File Google Cloud Console cho tải về lúc tạo OAuth client — chứa client_secret dạng chữ thường.
+# Tên nó không khớp mẫu .env* nào nên `git add .` sẽ nuốt gọn nếu không chặn ở đây.
+client_secret_*.json
 
 # supabase local
 supabase/.temp/
