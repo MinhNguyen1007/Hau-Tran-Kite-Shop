@@ -9,8 +9,9 @@
 // thêm danh mục là footer tự có thêm mục, không phải sửa code.
 import { Envelope, MapPin, Phone, Wind } from '@phosphor-icons/react/ssr'
 import Link from 'next/link'
+import { ZaloAction } from '@/components/contact/ZaloAction'
 import { getCategories } from '@/lib/categories'
-import { telHref, zaloHref } from '@/lib/shop'
+import { telHref } from '@/lib/shop'
 import { getSiteSettings } from '@/lib/site-settings'
 
 function FooterColumn({
@@ -101,14 +102,17 @@ export async function SiteFooter() {
           <FooterLink href="/yeu-thich">Danh sách yêu thích</FooterLink>
           <FooterLink href="/tai-khoan">Tài khoản</FooterLink>
           <li>
-            <a
-              href={zaloHref(settings.zaloPhone)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-stone-600 transition-colors hover:text-ink-950"
+            {/* Dùng ZaloAction chứ không phải thẻ <a> trần: trên máy tính link zalo.me dẫn vào
+                tường đăng nhập của Zalo, nên chỗ này cũng phải hiện mã QR. Kèm theo đó là link
+                Zalo duy nhất trước đây KHÔNG bắn contact_click, giờ có. */}
+            <ZaloAction
+              zaloPhone={settings.zaloPhone}
+              source="footer"
+              display="inline"
+              className="text-left text-stone-600 transition-colors hover:text-ink-950"
             >
               Nhắn Zalo tư vấn
-            </a>
+            </ZaloAction>
           </li>
         </FooterColumn>
 

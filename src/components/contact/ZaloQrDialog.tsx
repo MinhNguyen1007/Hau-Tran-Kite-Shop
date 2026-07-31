@@ -16,10 +16,14 @@ import { zaloHref } from '@/lib/shop'
 
 export function ZaloQrDialog({
   zaloPhone,
+  productName,
   onClose,
 }: {
   // Số lấy từ site_settings truyền xuống, không đọc DB ở đây (xem chú thích trong shop.ts).
   zaloPhone: string
+  // Quét QR bằng điện thoại là rời khỏi trang đang xem, nên nhắc lại tên mẫu ở đây cho khách
+  // khỏi phải quay lại tra. Chỗ nào không gắn với mẫu cụ thể (footer, trang liên hệ) thì bỏ trống.
+  productName?: string
   onClose: () => void
 }) {
   const ref = useRef<HTMLDialogElement>(null)
@@ -73,6 +77,12 @@ export function ZaloQrDialog({
       <p className="mt-1 text-sm text-stone-600">
         Mở Zalo trên điện thoại, bấm biểu tượng quét mã rồi hướng vào ô dưới đây.
       </p>
+
+      {productName && (
+        <p className="mt-3 rounded-xl bg-stone-100 px-3 py-2 text-sm text-stone-600">
+          Đang hỏi mẫu <span className="font-semibold text-ink-950">{productName}</span>
+        </p>
+      )}
 
       <div className="mt-5 flex justify-center rounded-2xl border border-stone-200 bg-white p-4">
         {/* fgColor là stone-900 chứ không phải đen tuyệt đối: vẫn thừa tương phản để máy đọc,
