@@ -24,6 +24,15 @@ export type WishlistItem = {
 
 export type Wishlist = WishlistItem[]
 
+// Danh sách kèm DẤU CHỦ SỞ HỮU. Bản trên localStorage phải mang theo nó, không thì tài khoản
+// nào đăng nhập trên máy này cũng nhận vơ danh sách người trước bỏ lại (xem reconcileForUser).
+export type StoredWishlist = {
+  // uid của tài khoản đã đồng bộ danh sách này lần cuối.
+  // null = của khách vãng lai, chưa thuộc về ai — ca DUY NHẤT được phép merge lên tài khoản.
+  ownerId: string | null
+  items: Wishlist
+}
+
 // Product (src/lib/products.ts) → dòng yêu thích. Nhận tham số theo cấu trúc thay vì import
 // kiểu Product: products.ts kéo theo adapter server (next/headers), không đụng vào từ client.
 export function toWishlistItem(product: {
@@ -101,6 +110,22 @@ export function mergeWishlists(local: Wishlist, remote: Wishlist): Wishlist {
   return [...merged.values()].sort(byNewest)
 }
 
+// Danh sách nào thắng khi một tài khoản vừa đăng nhập trên trình duyệt này.
+//
+// Tới 2026-07-31 bản local KHÔNG mang danh tính, nên mọi tài khoản đăng nhập sau đều nuốt
+// luôn danh sách người trước bỏ lại VÀ đẩy nó lên DB của mình — khách mới mở /yeu-thich đã
+// thấy sẵn một mẫu diều chưa từng bấm. Từ nay: dấu của tài khoản KHÁC thì vứt bản local đi,
+// DB là nguồn đúng. Chỉ danh sách chưa thuộc về ai (khách vãng lai vừa bấm tim rồi đăng
+// nhập) mới được merge lên — đó vốn là mục đích của tính năng merge.
+export function reconcileForUser(
+  stored: StoredWishlist,
+  remote: Wishlist,
+  userId: string,
+): Wishlist {
+  if (stored.ownerId !== null && stored.ownerId !== userId) return remote
+  return mergeWishlists(stored.items, remote)
+}
+
 // localStorage chứa dữ liệu người dùng sửa được và dữ liệu của bản build cũ — không tin cấu trúc.
 // Dòng nào không đúng hình dạng thì bỏ qua, thà mất một dòng còn hơn vỡ cả trang.
 // priceText CỐ Ý không bắt buộc: dòng lưu trước 2026-07-27 mang `priceVnd` dạng số thay vì
@@ -138,32 +163,60 @@ function normaliseItem(line: Record<string, unknown>): WishlistItem {
   }
 }
 
-export function parseWishlist(raw: string | null): Wishlist {
-  if (!raw) return []
+function parseList(value: unknown): Wishlist {
+  if (!Array.isArray(value)) return []
+  return value.filter(isValidItem).map(normaliseItem).sort(byNewest)
+}
+
+// Đọc cả HAI hình dạng đã từng nằm trong localStorage:
+//   - mảng trần            → bản trước 2026-07-31, không có dấu chủ sở hữu
+//   - { ownerId, items }   → bản hiện tại
+// Mảng trần coi như của khách vãng lai (ownerId null): người đang giữ nó phần lớn là khách
+// chưa đăng nhập bao giờ, xoá thẳng là cướp mất danh sách thật của họ. Dấu sẽ được đóng ngay
+// lần đồng bộ đầu tiên sau khi đăng nhập, nên cửa rò chỉ mở đúng một lần cho mỗi máy cũ.
+export function parseStored(raw: string | null): StoredWishlist {
+  if (!raw) return { ownerId: null, items: [] }
   try {
     const parsed: unknown = JSON.parse(raw)
-    if (!Array.isArray(parsed)) return []
-    return parsed.filter(isValidItem).map(normaliseItem).sort(byNewest)
+    if (Array.isArray(parsed)) return { ownerId: null, items: parseList(parsed) }
+    if (typeof parsed !== 'object' || parsed === null) return { ownerId: null, items: [] }
+
+    const record = parsed as Record<string, unknown>
+    return {
+      ownerId: typeof record.ownerId === 'string' ? record.ownerId : null,
+      items: parseList(record.items),
+    }
   } catch {
-    return []
+    return { ownerId: null, items: [] }
   }
 }
 
-export function loadWishlist(): Wishlist {
-  if (typeof window === 'undefined') return []
+export function loadStored(): StoredWishlist {
+  if (typeof window === 'undefined') return { ownerId: null, items: [] }
   try {
-    return parseWishlist(window.localStorage.getItem(STORAGE_KEY))
+    return parseStored(window.localStorage.getItem(STORAGE_KEY))
   } catch {
-    return []
+    return { ownerId: null, items: [] }
   }
 }
 
-export function saveWishlist(list: Wishlist): void {
+export function saveStored(stored: StoredWishlist): void {
   if (typeof window === 'undefined') return
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(list))
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(stored))
   } catch {
     // Hết quota hoặc trình duyệt chặn storage — danh sách vẫn chạy trong phiên này, chỉ không bền.
+  }
+}
+
+// Xoá hẳn KEY chứ không lưu danh sách rỗng: không để lại dấu tài khoản vừa đăng xuất trên
+// máy chung. removeItem cũng bắn sự kiện 'storage' nên các tab khác tự dọn theo.
+export function clearStored(): void {
+  if (typeof window === 'undefined') return
+  try {
+    window.localStorage.removeItem(STORAGE_KEY)
+  } catch {
+    // Xem saveStored.
   }
 }
 

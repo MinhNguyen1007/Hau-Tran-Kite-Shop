@@ -35,6 +35,12 @@ trang chủ, thông tin shop).
   Mất hết đường vào thì cứu bằng SQL trong Supabase Dashboard, xem docs/deploy.md.
 - Danh sách yêu thích lưu HAI NƠI: localStorage cho khách vãng lai, bảng `wishlists` cho
   khách đã đăng nhập; merge lúc đăng nhập. Thao tác thêm phải idempotent.
+  Bản localStorage mang DẤU CHỦ SỞ HỮU `{ ownerId, items }` (2026-07-31). Merge lên tài khoản
+  CHỈ khi `ownerId` là null (khách vãng lai) hoặc trùng người đang đăng nhập; dấu của người
+  khác thì vứt bản local, tin DB — xem `reconcileForUser()`. Bỏ dấu này là mọi tài khoản đăng
+  nhập sau trên cùng máy lại nuốt danh sách người trước VÀ đẩy nó lên DB của mình.
+  Đăng xuất phải đi qua `SignOutForm` để dọn localStorage: `/auth/dang-xuat` là route server,
+  nó xoá cookie chứ không với tới storage.
 - Nội dung trang nằm trong DB, KHÔNG hard-code trong component. Admin sửa ở /admin:
   `site_settings` + `nav_items` (menu chính) gộp chung trong **/admin/cai-dat**,
   `categories` ở /admin/danh-muc. Màn "Nội dung trang chủ" riêng đã bỏ 2026-07-28,

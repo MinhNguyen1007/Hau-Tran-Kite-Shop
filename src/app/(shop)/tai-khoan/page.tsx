@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { ProfileForm } from '@/components/account/ProfileForm'
+import { SignOutForm } from '@/components/auth/SignOutForm'
 import { getMyProfile } from '@/lib/profiles'
 import { telHref } from '@/lib/shop'
 import { getSiteSettings } from '@/lib/site-settings'
@@ -63,8 +64,7 @@ export default async function AccountPage() {
         để shop tư vấn mẫu và chốt đơn.
       </p>
 
-      {/* form POST chứ không phải link: đăng xuất bằng GET sẽ bị prefetch (xem route handler). */}
-      <form action="/auth/dang-xuat" method="post" className="mt-6">
+      <SignOutForm className="mt-6">
         <button
           type="submit"
           className="flex items-center gap-2 rounded-full border border-stone-300 px-5 py-2.5 text-sm font-bold text-stone-800 transition-colors hover:bg-stone-100"
@@ -72,7 +72,7 @@ export default async function AccountPage() {
           <SignOut size={18} weight="bold" />
           Đăng xuất
         </button>
-      </form>
+      </SignOutForm>
     </div>
   )
 }

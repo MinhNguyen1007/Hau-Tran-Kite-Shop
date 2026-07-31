@@ -4,7 +4,8 @@ import {
   addItem,
   hasItem,
   mergeWishlists,
-  parseWishlist,
+  parseStored,
+  reconcileForUser,
   removeItem,
   toWishlistItem,
   wishlistCount,
@@ -110,14 +111,10 @@ describe('mergeWishlists', () => {
   })
 })
 
-describe('parseWishlist', () => {
-  it('trả về danh sách rỗng khi localStorage chưa có gì', () => {
-    expect(parseWishlist(null)).toEqual([])
-  })
-
-  it('trả về danh sách rỗng khi JSON hỏng', () => {
-    expect(parseWishlist('{khong-phai-json')).toEqual([])
-  })
+// Đọc từng DÒNG trong localStorage. Đi qua parseStored vì đó là cửa duy nhất vào,
+// và nó phải nuốt được cả bản mảng trần lẫn bản có ownerId.
+describe('parseStored — đọc dòng', () => {
+  const items = (raw: string) => parseStored(raw).items
 
   it('bỏ dòng sai cấu trúc, giữ dòng hợp lệ', () => {
     const raw = JSON.stringify([
@@ -125,13 +122,12 @@ describe('parseWishlist', () => {
       { productId: 'p3' },
       null,
     ])
-    const list = parseWishlist(raw)
-    expect(list).toHaveLength(1)
-    expect(list[0].productId).toBe('p1')
+    expect(items(raw)).toHaveLength(1)
+    expect(items(raw)[0].productId).toBe('p1')
   })
 
   it('bỏ dòng thiếu addedAt — không xếp thứ tự được thì coi như hỏng', () => {
-    expect(parseWishlist(JSON.stringify([dieu]))).toEqual([])
+    expect(items(JSON.stringify([dieu]))).toEqual([])
   })
 
   // Dòng lưu trước 2026-07-27 mang `priceVnd` dạng SỐ (và có cả `stock`). Đổi schema mà xoá
@@ -146,7 +142,7 @@ describe('parseWishlist', () => {
       stock: 3,
       addedAt: '2026-07-01T00:00:00.000Z',
     }
-    const list = parseWishlist(JSON.stringify([legacy]))
+    const list = items(JSON.stringify([legacy]))
     expect(list).toHaveLength(1)
     expect(list[0].priceText).toBe(formatVnd(450_000))
   })
@@ -159,7 +155,58 @@ describe('parseWishlist', () => {
       imagePath: null,
       addedAt: '2026-07-01T00:00:00.000Z',
     }
-    expect(parseWishlist(JSON.stringify([legacy]))[0].priceText).toBe('')
+    expect(items(JSON.stringify([legacy]))[0].priceText).toBe('')
+  })
+})
+
+describe('parseStored', () => {
+  const line = { ...dieu, addedAt: '2026-07-01T00:00:00.000Z' }
+
+  it('đọc được bản có dấu chủ sở hữu', () => {
+    const stored = parseStored(JSON.stringify({ ownerId: 'u1', items: [line] }))
+    expect(stored.ownerId).toBe('u1')
+    expect(stored.items).toHaveLength(1)
+  })
+
+  // Bản trước 2026-07-31 lưu thẳng mảng. Từ chối nó là xoá danh sách thật của khách vãng lai.
+  it('đọc được bản cũ (mảng trần) và coi là của khách vãng lai', () => {
+    const stored = parseStored(JSON.stringify([line]))
+    expect(stored.ownerId).toBeNull()
+    expect(stored.items).toHaveLength(1)
+  })
+
+  it('localStorage trống hoặc JSON hỏng thì trả về danh sách rỗng vô chủ', () => {
+    expect(parseStored(null)).toEqual({ ownerId: null, items: [] })
+    expect(parseStored('{khong-phai-json')).toEqual({ ownerId: null, items: [] })
+  })
+
+  it('ownerId sai kiểu thì coi như vô chủ, không vỡ', () => {
+    expect(parseStored(JSON.stringify({ ownerId: 42, items: [line] })).ownerId).toBeNull()
+  })
+})
+
+describe('reconcileForUser', () => {
+  const local = addItem([], dieu, '2026-07-01T00:00:00.000Z')
+  const remote = addItem([], sao, '2026-07-02T00:00:00.000Z')
+
+  // Bài test quan trọng nhất file này. Không có luật này thì tài khoản mới nào đăng nhập trên
+  // máy đã dùng cũng thấy sẵn một mẫu diều "đang thích", và nó bị đẩy luôn lên DB của họ.
+  it('VỨT bản local khi nó mang dấu của tài khoản khác', () => {
+    expect(reconcileForUser({ ownerId: 'u1', items: local }, remote, 'u2')).toEqual(remote)
+  })
+
+  it('merge khi danh sách local chưa thuộc về ai — khách vãng lai vừa đăng nhập', () => {
+    const items = reconcileForUser({ ownerId: null, items: local }, remote, 'u2')
+    expect(items.map((item) => item.productId).sort()).toEqual(['p1', 'p2'])
+  })
+
+  it('merge khi vẫn đúng tài khoản đó — mở lại tab, đổi máy', () => {
+    const items = reconcileForUser({ ownerId: 'u1', items: local }, remote, 'u1')
+    expect(items.map((item) => item.productId).sort()).toEqual(['p1', 'p2'])
+  })
+
+  it('tài khoản khác mà DB rỗng thì ra rỗng, không rơi về bản local', () => {
+    expect(reconcileForUser({ ownerId: 'u1', items: local }, [], 'u2')).toEqual([])
   })
 })
 

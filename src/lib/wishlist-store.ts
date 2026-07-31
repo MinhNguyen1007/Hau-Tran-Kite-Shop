@@ -10,10 +10,11 @@
 import { logEvent } from './analytics'
 import {
   addItem,
-  loadWishlist,
-  mergeWishlists,
+  clearStored,
+  loadStored,
+  reconcileForUser,
   removeItem,
-  saveWishlist,
+  saveStored,
   WISHLIST_STORAGE_KEY,
   type Wishlist,
   type WishlistItem,
@@ -33,20 +34,29 @@ let state: WishlistState = INITIAL
 let subscribed = false
 const listeners = new Set<() => void>()
 
+// Tài khoản đang sở hữu danh sách trong `state`. null = của khách vãng lai.
+// Để NGOÀI snapshot vì không component nào cần vẽ theo nó; đổi giá trị này không phải là
+// đổi thứ hiện trên màn hình.
+let ownerId: string | null = null
+
 function emit(): void {
   for (const listener of listeners) listener()
 }
 
 function commit(items: Wishlist): void {
   state = { items, hydrated: true }
-  saveWishlist(items)
+  saveStored({ ownerId, items })
   emit()
 }
 
 // Tab khác vừa đổi danh sách → nạp lại. Chỉ phản ứng đúng key; key === null là lệnh clear().
 function handleStorage(event: StorageEvent): void {
   if (event.key !== null && event.key !== WISHLIST_STORAGE_KEY) return
-  state = { items: loadWishlist(), hydrated: true }
+  // Nhận cả dấu chủ sở hữu: tab kia vừa đăng xuất thì tab này cũng phải quên tài khoản cũ,
+  // không thì lần đồng bộ sau nó tưởng danh sách rỗng vẫn là của người vừa đi.
+  const stored = loadStored()
+  ownerId = stored.ownerId
+  state = { items: stored.items, hydrated: true }
   emit()
 }
 
@@ -56,19 +66,31 @@ function handleStorage(event: StorageEvent): void {
 // Chưa đăng nhập → fetchRemoteWishlist trả null → không làm gì, cứ dùng localStorage.
 async function syncWithRemote(): Promise<void> {
   const remote = await fetchRemoteWishlist()
-  if (!remote) return
+  if (!remote) return // Chưa đăng nhập — cứ dùng localStorage như khách vãng lai.
 
-  const local = state.items
-  const merged = mergeWishlists(local, remote)
+  // Đọc DB hỏng: KHÔNG merge, nhưng vẫn phải gỡ danh sách của tài khoản khác khỏi màn hình.
+  // Bỏ qua nhánh này là để nguyên cửa hậu cho đúng cái bug đang vá.
+  if (!remote.items) {
+    if (ownerId !== null && ownerId !== remote.userId) {
+      ownerId = remote.userId
+      commit([])
+    }
+    return
+  }
+
+  const items = reconcileForUser({ ownerId, items: state.items }, remote.items, remote.userId)
+
+  // Đóng dấu TRƯỚC commit: commit ghi xuống localStorage kèm ownerId hiện tại.
+  ownerId = remote.userId
+  commit(items)
 
   // Thứ có ở local mà DB chưa có = khách đã thích lúc chưa đăng nhập. Đẩy lên kèm addedAt gốc.
-  const remoteIds = new Set(remote.map((item) => item.productId))
-  const missing = merged.filter((item) => !remoteIds.has(item.productId))
+  // Ca "vứt bản local" không rơi vào đây: items lúc đó CHÍNH LÀ bản DB nên không thiếu dòng nào.
+  const remoteIds = new Set(remote.items.map((item) => item.productId))
+  const missing = items.filter((item) => !remoteIds.has(item.productId))
   if (missing.length > 0) {
     await addRemote(missing.map((item) => ({ productId: item.productId, addedAt: item.addedAt })))
   }
-
-  commit(merged)
 }
 
 export function subscribe(listener: () => void): () => void {
@@ -78,7 +100,9 @@ export function subscribe(listener: () => void): () => void {
   // kiểm lại snapshot ngay sau đó, nên đổi state đồng bộ ở đây là an toàn.
   if (!subscribed) {
     subscribed = true
-    state = { items: loadWishlist(), hydrated: true }
+    const stored = loadStored()
+    ownerId = stored.ownerId
+    state = { items: stored.items, hydrated: true }
     window.addEventListener('storage', handleStorage)
     // Đăng nhập bằng magic link/Google đi qua /auth/callback rồi redirect → trang tải lại từ
     // đầu → subscribe chạy lại → merge diễn ra đúng lúc đó. Không cần nghe onAuthStateChange.
@@ -112,6 +136,21 @@ export function remove(productId: string): void {
   commit(removeItem(state.items, productId))
   logEvent('remove_from_wishlist', { productId })
   void removeRemote(productId)
+}
+
+// Đăng xuất — quên sạch danh sách trên MÁY NÀY. Trên DB vẫn còn nguyên, đăng nhập lại là thấy.
+//
+// Cần cả cái này lẫn dấu ownerId, không thay nhau được: dấu chặn danh sách người trước chui
+// vào DB người sau, còn xoá ở đây để người dùng máy chung không nhìn thấy diều người trước
+// đã thích ngay lúc vừa đăng xuất.
+//
+// CỐ Ý không bắn remove_from_wishlist: khách không bỏ thích mẫu nào cả. Bắn ở đây là bơm rác
+// vào thống kê và làm hỏng ý nghĩa của loại event đó (xem skill event-logging).
+export function clearWishlist(): void {
+  ownerId = null
+  state = { items: [], hydrated: true }
+  clearStored()
+  emit()
 }
 
 // Nút trái tim là nút bật/tắt. Trả về trạng thái SAU khi bấm để nút tự đổi nhãn mà không

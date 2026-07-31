@@ -7,10 +7,11 @@
 // khiến đứng ở Tổng quan vẫn thấy "Tìm sản phẩm", bấm vào là bị ném sang màn khác. Giờ mỗi
 // trang danh sách có ô tìm của riêng nó, tìm đúng thứ đang xem.
 //
-// Đăng xuất là form POST vì route /auth/dang-xuat cố ý không nhận GET (link GET bị trình duyệt
-// prefetch, đang xem trang tự dưng bị đăng xuất).
+// Đăng xuất đi qua SignOutForm (form POST + dọn localStorage), xem component đó để biết vì sao
+// không phải link GET và vì sao phải dọn.
 import { ArrowSquareOut, List, SignOut } from '@phosphor-icons/react'
 import Link from 'next/link'
+import { SignOutForm } from '@/components/auth/SignOutForm'
 
 export function AdminTopbar({
   userName,
@@ -55,7 +56,7 @@ export function AdminTopbar({
             </span>
           </div>
 
-          <form action="/auth/dang-xuat" method="post">
+          <SignOutForm>
             <button
               type="submit"
               aria-label="Đăng xuất"
@@ -63,7 +64,7 @@ export function AdminTopbar({
             >
               <SignOut size={18} weight="bold" />
             </button>
-          </form>
+          </SignOutForm>
         </div>
       </div>
     </header>

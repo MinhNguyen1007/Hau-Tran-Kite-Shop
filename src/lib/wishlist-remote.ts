@@ -41,9 +41,18 @@ function mapRow(row: WishlistRow): WishlistItem | null {
   }
 }
 
-// null = chưa đăng nhập (khác với [] = đã đăng nhập nhưng chưa thích gì).
-// Người gọi cần phân biệt hai ca này để biết có nên merge lên DB hay không.
-export async function fetchRemoteWishlist(): Promise<Wishlist | null> {
+// Trả kèm userId chứ không chỉ mảng: người gọi phải biết danh sách này của AI mới đối chiếu
+// được với dấu chủ sở hữu trên bản local (xem reconcileForUser).
+export type RemoteWishlist = {
+  userId: string
+  // null = ĐỌC HỎNG (mạng rớt, RLS chặn). Khác hẳn [] = đã đăng nhập mà chưa thích mẫu nào.
+  // Nhập hai ca này làm một là đẩy nhầm danh sách local lên DB của người vừa đăng nhập.
+  items: Wishlist | null
+}
+
+// null = CHƯA ĐĂNG NHẬP. Người gọi cần phân biệt với ca đã đăng nhập mà đọc hỏng ở trên:
+// chưa đăng nhập thì bản local cứ dùng tiếp, còn đã đăng nhập thì phải soi dấu chủ sở hữu.
+export async function fetchRemoteWishlist(): Promise<RemoteWishlist | null> {
   try {
     const supabase = createBrowserSupabase()
     const {
@@ -52,11 +61,14 @@ export async function fetchRemoteWishlist(): Promise<Wishlist | null> {
     if (!session) return null
 
     const { data, error } = await supabase.from('wishlists').select(SELECT)
-    if (error) return null
+    if (error) return { userId: session.user.id, items: null }
 
-    return (data as unknown as WishlistRow[])
-      .map(mapRow)
-      .filter((item): item is WishlistItem => item !== null)
+    return {
+      userId: session.user.id,
+      items: (data as unknown as WishlistRow[])
+        .map(mapRow)
+        .filter((item): item is WishlistItem => item !== null),
+    }
   } catch {
     return null
   }
