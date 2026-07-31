@@ -9,7 +9,7 @@
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "tao-chu-shop": "node scripts/tao-chu-shop.mjs"
+    "nang-chu-shop": "node scripts/nang-chu-shop.mjs"
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",

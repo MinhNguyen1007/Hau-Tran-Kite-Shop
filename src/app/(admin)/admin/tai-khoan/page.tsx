@@ -6,7 +6,6 @@ import { PageHeader, Panel } from '@/components/admin/Panel'
 import { RoleButton } from '@/components/admin/RoleButton'
 import { SearchField } from '@/components/admin/SearchField'
 import { getProfile } from '@/lib/auth'
-import { toDisplayName } from '@/lib/login-identifier'
 import { getProfilesForOwner } from '@/lib/profiles'
 import { hasOwnerAccess, ROLE_LABEL, type Role } from '@/lib/roles'
 import { getAvatarUrl } from '@/lib/storage'
@@ -98,7 +97,9 @@ export default async function AdminAccountsPage({
                   const badge = ROLE_BADGE[account.role]
                   const Glyph = badge.icon
                   const isOwner = account.role === 'owner'
-                  const login = toDisplayName(account.email)
+                  // Mọi tài khoản giờ đều đăng nhập bằng Google nên email LÀ tên đăng nhập,
+                  // không còn email nội bộ nào phải rút gọn lại thành tên tài khoản.
+                  const login = account.email ?? '(chưa có email)'
                   // `?? ` không đủ: form hồ sơ lưu chuỗi RỖNG khi khách bỏ trống ô họ tên, mà
                   // chuỗi rỗng thì `??` cho qua và ô hiện ra trắng trơn.
                   const fullName = account.fullName?.trim()

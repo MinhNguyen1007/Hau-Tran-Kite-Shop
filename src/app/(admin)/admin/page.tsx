@@ -9,7 +9,6 @@ import { LiveRefresh } from '@/components/admin/LiveRefresh'
 import { PageHeader, Panel } from '@/components/admin/Panel'
 import type { ActivityItem } from '@/lib/admin-stats'
 import { getAdminInsights, getAdminOverview } from '@/lib/admin-stats'
-import { toDisplayName } from '@/lib/login-identifier'
 import type { Product } from '@/lib/products'
 import { getProductsForAdmin } from '@/lib/products'
 import type { ActorProfile } from '@/lib/profiles'
@@ -243,7 +242,7 @@ function describeActor(item: ActivityItem, actors: Map<string, ActorProfile>): s
   if (!actor) return 'Khách đã đăng nhập'
 
   const fullName = actor.fullName?.trim()
-  return fullName ? fullName : toDisplayName(actor.email)
+  return fullName ? fullName : (actor.email ?? '(chưa có email)')
 }
 
 // Làm gì với cái gì: mẫu diều nào, trang nào, tìm từ khoá gì, bấm kênh nào.

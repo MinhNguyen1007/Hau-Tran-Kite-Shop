@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { LoginForm } from '@/components/auth/LoginForm'
 import { getProfile } from '@/lib/auth'
@@ -46,17 +45,9 @@ export default async function LoginPage({
         mọi thiết bị.
       </p>
 
+      {/* KHÔNG còn dòng "Chưa có tài khoản? Đăng ký" (bỏ 2026-07-31): đăng ký riêng đã bỏ hẳn,
+          nút Google vừa là đăng nhập vừa là đăng ký. Thêm lại link đó là dẫn khách tới 404. */}
       <LoginForm next={next} callbackError={params.loi} />
-
-      <p className="mt-6 border-t border-stone-200 pt-5 text-sm text-stone-600">
-        Chưa có tài khoản?{' '}
-        <Link
-          href={`/dang-ky?tiep-tuc=${encodeURIComponent(next)}`}
-          className="font-semibold text-ink-950 hover:underline"
-        >
-          Đăng ký
-        </Link>
-      </p>
     </div>
   )
 }

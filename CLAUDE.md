@@ -25,9 +25,14 @@ trang chủ, thông tin shop).
   chỉ thay adapter, không sửa tính năng.
 - Phân quyền CHECK Ở BACKEND (RLS + kiểm ở API/Server Action); frontend chỉ ẩn UI.
 - BA BẬC quyền: `owner` (chủ shop, DUY NHẤT một tài khoản) > `admin` (admin phụ do owner
-  nâng lên) > `user`. Admin phụ toàn quyền nội dung nhưng KHÔNG quản lý tài khoản. Chủ shop
-  đăng nhập bằng tên tài khoản + mật khẩu (`npm run tao-chu-shop -- <tên> <mật khẩu>`);
-  tên tài khoản ghép thành email nội bộ trong `src/lib/login-identifier.ts`.
+  nâng lên) > `user`. Admin phụ toàn quyền nội dung nhưng KHÔNG quản lý tài khoản.
+- MỘT cửa đăng nhập cho tất cả: **Google, không có gì khác** (2026-07-31). Khách, admin phụ và
+  chủ shop bấm chung một nút; phân biệt là do `role` trong `profiles` SAU khi đăng nhập. Tài
+  khoản mật khẩu `adminhautran` và `src/lib/login-identifier.ts` đã xoá.
+  Bootstrap chủ shop: người đó đăng nhập Google một lần → `npm run nang-chu-shop -- <email>`
+  (script chỉ NÂNG tài khoản đã có, không tạo được tài khoản Google mới; nó tự hạ chủ cũ
+  xuống `admin` vì unique index chỉ cho một `owner`).
+  Mất hết đường vào thì cứu bằng SQL trong Supabase Dashboard, xem docs/deploy.md.
 - Danh sách yêu thích lưu HAI NƠI: localStorage cho khách vãng lai, bảng `wishlists` cho
   khách đã đăng nhập; merge lúc đăng nhập. Thao tác thêm phải idempotent.
 - Nội dung trang nằm trong DB, KHÔNG hard-code trong component. Admin sửa ở /admin:
@@ -91,6 +96,15 @@ trang chủ, thông tin shop).
   `site_settings` / `nav_items` / `categories` để admin sửa được. `FALLBACK_NAV_ITEMS` trong
   `shop.ts` chỉ là lưới an toàn khi DB hỏng, KHÔNG phải nguồn sự thật của menu.
 - KHÔNG thêm lại tồn kho, nút "Hết hàng", hay trạng thái còn/hết. Đã bỏ có chủ ý.
+- KHÔNG dựng lại `/dang-ky` hay form đăng ký bằng email. Bỏ hẳn 2026-07-31: khách chỉ vào
+  bằng Google, bấm lần đầu là có tài khoản luôn. Chỗ chặn THẬT là trigger `chan_dang_ky_email`
+  trên `auth.users` (migration `20260731120000_chi_dang_ky_google.sql`), miễn trừ miền nội bộ
+  (siết lại ở `20260731130000`, không còn miễn trừ miền nào). **KHÔNG chặn bằng
+  `[auth.email] enable_signup = false`** — cờ đó tắt cả provider email chứ không riêng đăng ký,
+  đo được 2026-07-31.
+- KHÔNG dựng lại form tài khoản + mật khẩu ở `/dang-nhap`, kể cả thu sau nút hay tách route
+  `/dang-nhap-quan-tri`. Đã bỏ 2026-07-31: một cửa riêng cho admin vừa thừa (phân quyền nằm ở
+  tầng `role`) vừa quảng cáo cho người lạ biết web có khu quản trị.
 - KHÔNG dựng lại form liên hệ / bảng `contact_messages` / màn đọc tin nhắn. Bỏ hẳn
   2026-07-28: mọi liên hệ đi qua Zalo và gọi điện, ô nhập chỉ là chỗ khách gõ rồi chờ hồi
   âm không tới. Loại event `contact_submitted` vẫn giữ trong taxonomy cho dữ liệu cũ.
