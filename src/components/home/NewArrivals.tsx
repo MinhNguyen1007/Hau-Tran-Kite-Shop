@@ -25,7 +25,9 @@ function ProductGrid({ products }: { products: Product[] }) {
   return (
     <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {products.map((product, i) => (
-        <li key={product.id}>
+        // Reveal gắn ở <li> chứ không ở cả <section>: section lưới cao hơn màn hình, khoảng
+        // `entry` của nó dài tới mức khối sáng hẳn khi đã cuộn qua gần hết.
+        <li key={product.id} className="reveal-on-scroll">
           {/* Chỉ ảnh đầu tiên đặt priority: đặt cho cả lưới là ép trình duyệt tải song song
               hàng loạt ảnh lớn, LCP xấu đi chứ không tốt lên. */}
           <ProductCard product={product} priority={i === 0} />
@@ -60,7 +62,7 @@ export function NewArrivals({
     <section className="mx-auto w-full max-w-7xl px-4 py-8 md:py-10">
       <SectionHeading title={title} />
       <ProductTabs tabs={tabs} />
-      <div className="mt-8 text-center">
+      <div className="reveal-on-scroll mt-8 text-center">
         <Link
           href="/san-pham"
           className="group inline-flex items-center gap-2 rounded-full border border-stone-300 bg-white px-6 py-2.5 text-sm font-semibold text-ink-950 transition-colors hover:border-stone-400 hover:bg-stone-50"

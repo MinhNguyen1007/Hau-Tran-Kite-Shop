@@ -26,7 +26,7 @@ export async function CategoryGrid() {
           <Link
             key={category.id}
             href={`/san-pham?danh-muc=${encodeURIComponent(category.slug)}`}
-            className="group overflow-hidden rounded-2xl border border-stone-200 bg-white transition-shadow duration-300 hover:shadow-lg hover:shadow-stone-900/5"
+            className="reveal-on-scroll group overflow-hidden rounded-2xl border border-stone-200 bg-white transition-shadow duration-300 hover:shadow-lg hover:shadow-stone-900/5"
           >
             <div className="relative aspect-[4/3] overflow-hidden bg-stone-50">
               {category.imagePath ? (

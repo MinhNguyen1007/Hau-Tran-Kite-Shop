@@ -95,11 +95,56 @@ body {
   }
 }
 
+/* Hiện dần THEO CUỘN (các khối dưới hero). Khác `reveal` ở chỗ tiến độ animation buộc vào vị
+   trí cuộn chứ không vào đồng hồ: khách kéo tới đâu khối sáng lên tới đó, kéo ngược lên thì mờ
+   lại — đúng cảm giác trong mẫu framer-motion (useScroll + useTransform) user đưa, nhưng làm
+   bằng CSS scroll-driven animation nên KHÔNG cần cài framer-motion/motion và các khối vẫn là
+   Server Component.
+
+   Chỉ chạy opacity + transform (không blur như `reveal`): khung nào cũng phải vẽ lại trong lúc
+   cuộn, mà blur trên cả lưới ảnh sản phẩm là đủ để rớt khung hình trên máy yếu.
+
+   Mốc đo theo `cover` (chiều cao khối + chiều cao màn hình) chứ KHÔNG theo `entry` (chỉ chiều
+   cao khối): với `entry`, dòng tiêu đề cao 36px diễn xong sau ~20px cuộn — thành ra nó bật ra
+   chứ không hiện dần, trong khi thẻ sản phẩm cao 478px lại kéo dài gấp mười lần. Lấy `cover`
+   thì mọi khối hiện xong trong quãng 160–250px cuộn, nhịp đều nhau.
+
+   Đổi lại, mốc cuối phải để thấp (22%): khối cuối trang chỉ còn footer ở dưới, đặt mốc xa quá
+   là nó không bao giờ cuộn đủ và đứng nguyên ở trạng thái mờ dở. Cũng đừng gắn utility này cho
+   element cao hơn màn hình (cả <section> lưới sản phẩm chẳng hạn) — gắn cho từng thẻ con. */
+@utility reveal-on-scroll {
+  animation-name: reveal-scroll-in;
+  /* `auto` = trải đúng một lượt trên khoảng cuộn ở dưới; số giây ở đây vô nghĩa. */
+  animation-duration: auto;
+  /* `linear` chứ không phải đường cong ease của `reveal`: ở đây "thời gian" CHÍNH LÀ vị trí
+     cuộn, nên độ mờ bám 1:1 vào tay khách. Nhét ease-out vào thì 85% quãng sáng xong ngay
+     trong 25% đầu, nhìn như khối bật ra rồi đứng chờ. */
+  animation-timing-function: linear;
+  animation-fill-mode: both;
+  animation-timeline: view();
+  animation-range: cover 2% cover 22%;
+
+  /* Trình duyệt chưa có timeline cuộn: bỏ hẳn animation, nội dung hiện thẳng. Không có nhánh
+     này thì animation rơi về đồng hồ trang và mọi khối chạy một lượt ngay lúc tải — khối dưới
+     màn hình diễn xong từ đời nào trước khi khách cuộn tới. */
+  @supports not (animation-timeline: view()) {
+    animation: none;
+  }
+}
+
+@keyframes reveal-scroll-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
 /* Ai bật "giảm chuyển động" thì thấy thẳng nội dung. Bỏ animation là an toàn vì fill-mode
    `both` chỉ giữ khung `from` trong lúc chờ delay; không còn animation thì element về đúng
    trạng thái mặc định của nó (đã hiện). Khối này nằm ngoài @layer nên thắng utility của Tailwind. */
 @media (prefers-reduced-motion: reduce) {
-  .reveal {
+  .reveal,
+  .reveal-on-scroll {
     animation: none;
   }
 }

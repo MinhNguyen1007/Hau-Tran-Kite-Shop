@@ -12,7 +12,7 @@ export async function ContactBand() {
 
   return (
     <section className="mx-auto w-full max-w-7xl px-4 pb-12 pt-4 md:pb-16">
-      <div className="rounded-3xl border border-stone-200 bg-white px-6 py-12 text-center md:py-16">
+      <div className="reveal-on-scroll rounded-3xl border border-stone-200 bg-white px-6 py-12 text-center md:py-16">
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-stone-400">
           {settings.area}
         </p>
