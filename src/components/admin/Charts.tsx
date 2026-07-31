@@ -24,6 +24,7 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  type YAxisTickContentProps,
 } from 'recharts'
 
 const SERIES = ['#2a78d6', '#eb6834', '#1baf7a', '#eda100', '#e87ba4', '#008300']
@@ -179,6 +180,23 @@ export function DonutChart({
   )
 }
 
+// Nhãn mặc định của recharts tự bẻ dòng khi tên dài hơn bề ngang trục, thành ra mỗi thanh
+// một kiểu lệch. Tự vẽ tick để tên mẫu luôn nằm MỘT dòng, dài quá thì cắt bớt — tên đầy đủ
+// vẫn đọc được ở tooltip khi rê chuột.
+const MAX_LABEL_CHARS = 22
+
+function CategoryTick({ x, y, payload }: YAxisTickContentProps) {
+  const label = String(payload.value)
+  const text =
+    label.length > MAX_LABEL_CHARS ? `${label.slice(0, MAX_LABEL_CHARS - 1).trimEnd()}…` : label
+
+  return (
+    <text x={x} y={y} textAnchor="end" dominantBaseline="central" fontSize={12} fill="#44403c">
+      {text}
+    </text>
+  )
+}
+
 export function RankedBars({
   rows,
   unit,
@@ -203,10 +221,10 @@ export function RankedBars({
           <YAxis
             type="category"
             dataKey="label"
-            tick={{ fontSize: 12, fill: '#44403c' }}
+            tick={CategoryTick}
             tickLine={false}
             axisLine={false}
-            width={140}
+            width={150}
           />
           <Tooltip
             contentStyle={TOOLTIP_STYLE}
