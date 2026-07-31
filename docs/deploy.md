@@ -165,8 +165,8 @@ Dashboard → **Authentication → Sign In / Providers → Google**:
 Ô "Callback URL" mà Dashboard hiện ra phải **khớp y hệt** dòng redirect URI thứ hai đã điền
 ở bước 1.4. Lệch một ký tự là Google trả `redirect_uri_mismatch`.
 
-**⚠ ĐỪNG tắt Email provider và ĐỪNG bỏ tick "Allow new users to sign up" trên Dashboard.**
-Cái thứ nhất khoá luôn đăng nhập mật khẩu của chủ shop; cái thứ hai chặn cả đăng ký Google.
+**⚠ ĐỪNG bỏ tick "Allow new users to sign up" trên Dashboard** — cờ đó chặn cả đăng ký
+Google, tức là không khách nào có tài khoản được nữa.
 Việc chặn đăng ký email do trigger `chan_dang_ky_email` lo (migration
 `20260731120000_chi_dang_ky_google.sql`), và `db push` ở bước 2.2 đã mang nó lên cloud rồi —
 không phải bật tắt gì thêm.
@@ -287,7 +287,7 @@ Từ giờ mỗi lần `git push` lên `master` là Vercel tự deploy lại.
 - [ ] Tài khoản khách đó **KHÔNG** vào được `/admin` (bị đá ra).
 - [ ] Gõ thẳng URL `POST` route admin bằng tài khoản khách → trả 403, không phải 200.
       (Đây là kiểm lớp API; RLS là lớp hai.)
-- [ ] Đăng nhập chủ shop bằng tài khoản + mật khẩu → vào thẳng `/admin`.
+- [ ] Đăng nhập chủ shop bằng Google (tài khoản đã nâng ở bước 2.5) → vào thẳng `/admin`.
 - [ ] `/admin/san-pham` thêm 1 sản phẩm thật + upload ảnh → ảnh hiện được ở trang khách
       (nếu 400 thì xem lại `NEXT_PUBLIC_SUPABASE_URL` trên Vercel).
 - [ ] Chưa đăng nhập → bấm tim → đăng nhập Google → danh sách yêu thích được **merge** lên
