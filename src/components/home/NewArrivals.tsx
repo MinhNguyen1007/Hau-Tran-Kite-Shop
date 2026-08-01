@@ -59,7 +59,9 @@ export function NewArrivals({
   ]
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-4 py-8 md:py-10">
+    // id trên <section> chứ không trên tiêu đề: mục nav neo sáng theo mép trên của KHỐI, đặt
+    // ở <h2> thì cuộn qua vài trăm pixel là mục nav tắt (bẫy đã dính 2026-07-28).
+    <section id="san-pham" className="mx-auto w-full max-w-7xl px-4 py-8 md:py-10">
       <SectionHeading title={title} />
       <ProductTabs tabs={tabs} />
       <div className="reveal-on-scroll mt-8 text-center">

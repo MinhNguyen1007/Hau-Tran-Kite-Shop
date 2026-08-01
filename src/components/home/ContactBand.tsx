@@ -11,7 +11,9 @@ export async function ContactBand() {
   const settings = await getSiteSettings()
 
   return (
-    <section className="mx-auto w-full max-w-7xl px-4 pb-12 pt-4 md:pb-16">
+    // Đây cũng là đích của mục nav 'Liên hệ' (từ 2026-08-01): khách bấm thì cuộn xuống đây
+    // chứ không rời trang chủ. Trang /lien-he vẫn còn, footer vẫn dẫn tới.
+    <section id="lien-he" className="mx-auto w-full max-w-7xl px-4 pb-12 pt-4 md:pb-16">
       <div className="reveal-on-scroll rounded-3xl border border-stone-200 bg-white px-6 py-12 text-center md:py-16">
         <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-stone-400">
           {settings.area}

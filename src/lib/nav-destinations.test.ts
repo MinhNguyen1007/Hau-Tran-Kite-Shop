@@ -1,10 +1,19 @@
 import { describe, expect, it } from 'vitest'
-import { checkNavHref, NAV_DESTINATIONS } from './nav-destinations'
+import { checkNavHref, KNOWN_ANCHORS, NAV_DESTINATIONS } from './nav-destinations'
 
 describe('checkNavHref', () => {
   it('nhận mọi đích trong danh sách thả xuống', () => {
     for (const item of NAV_DESTINATIONS) {
       expect(checkNavHref(item.href), item.href).toBeNull()
+    }
+  })
+
+  // Hai hằng này rời nhau nên dễ lệch: thêm neo vào KNOWN_ANCHORS mà quên thêm dòng tương ứng
+  // vào NAV_DESTINATIONS thì admin gõ tay mới tới được khối đó, ô chọn không bày ra.
+  it('mọi neo đã biết đều có mặt trong danh sách thả xuống', () => {
+    const hrefs = NAV_DESTINATIONS.map((item) => item.href)
+    for (const anchor of KNOWN_ANCHORS) {
+      expect(hrefs, anchor).toContain(`/#${anchor}`)
     }
   })
 
