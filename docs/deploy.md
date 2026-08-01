@@ -328,6 +328,7 @@ Từ giờ mỗi lần `git push` lên `master` là Vercel tự deploy lại.
 | Build Vercel gãy, log nhắc `next/headers` | Client component import module server-only | Chạy `npm run build` ở local để tìm, xem CLAUDE.md |
 | PostgREST trả 42501 dù RLS đúng | Bảng mới chưa `GRANT` cho `anon`/`authenticated` | Thêm GRANT vào migration rồi `db push` lại |
 | Web đột nhiên không vào được sau vài ngày | Free tier Supabase tạm dừng project | Dashboard → Restore |
+| Workflow sao lưu đỏ: `pg_dumpall: error: … password authentication failed for user "postgres"` | Sai mật khẩu trong secret `SUPABASE_DB_URL` | **Đừng đi tìm lỗi ở tên user.** Supavisor luôn báo `user "postgres"` kể cả khi chuỗi ghi đúng `postgres.<ref>` — đo 2026-08-01 bằng cách thử mật khẩu sai cố ý. Không nhớ mật khẩu thì Dashboard → Database Settings → **Reset database password** rồi khai lại secret; reset không làm hỏng gì khác vì web dùng anon key và CLI dùng access token, không cái nào cần mật khẩu này |
 
 ---
 
@@ -378,7 +379,7 @@ Khai ở **Settings → Secrets and variables → Actions**.
 |---|---|---|---|
 | `SUPABASE_URL` | secret | `giu-web-song` | Dashboard → Project Settings → API → Project URL |
 | `SUPABASE_ANON_KEY` | secret | `giu-web-song` | cùng chỗ, khoá `anon` / publishable |
-| `SUPABASE_DB_URL` | secret | `sao-luu-db` | Dashboard → **Connect** → chuỗi **Session pooler** |
+| `SUPABASE_DB_URL` | secret | `sao-luu-db` | Dashboard → **Connect** → thẻ **Direct** → Connection Method → **Session pooler** |
 | `BACKUP_PASSPHRASE` | secret | `sao-luu-db` | Tự đặt. Lưu ở chỗ KHÁC GitHub |
 | `SITE_URL` | variable | `giu-web-song` | Domain Vercel. Chỉ cần khai khi đổi domain |
 
@@ -388,8 +389,14 @@ không ai buồn mở ra xem.
 
 > ⚠ `SUPABASE_DB_URL` **phải là chuỗi "Session pooler"**, đừng lấy "Direct connection". Kết nối
 > trực tiếp `db.<ref>.supabase.co` chỉ có địa chỉ IPv6, mà runner của GitHub chỉ có IPv4 —
-> nối thẳng là treo tới lúc timeout, log không nói gì về nguyên nhân.
+> nối thẳng là treo tới lúc timeout, log không nói gì về nguyên nhân. Chính Supabase cũng mô tả
+> Session pooler là *"alternative to direct connection when connecting via an IPv4 network"*.
 > Mật khẩu có ký tự đặc biệt thì phải percent-encode (`@` → `%40`, `#` → `%23`).
+>
+> Nhận dạng nhanh: chuỗi đúng có host `...pooler.supabase.com` và cổng **5432**. Thấy cổng
+> **6543** là đang cầm nhầm Transaction pooler — `pg_dump` không chạy được ở chế độ đó.
+> Chuỗi của project hiện tại:
+> `postgresql://postgres.qwxnggbdcyoomogniswg:[MẬT-KHẨU]@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres`
 
 > ⚠ Mất `BACKUP_PASSPHRASE` là **mất toàn bộ bản sao lưu**, không có đường mở lại. Đây là mã
 > hoá đối xứng, không có khoá dự phòng nào cả.
