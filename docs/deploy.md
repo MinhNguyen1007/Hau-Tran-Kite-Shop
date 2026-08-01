@@ -315,3 +315,125 @@ Từ giờ mỗi lần `git push` lên `master` là Vercel tự deploy lại.
 | Build Vercel gãy, log nhắc `next/headers` | Client component import module server-only | Chạy `npm run build` ở local để tìm, xem CLAUDE.md |
 | PostgREST trả 42501 dù RLS đúng | Bảng mới chưa `GRANT` cho `anon`/`authenticated` | Thêm GRANT vào migration rồi `db push` lại |
 | Web đột nhiên không vào được sau vài ngày | Free tier Supabase tạm dừng project | Dashboard → Restore |
+
+---
+
+## 6. Vận hành: CI, sao lưu, rollback
+
+Bốn workflow trong `.github/workflows/`. Repo public nên GitHub Actions không tính phút, chạy
+bao nhiêu cũng miễn phí.
+
+| Workflow | Chạy khi nào | Làm gì |
+|---|---|---|
+| `ci.yml` | mỗi push (mọi nhánh), mỗi PR vào `master` | `lint` → `typecheck` → `test` → `build` |
+| `kiem-migration.yml` | push/PR có đụng `supabase/**` | Dựng DB trắng, áp toàn bộ migration + `seed.sql`, rồi soi lại schema |
+| `giu-web-song.yml` | 6 tiếng/lần | Ping web production + hỏi Supabase một câu truy vấn thật |
+| `sao-luu-db.yml` | 01:30 giờ VN mỗi ngày | `pg_dump` toàn bộ DB, mã hoá GPG, giữ artifact 30 ngày |
+
+`kiem-migration.yml` không chỉ kiểm "migration có chạy được không" — nó còn khẳng định những
+thứ **đã bỏ có chủ ý** (bảng `orders`, `contact_messages`, `content_blocks`, `product_sizes`,
+cột `stock`/`price_vnd`) vẫn đang biến mất. Ai vô tình dựng lại chúng sẽ thấy CI đỏ kèm câu
+giải thích, thay vì phải nhớ hết mục NEVER DO trong CLAUDE.md.
+
+### 6.1 ⚠ CI hiện là chuông báo, CHƯA phải cổng chặn
+
+Vercel bắt đầu deploy **ngay khi nhận push**, chạy song song với GitHub Actions chứ không đợi
+kết quả. Nghĩa là **CI đỏ thì bản hỏng vẫn lên sóng**, chỉ khác là có mail báo.
+
+Muốn CI thành cổng thật thì phải đổi cách làm việc, chọn một trong hai:
+
+- **Nhánh + Pull Request + branch protection**: Settings → Branches → Add rule cho `master`,
+  tick *Require status checks to pass* → chọn job `Lint, typecheck, test, build`. Từ đó không
+  push thẳng `master` được nữa, mọi thay đổi phải qua PR và PR phải xanh mới merge.
+- **Giữ nguyên cách push thẳng**, coi CI là lưới an toàn và dựa vào Instant Rollback ở 6.4 khi
+  có sự cố.
+
+### 6.2 Secret và variable cần khai
+
+Khai ở **Settings → Secrets and variables → Actions**.
+
+| Tên | Loại | Workflow dùng | Lấy ở đâu |
+|---|---|---|---|
+| `SUPABASE_URL` | secret | `giu-web-song` | Dashboard → Project Settings → API → Project URL |
+| `SUPABASE_ANON_KEY` | secret | `giu-web-song` | cùng chỗ, khoá `anon` / publishable |
+| `SUPABASE_DB_URL` | secret | `sao-luu-db` | Dashboard → **Connect** → chuỗi **Session pooler** |
+| `BACKUP_PASSPHRASE` | secret | `sao-luu-db` | Tự đặt. Lưu ở chỗ KHÁC GitHub |
+| `SITE_URL` | variable | `giu-web-song` | Domain Vercel. Chỉ cần khai khi đổi domain |
+
+Chưa khai thì hai workflow đó **không đỏ** — chúng bỏ qua phần cần secret kèm một cảnh báo
+vàng. Cố ý làm vậy: một job đỏ mỗi ngày sẽ nhanh chóng bị ngó lơ, rồi lúc hỏng thật cũng
+không ai buồn mở ra xem.
+
+> ⚠ `SUPABASE_DB_URL` **phải là chuỗi "Session pooler"**, đừng lấy "Direct connection". Kết nối
+> trực tiếp `db.<ref>.supabase.co` chỉ có địa chỉ IPv6, mà runner của GitHub chỉ có IPv4 —
+> nối thẳng là treo tới lúc timeout, log không nói gì về nguyên nhân.
+> Mật khẩu có ký tự đặc biệt thì phải percent-encode (`@` → `%40`, `#` → `%23`).
+
+> ⚠ Mất `BACKUP_PASSPHRASE` là **mất toàn bộ bản sao lưu**, không có đường mở lại. Đây là mã
+> hoá đối xứng, không có khoá dự phòng nào cả.
+
+### 6.3 Mở một bản sao lưu
+
+Actions → `Sao lưu database` → chọn lượt chạy → tải artifact `sao-luu-<id>`.
+
+```bash
+gpg --decrypt --batch --passphrase '<BACKUP_PASSPHRASE>' -o sao-luu.tar.gz sao-luu.tar.gz.gpg
+tar -xzf sao-luu.tar.gz        # ra roles.sql, schema.sql, data.sql
+```
+
+Khôi phục **vào một project TRỐNG** (đừng đổ đè lên DB đang có dữ liệu — `data.sql` không xoá
+gì trước khi chèn, chỉ chồng thêm và đụng khoá chính):
+
+```bash
+psql "$DB_URL" -f roles.sql
+psql "$DB_URL" -f schema.sql
+psql "$DB_URL" -f data.sql
+```
+
+Chỉ cần cứu một bảng thì mở `data.sql` tìm khối `COPY public.<tên bảng>` và chạy riêng khối đó.
+
+### 6.4 Runbook: hỏng thì lùi thế nào
+
+**A. Vừa deploy xong thì web hỏng**
+
+1. Vercel → Deployments → chọn bản chạy tốt gần nhất → **Promote to Production**. Đây là đường
+   nhanh nhất, không cần đụng tới git, web trở lại sau vài giây.
+2. Xong mới `git revert <sha>` rồi push, cho repo khớp với thứ đang chạy thật. Bỏ bước này là
+   lần push sau vô tình đẩy lại đúng bản hỏng.
+
+⚠ Promote chỉ lùi **code**. Migration đã chạy thì vẫn nằm nguyên trong DB — xem mục B.
+
+**B. Migration hỏng**
+
+**Đừng sửa file migration đã push.** Supabase ghi lại version đã chạy trong
+`supabase_migrations.schema_migrations`; sửa nội dung file cũ thì cloud không chạy lại, còn máy
+dev dựng từ đầu lại ra schema khác — hai bên lệch nhau mà không có gì báo.
+
+Cách đúng là viết một migration MỚI đảo lại:
+
+```bash
+supabase migration new sua_<viec_can_dao>
+# viết SQL đảo lại, rồi:
+supabase db push
+```
+
+Xem cloud đang dừng ở đâu: `select * from supabase_migrations.schema_migrations order by version desc limit 5;`
+
+**C. Mất dữ liệu (xoá nhầm, update nhầm)**
+
+Gói Free **không có** backup tự động lẫn Point-in-time recovery — `sao-luu-db.yml` là bản sao
+duy nhất. Lấy bản gần nhất theo 6.3, dựng một project Supabase tạm để khôi phục, rồi copy phần
+thiếu sang project thật. Đừng restore thẳng đè lên production.
+
+**D. Web không vào được sau vài ngày yên ắng**
+
+Supabase Free tạm dừng project sau 7 ngày không có truy vấn. `giu-web-song.yml` sinh ra để
+chuyện này không xảy ra; nếu vẫn dính thì vào Dashboard bấm **Restore**, dữ liệu còn nguyên.
+
+### 6.5 Mấy điều dễ quên
+
+- **GitHub tự tắt scheduled workflow sau 60 ngày repo không có hoạt động nào.** Nghỉ hè xong
+  quay lại thấy ping và sao lưu im lặng thì vào tab Actions bật lại, không phải file hỏng.
+- Lịch `schedule` của GitHub chạy trễ vài phút đến vài chục phút lúc cao điểm. Bình thường.
+- Đổi domain Vercel → khai lại variable `SITE_URL`. Xoay `anon` key → khai lại secret.
+- Muốn chạy tay bất kỳ workflow nào: Actions → chọn workflow → **Run workflow**.
