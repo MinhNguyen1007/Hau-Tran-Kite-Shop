@@ -34,8 +34,8 @@ export type NavLink = { label: string; href: string }
 // src/lib/nav-destinations.ts để bẫy đó không lặp lại.
 export const FALLBACK_NAV_ITEMS: readonly NavLink[] = [
   { label: 'Trang chủ', href: '/' },
-  { label: 'Sản phẩm', href: '/san-pham' },
+  { label: 'Sản phẩm', href: '/#san-pham' },
   { label: 'Danh mục', href: '/#danh-muc' },
   { label: 'Giới thiệu', href: '/#gioi-thieu' },
-  { label: 'Liên hệ', href: '/lien-he' },
+  { label: 'Liên hệ', href: '/#lien-he' },
 ]

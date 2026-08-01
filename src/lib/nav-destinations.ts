@@ -8,17 +8,20 @@
 // chỉ dành cho admin không được phép lọt vào menu của khách.
 export const NAV_DESTINATIONS = [
   { href: '/', label: 'Trang chủ' },
-  { href: '/san-pham', label: 'Tất cả sản phẩm' },
+  { href: '/#san-pham', label: 'Trang chủ — khối Sản phẩm' },
   { href: '/#danh-muc', label: 'Trang chủ — khối Danh mục' },
   { href: '/#gioi-thieu', label: 'Trang chủ — khối Giới thiệu' },
-  { href: '/lien-he', label: 'Liên hệ' },
+  { href: '/#lien-he', label: 'Trang chủ — khối Liên hệ' },
+  { href: '/san-pham', label: 'Tất cả sản phẩm (trang riêng)' },
+  { href: '/lien-he', label: 'Liên hệ (trang riêng)' },
   { href: '/yeu-thich', label: 'Danh sách yêu thích' },
 ] as const
 
-// Id của những khối THẬT SỰ có trên trang chủ: CategoryGrid.tsx và AboutStrip.tsx.
+// Id của những khối THẬT SỰ có trên trang chủ: NewArrivals.tsx, CategoryGrid.tsx,
+// AboutStrip.tsx, ContactBand.tsx.
 // Thêm neo mới vào đây thì phải có element mang đúng id đó, không thì bấm vào nhảy hụt —
 // đúng cái bẫy đã dính với mục 'Kinh nghiệm' và 'Khuyến mãi' hồi 2026-07-28.
-export const KNOWN_ANCHORS = ['danh-muc', 'gioi-thieu'] as const
+export const KNOWN_ANCHORS = ['san-pham', 'danh-muc', 'gioi-thieu', 'lien-he'] as const
 
 export const NAV_HREF_MAX = 200
 
