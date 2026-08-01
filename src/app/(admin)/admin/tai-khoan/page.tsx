@@ -55,8 +55,12 @@ export default async function AdminAccountsPage({
   return (
     <div>
       <PageHeader
-        title={`Tài khoản (${accounts.length})`}
-        description="Nâng một khách đã đăng ký lên admin phụ để họ cùng quản lý sản phẩm, danh mục và thông tin shop. Admin phụ không vào được màn hình này, nên không nâng thêm ai và cũng không hạ được bạn."
+        title={`Tài khoản (${rows.length})`}
+        description={
+          keyword === ''
+            ? 'Nâng một khách đã đăng ký lên admin phụ để họ cùng quản lý sản phẩm, danh mục và thông tin shop. Admin phụ không vào được màn hình này, nên không nâng thêm ai và cũng không hạ được bạn.'
+            : `${rows.length}/${accounts.length} tài khoản khớp từ khoá “${keyword}”.`
+        }
       />
 
       <div className="mb-4">
