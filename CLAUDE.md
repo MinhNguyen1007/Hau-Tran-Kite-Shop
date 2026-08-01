@@ -90,6 +90,10 @@ trang chủ, thông tin shop).
 - KHÔNG tự nhận/lưu số thẻ, CVV trong bất kỳ hoàn cảnh nào.
 - KHÔNG commit secret (.env, Google/Supabase keys). Dùng .env + .gitignore.
 - KHÔNG dựa RLS rồi bỏ kiểm quyền ở API — kiểm CẢ HAI cho route admin.
+- KHÔNG dựa RLS để giới hạn dữ liệu của MỘT người khi đọc từ client. Bảng nào có policy nới
+  cho admin xem hết (`wishlists_select` là `user_id = auth.uid() OR is_admin()`) thì câu select
+  phải tự `.eq('user_id', …)`. Bỏ đi là tài khoản admin/owner nhận về dữ liệu của khách khác
+  mà tưởng của mình — dính thật ngày 2026-08-01, xem `fetchRemoteWishlist`.
 - KHÔNG viết `role === 'admin'` trong component hay route. Dùng `hasAdminAccess()` /
   `hasOwnerAccess()` trong `src/lib/roles.ts` — so sánh thẳng là sót `owner` ở đâu đó rồi
   khoá chính chủ shop ra khỏi khu quản trị.

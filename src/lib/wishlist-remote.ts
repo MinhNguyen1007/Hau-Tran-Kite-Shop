@@ -60,7 +60,17 @@ export async function fetchRemoteWishlist(): Promise<RemoteWishlist | null> {
     } = await supabase.auth.getSession()
     if (!session) return null
 
-    const { data, error } = await supabase.from('wishlists').select(SELECT)
+    // Lọc user_id dù RLS đã ràng — giống removeRemote ở dưới, policy là lớp cuối chứ không
+    // phải lớp duy nhất (xem CLAUDE.md). Ở ĐÂY nó còn là lớp DUY NHẤT đúng: policy
+    // `wishlists_select` cố ý cho admin đọc dòng của mọi người để đếm mẫu được ưng nhiều.
+    // Thiếu dòng này thì tài khoản admin/owner nhận về danh sách của KHÁCH KHÁC và tưởng là
+    // của mình: /yeu-thich hiện nhầm mẫu, tim của chính họ không bao giờ ghi được vào DB
+    // (mẫu "đã có trên DB" nên syncWithRemote thấy không thiếu gì để đẩy lên), và bỏ tim thì
+    // lần đồng bộ sau dòng của người kia lại kéo nó về.
+    const { data, error } = await supabase
+      .from('wishlists')
+      .select(SELECT)
+      .eq('user_id', session.user.id)
     if (error) return { userId: session.user.id, items: null }
 
     return {
