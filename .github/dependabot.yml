@@ -1,0 +1,29 @@
+# Dependabot mở PR nâng thư viện. Mỗi PR đi qua CI (lint → typecheck → test → build) nên bản
+# nâng nào làm gãy build sẽ đỏ ngay trên PR, không lọt vào master.
+#
+# Gộp minor/patch thành MỘT PR mỗi tuần cho đỡ ồn; bản major (Next 16 → 17, React 19 → 20) cố ý
+# tách riêng vì loại đó phải đọc changelog chứ không merge theo phản xạ.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '02:00'
+      timezone: Asia/Ho_Chi_Minh
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: chore
+    groups:
+      nang-nho:
+        patterns: ['*']
+        update-types: [minor, patch]
+
+  # Chính các action dùng trong .github/workflows. Ít đổi nên mỗi tháng một lần là đủ.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: chore

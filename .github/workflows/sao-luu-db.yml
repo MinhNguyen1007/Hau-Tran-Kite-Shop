@@ -1,0 +1,104 @@
+# Sao lưu database Supabase theo lịch.
+#
+# Vì sao cần: gói Free của Supabase KHÔNG có backup tự động (daily backup là tính năng của gói
+# Pro), cũng không có Point-in-time recovery. Lỡ tay `delete` nhầm ở SQL Editor là mất thật.
+#
+# ⚠ ĐỌC TRƯỚC KHI SỬA: repo này PUBLIC, mà artifact của repo public thì ai cũng tải được.
+# Bản dump có email khách trong `auth.users` và `profiles`. Vì thế file BẮT BUỘC được mã hoá
+# trước khi upload — đừng bỏ bước gpg đi cho gọn, và đừng upload file .sql trần.
+name: Sao lưu database
+
+on:
+  schedule:
+    # 18:30 UTC = 01:30 giờ VN, lúc không ai đụng vào web.
+    - cron: '30 18 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  dump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+      MAT_KHAU: ${{ secrets.BACKUP_PASSPHRASE }}
+
+    steps:
+      # Chưa khai secret thì bỏ qua kèm cảnh báo, KHÔNG làm đỏ workflow: một job đỏ mỗi ngày
+      # sẽ nhanh chóng bị bỏ qua, rồi lúc hỏng thật cũng chẳng ai nhìn.
+      - name: Kiểm secret
+        id: kiem
+        run: |
+          if [ -z "${DB_URL:-}" ] || [ -z "${MAT_KHAU:-}" ]; then
+            echo "::warning::Chưa khai SUPABASE_DB_URL / BACKUP_PASSPHRASE — chưa sao lưu được. Xem docs/deploy.md mục 6."
+            echo "chay=khong" >> "$GITHUB_OUTPUT"
+          else
+            echo "chay=co" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.kiem.outputs.chay == 'co'
+
+      - uses: supabase/setup-cli@v1
+        if: steps.kiem.outputs.chay == 'co'
+        with:
+          version: latest
+
+      - name: Dump roles + schema + dữ liệu
+        if: steps.kiem.outputs.chay == 'co'
+        run: |
+          set -euo pipefail
+          # Ba file, đúng bộ Supabase khuyến nghị để khôi phục lại được nguyên trạng:
+          #   roles  — vai trò cấp cluster
+          #   schema — bảng, view, hàm, policy, trigger
+          #   data   — nội dung, dùng COPY cho nhanh và nhẹ hơn INSERT
+          supabase db dump --db-url "$DB_URL" -f roles.sql  --role-only
+          supabase db dump --db-url "$DB_URL" -f schema.sql
+          supabase db dump --db-url "$DB_URL" -f data.sql   --data-only --use-copy
+          ls -lh roles.sql schema.sql data.sql
+
+      - name: Ghi lại bản dump có những bảng nào
+        if: steps.kiem.outputs.chay == 'co'
+        run: |
+          set -euo pipefail
+          # CHỈ liệt kê TÊN bảng, không in nội dung — log của repo public ai cũng đọc được.
+          {
+            echo "### Bản sao lưu $(date -u '+%Y-%m-%d %H:%M UTC')"
+            echo ""
+            echo "| File | Kích thước |"
+            echo "|---|---|"
+            for f in roles.sql schema.sql data.sql; do
+              echo "| $f | $(du -h "$f" | cut -f1) |"
+            done
+            echo ""
+            echo "Bảng có dữ liệu trong bản dump:"
+            echo ""
+            echo '```'
+            grep -oE '^COPY [^ ]+' data.sql | sed 's/^COPY //' | sort -u || echo "(không thấy lệnh COPY nào)"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Mã hoá rồi xoá bản trần
+        if: steps.kiem.outputs.chay == 'co'
+        run: |
+          set -euo pipefail
+          tar -czf sao-luu.tar.gz roles.sql schema.sql data.sql
+          # --batch --yes: không hỏi gì. AES256 đối xứng, mở lại bằng đúng BACKUP_PASSPHRASE.
+          gpg --batch --yes --symmetric --cipher-algo AES256 \
+              --passphrase "$MAT_KHAU" \
+              -o sao-luu.tar.gz.gpg sao-luu.tar.gz
+          # Xoá mọi bản chưa mã hoá TRƯỚC bước upload. Nhỡ tay upload cả thư mục là lộ sạch.
+          rm -f roles.sql schema.sql data.sql sao-luu.tar.gz
+          ls -lh sao-luu.tar.gz.gpg
+
+      - uses: actions/upload-artifact@v4
+        if: steps.kiem.outputs.chay == 'co'
+        with:
+          name: sao-luu-${{ github.run_id }}
+          path: sao-luu.tar.gz.gpg
+          # 30 ngày: đủ để phát hiện ra mất dữ liệu rồi lùi lại, mà không giữ email khách
+          # nằm trên GitHub vô thời hạn.
+          retention-days: 30
+          if-no-files-found: error

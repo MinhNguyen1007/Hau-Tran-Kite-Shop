@@ -1,0 +1,55 @@
+# Cổng kiểm cho mọi thay đổi code.
+#
+# Vì sao chạy trên MỌI nhánh chứ không riêng pull request: push thẳng lên `master` là đường
+# deploy production (docs/deploy.md mục 3.4), nên chỗ cần chặn nhất chính là push thẳng.
+#
+# Vì sao có bước `build`, không rút gọn còn lint+test: lỗi Client Component import nhầm module
+# có `next/headers` CHỈ lộ ra ở bước build, `npm run dev` chạy ngon lành (xem CLAUDE.md).
+name: CI
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [master]
+
+# Push liên tiếp vào cùng một nhánh thì huỷ lượt đang chạy dở, khỏi xếp hàng chờ vô ích.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  kiem-tra:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # `npm ci` chứ không `npm install`: cài đúng theo package-lock.json và gãy nếu lock lệch
+      # package.json — đúng thứ muốn biết trước khi Vercel build.
+      - run: npm ci
+
+      - run: npm run lint
+
+      - run: npm run typecheck
+
+      - run: npm run test
+
+      - name: Build
+        run: npm run build
+        env:
+          # GIÁ TRỊ GIẢ, CỐ Ý. Mọi route đều render động (`ƒ` trong bảng output của next build,
+          # đo 2026-08-01) nên bước build không gọi DB lần nào — CI không cần, và KHÔNG ĐƯỢC
+          # chạm vào Supabase production. Vẫn phải khai vì `next.config.ts` ném lỗi khi thiếu
+          # biến này. Nếu về sau có trang prerender đọc DB lúc build thì bước này sẽ đỏ; đó là
+          # tín hiệu đúng, đừng chữa bằng cách nhét URL thật vào đây.
+          NEXT_PUBLIC_SUPABASE_URL: https://ci-khong-co-that.supabase.co
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-khong-co-that

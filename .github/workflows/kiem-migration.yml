@@ -1,0 +1,174 @@
+# Áp TOÀN BỘ migration lên một DB trắng rồi soi lại schema.
+#
+# Vì sao cần: máy dev và cloud đều là DB đã có sẵn lịch sử, nên một migration hỏng (gõ sai tên
+# cột, phụ thuộc thứ tự, quên GRANT) vẫn có thể "chạy được ở đây" mà gãy khi `supabase db push`
+# lên project mới. Chỗ duy nhất bắt được là dựng lại từ số 0.
+#
+# Chỉ chạy khi đụng `supabase/**` — nó tốn vài phút vì phải kéo image Docker, không đáng chạy
+# cho mỗi lần sửa CSS.
+name: Kiểm migration
+
+on:
+  push:
+    branches: ['**']
+    paths:
+      - 'supabase/**'
+      - '.github/workflows/kiem-migration.yml'
+  pull_request:
+    paths:
+      - 'supabase/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ap-tu-dau:
+    name: Dựng DB trắng, áp migration + seed
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # config.toml để `[auth.external.google] enabled = true` và đọc hai biến này; thiếu là
+      # `supabase start` gãy ngay lúc khởi động (xem ghi chú trong config.toml).
+      # Giá trị giả là đủ: GoTrue chỉ dùng chúng khi có người thật bấm nút đăng nhập Google.
+      SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID: ci-khong-dung
+      SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET: ci-khong-dung
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      # Bỏ những container không liên quan tới schema cho nhanh. GIỮ db, kong, rest, auth,
+      # storage, realtime: migration có đụng `auth.users` (trigger chặn đăng ký email),
+      # `storage.buckets` (bucket products/avatars) và publication `supabase_realtime`.
+      - name: supabase start
+        run: supabase start -x studio,edge-runtime,functions,imgproxy,inbucket,vector,analytics
+
+      - name: Schema phải đúng như code đang giả định
+        run: |
+          set -euo pipefail
+          psql "postgresql://postgres:postgres@127.0.0.1:55322/postgres" -v ON_ERROR_STOP=1 <<'SQL'
+          do $$
+          declare
+            thieu text[] := '{}';
+            thua  text[] := '{}';
+          begin
+            -- ---- Phải CÓ ----------------------------------------------------------------
+            -- Bảng code đang đọc/ghi hằng ngày.
+            if to_regclass('public.profiles')       is null then thieu := thieu || 'bảng profiles';       end if;
+            if to_regclass('public.products')       is null then thieu := thieu || 'bảng products';       end if;
+            if to_regclass('public.product_images') is null then thieu := thieu || 'bảng product_images'; end if;
+            if to_regclass('public.categories')     is null then thieu := thieu || 'bảng categories';     end if;
+            if to_regclass('public.wishlists')      is null then thieu := thieu || 'bảng wishlists';      end if;
+            if to_regclass('public.events')         is null then thieu := thieu || 'bảng events';         end if;
+            if to_regclass('public.site_settings')  is null then thieu := thieu || 'bảng site_settings';  end if;
+            if to_regclass('public.nav_items')      is null then thieu := thieu || 'bảng nav_items';      end if;
+
+            -- View lọc admin khỏi thống kê. `admin-stats.ts` đọc đúng tên này.
+            if to_regclass('public.customer_events') is null then thieu := thieu || 'view customer_events'; end if;
+
+            -- Hàm phân quyền. Mất là mọi policy đứt, không phải chỉ một trang hỏng.
+            if to_regprocedure('public.is_admin()')       is null then thieu := thieu || 'hàm is_admin()';       end if;
+            if to_regprocedure('public.is_owner()')       is null then thieu := thieu || 'hàm is_owner()';       end if;
+            if to_regprocedure('public.staff_user_ids()') is null then thieu := thieu || 'hàm staff_user_ids()'; end if;
+
+            -- Chỉ ĐƯỢC có một chủ shop.
+            if not exists (select 1 from pg_indexes
+                           where schemaname = 'public' and indexname = 'profiles_one_owner') then
+              thieu := thieu || 'unique index profiles_one_owner';
+            end if;
+
+            -- Chặn đăng ký bằng email nằm ở TRIGGER này, không phải ở cờ trong config.
+            if not exists (select 1 from pg_trigger
+                           where tgname = 'chan_dang_ky_email' and not tgisinternal) then
+              thieu := thieu || 'trigger chan_dang_ky_email';
+            end if;
+            if not exists (select 1 from pg_trigger
+                           where tgname = 'on_auth_user_created' and not tgisinternal) then
+              thieu := thieu || 'trigger on_auth_user_created';
+            end if;
+            if not exists (select 1 from pg_trigger
+                           where tgname = 'profiles_prevent_role_change' and not tgisinternal) then
+              thieu := thieu || 'trigger profiles_prevent_role_change';
+            end if;
+
+            -- Bucket ảnh. Thiếu là upload ở /admin gãy mà lỗi chẳng nói gì về nguyên nhân.
+            if not exists (select 1 from storage.buckets where id = 'products') then
+              thieu := thieu || 'bucket products';
+            end if;
+            if not exists (select 1 from storage.buckets where id = 'avatars') then
+              thieu := thieu || 'bucket avatars';
+            end if;
+
+            -- LiveRefresh nghe Postgres Changes trên BẢNG events (không phải view).
+            if not exists (select 1 from pg_publication_tables
+                           where pubname = 'supabase_realtime' and schemaname = 'public'
+                             and tablename = 'events') then
+              thieu := thieu || 'events trong publication supabase_realtime';
+            end if;
+
+            -- ---- Phải KHÔNG CÒN ---------------------------------------------------------
+            -- Những thứ đã bỏ CÓ CHỦ Ý (xem mục NEVER DO trong CLAUDE.md). Migration nào dựng
+            -- lại chúng là đang đi ngược quyết định nghiệp vụ, không phải sửa lỗi.
+            if to_regclass('public.orders')            is not null then thua := thua || 'bảng orders (thanh toán đã bỏ)';           end if;
+            if to_regclass('public.order_items')       is not null then thua := thua || 'bảng order_items (thanh toán đã bỏ)';      end if;
+            if to_regclass('public.contact_messages')  is not null then thua := thua || 'bảng contact_messages (form liên hệ đã bỏ)'; end if;
+            if to_regclass('public.content_blocks')    is not null then thua := thua || 'bảng content_blocks (đã gộp vào site_settings)'; end if;
+            if to_regclass('public.product_sizes')     is not null then thua := thua || 'bảng product_sizes (giá là chữ tự do)';    end if;
+            if to_regclass('public.guide_videos')      is not null then thua := thua || 'bảng guide_videos (trang hướng dẫn đã bỏ)'; end if;
+
+            -- Tồn kho và giá dạng số đã bỏ hẳn.
+            if exists (select 1 from information_schema.columns
+                       where table_schema = 'public' and table_name = 'products'
+                         and column_name in ('stock', 'price_vnd')) then
+              thua := thua || 'cột products.stock / products.price_vnd';
+            end if;
+
+            if array_length(thieu, 1) is not null then
+              raise exception E'Schema THIẾU:\n  - %', array_to_string(thieu, E'\n  - ');
+            end if;
+            if array_length(thua, 1) is not null then
+              raise exception E'Schema có thứ ĐÃ BỎ mà vẫn còn:\n  - %', array_to_string(thua, E'\n  - ');
+            end if;
+
+            raise notice 'Schema đủ và sạch.';
+          end $$;
+          SQL
+
+      # Chạy thẳng seed.sql thay vì tin rằng `supabase start` đã seed hộ: chạy tay mới là thứ
+      # kiểm ĐÚNG file seed. Nó idempotent (`on conflict do nothing`) nên chạy hai lần vô hại.
+      - name: seed.sql phải chạy được trên DB trắng
+        run: |
+          set -euo pipefail
+          psql "postgresql://postgres:postgres@127.0.0.1:55322/postgres" -v ON_ERROR_STOP=1 \
+            -f supabase/seed.sql
+          psql "postgresql://postgres:postgres@127.0.0.1:55322/postgres" -v ON_ERROR_STOP=1 <<'SQL'
+          do $$
+          declare so_sp int; so_dm int; sp_khong_danh_muc int;
+          begin
+            select count(*) into so_sp from public.products;
+            select count(*) into so_dm from public.categories;
+            select count(*) into sp_khong_danh_muc from public.products where category_id is null;
+
+            -- seed.sql chèn 5 mẫu; migration tạo 5 danh mục + 'sao' = 6.
+            if so_sp <> 5 then
+              raise exception 'Sau seed phải có 5 sản phẩm, đang có %. seed.sql lệch schema?', so_sp;
+            end if;
+            if so_dm <> 6 then
+              raise exception 'Phải có 6 danh mục, đang có %.', so_dm;
+            end if;
+            -- Bắt lỗi slug danh mục gõ sai trong seed: left join trượt thì category_id ra null.
+            if sp_khong_danh_muc > 0 then
+              raise exception '% sản phẩm seed không khớp danh mục nào — sai slug trong seed.sql.', sp_khong_danh_muc;
+            end if;
+
+            raise notice 'Seed ổn: % sản phẩm, % danh mục.', so_sp, so_dm;
+          end $$;
+          SQL
+
+      - name: supabase stop
+        if: always()
+        run: supabase stop

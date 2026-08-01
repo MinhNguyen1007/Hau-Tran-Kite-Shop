@@ -1,0 +1,74 @@
+# Ping định kỳ, làm hai việc cùng lúc:
+#
+# 1. GIỮ SUPABASE KHỎI TẠM DỪNG — free tier tạm dừng project sau 7 ngày không có truy vấn nào
+#    (docs/deploy.md mục 0). Web diều lúc mới lên sóng có thể cả tuần không ai vào, sáng ra
+#    thấy web chết mà tưởng hỏng code.
+# 2. UPTIME MONITOR — hỏng thì GitHub gửi mail báo workflow đỏ. Thay cho UptimeRobot.
+#
+# ⚠ Hai bước dưới KHÔNG thay thế được nhau:
+# - Bước trang chủ luôn chạy, và nó có gọi DB ở phía server nên đủ để giữ project sống.
+#   Nhưng nó KHÔNG phát hiện được DB chết: `src/lib/shop.ts` có giá trị dự phòng nên trang vẫn
+#   trả 200 với nội dung mặc định khi Supabase không trả lời.
+# - Bước hỏi thẳng Supabase mới là cái phát hiện DB chết. Nó cần secret; chưa khai thì bỏ qua
+#   kèm cảnh báo chứ không làm đỏ workflow.
+name: Giữ web sống
+
+on:
+  schedule:
+    # 6 tiếng một lần. Phút lẻ 17 cho khỏi rơi vào lúc GitHub xếp hàng dày nhất (đầu giờ tròn).
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    env:
+      # Đổi domain thì khai biến SITE_URL ở Settings → Secrets and variables → Actions →
+      # Variables, khỏi sửa file này.
+      SITE_URL: ${{ vars.SITE_URL || 'https://hau-tran-kite-shop.vercel.app' }}
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+
+    steps:
+      - name: Trang chủ phải trả 200
+        run: |
+          set -euo pipefail
+          # --retry 2 để một cú nghẽn mạng thoáng qua không gửi mail báo động giả.
+          ma=$(curl -sS -o /tmp/trang-chu.html -w '%{http_code}' \
+                 --max-time 30 --retry 2 --retry-delay 15 --retry-all-errors \
+                 "$SITE_URL/")
+          echo "GET $SITE_URL/ → HTTP $ma"
+          if [ "$ma" != "200" ]; then
+            echo "::error::Trang chủ trả HTTP $ma. Kiểm Vercel Deployments trước, rồi tới Supabase."
+            exit 1
+          fi
+
+      - name: Supabase phải trả lời một truy vấn thật
+        if: env.SUPABASE_URL != '' && env.SUPABASE_ANON_KEY != ''
+        run: |
+          set -euo pipefail
+          # site_settings đọc được bằng anon key (policy site_settings_select), nên đây là
+          # truy vấn nhẹ nhất mà vẫn đi hết đường PostgREST → Postgres.
+          ma=$(curl -sS -o /tmp/db.json -w '%{http_code}' --max-time 30 \
+                 -H "apikey: $SUPABASE_ANON_KEY" \
+                 -H "Authorization: Bearer $SUPABASE_ANON_KEY" \
+                 "$SUPABASE_URL/rest/v1/site_settings?select=id&limit=1")
+          echo "PostgREST → HTTP $ma"
+          if [ "$ma" != "200" ]; then
+            echo "::error::Supabase trả HTTP $ma. Project bị tạm dừng thì vào Dashboard bấm Restore."
+            cat /tmp/db.json || true
+            exit 1
+          fi
+          # 200 mà rỗng nghĩa là bảng mất dòng cấu hình — trang chủ sẽ rơi về giá trị dự phòng.
+          if ! grep -q '"id"' /tmp/db.json; then
+            echo "::error::site_settings không trả dòng nào. Xem lại bảng cấu hình."
+            exit 1
+          fi
+
+      - name: Nhắc khai secret
+        if: env.SUPABASE_URL == '' || env.SUPABASE_ANON_KEY == ''
+        run: |
+          echo "::warning::Chưa khai secret SUPABASE_URL / SUPABASE_ANON_KEY nên chỉ ping được web, chưa dò được sức khoẻ DB. Xem docs/deploy.md mục 6."
