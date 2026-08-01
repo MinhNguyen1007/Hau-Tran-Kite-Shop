@@ -266,6 +266,19 @@ local**, trên cloud thì credential Google nằm trong Dashboard (bước 2.3).
 > Thiếu `NEXT_PUBLIC_SUPABASE_URL` là **gãy build** kèm câu báo rõ ràng — `next.config.ts`
 > cố ý ném lỗi thay vì để web lên sóng với toàn bộ ảnh sản phẩm hỏng.
 
+⚠ Tick đủ cả ba môi trường nghĩa là **Preview cũng trỏ vào DB thật**. Vì thế từ 2026-08-01
+`vercel.json` tắt hẳn tự động deploy cho mọi nhánh trừ `master`:
+
+```json
+{ "git": { "deploymentEnabled": { "**": false, "master": true } } }
+```
+
+Không có preview deploy thì không còn bản web nào chạy bằng dữ liệu thật ngoài production.
+Đây là lý do file `vercel.json` tồn tại — JSON không viết chú thích được nên ghi ở đây.
+Muốn xem thử trước khi merge thì chạy `npm run dev` ở máy. Nếu về sau thật sự cần preview,
+đừng chỉ bật lại dòng trên: phải dựng một project Supabase riêng cho nó trước, không thì
+mỗi nhánh đang làm dở lại ghi thẳng vào bảng `events` của production.
+
 ### 3.4 Deploy
 
 Bấm Deploy, đợi ~2 phút, lấy domain `https://<tên-app>.vercel.app`.
@@ -335,18 +348,27 @@ thứ **đã bỏ có chủ ý** (bảng `orders`, `contact_messages`, `content_
 cột `stock`/`price_vnd`) vẫn đang biến mất. Ai vô tình dựng lại chúng sẽ thấy CI đỏ kèm câu
 giải thích, thay vì phải nhớ hết mục NEVER DO trong CLAUDE.md.
 
-### 6.1 ⚠ CI hiện là chuông báo, CHƯA phải cổng chặn
+### 6.1 Vì sao phải đi qua Pull Request
 
 Vercel bắt đầu deploy **ngay khi nhận push**, chạy song song với GitHub Actions chứ không đợi
-kết quả. Nghĩa là **CI đỏ thì bản hỏng vẫn lên sóng**, chỉ khác là có mail báo.
+kết quả. Nghĩa là push thẳng `master` thì **CI đỏ mà bản hỏng vẫn lên sóng** — Actions chỉ kịp
+gửi mail báo sau khi chuyện đã rồi.
 
-Muốn CI thành cổng thật thì phải đổi cách làm việc, chọn một trong hai:
+Chỗ duy nhất chặn được là chặn ở GitHub, trước khi commit kịp nằm trên `master`. Vì thế
+`master` bật **branch protection**: Settings → Branches → Add branch ruleset cho `master`,
+tick *Require a pull request before merging* và *Require status checks to pass* → chọn check
+`Lint, typecheck, test, build`.
 
-- **Nhánh + Pull Request + branch protection**: Settings → Branches → Add rule cho `master`,
-  tick *Require status checks to pass* → chọn job `Lint, typecheck, test, build`. Từ đó không
-  push thẳng `master` được nữa, mọi thay đổi phải qua PR và PR phải xanh mới merge.
-- **Giữ nguyên cách push thẳng**, coi CI là lưới an toàn và dựa vào Instant Rollback ở 6.4 khi
-  có sự cố.
+Cách làm việc từ đó:
+
+```bash
+git switch -c sua-abc          # làm việc trên nhánh, không đụng master
+git push -u origin sua-abc     # CI chạy trên nhánh này
+# CI xanh → mở Pull Request trên GitHub → Merge → lúc này Vercel mới deploy production
+```
+
+Nhánh không sinh preview deploy nữa (xem 3.3), nên đẩy nhánh lên chỉ tốn CI chứ không đụng
+gì tới web thật.
 
 ### 6.2 Secret và variable cần khai
 
