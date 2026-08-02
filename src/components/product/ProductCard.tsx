@@ -18,15 +18,22 @@ import { WishlistButton } from './WishlistButton'
 export function ProductCard({
   product,
   priority = false,
+  sizes = '(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 380px',
 }: {
   product: Product
   priority?: boolean
+  // Mỗi lưới chia cột một kiểu (trang chủ 1→2→3, /san-pham 2→3→4) nên chỉ nơi ĐẶT card mới
+  // biết ô rộng bao nhiêu. Để mặc định theo lưới trang chủ; lưới nào khác thì tự khai.
+  sizes?: string
 }) {
   const href = `/san-pham/${product.slug}`
   const price = visiblePrice(product)
 
   return (
-    <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white transition-shadow duration-300 hover:shadow-lg hover:shadow-stone-900/5">
+    // @container: hàng "tên - giá" phải đổi dáng theo bề rộng CỦA CARD, không theo bề rộng màn
+    // hình. Cùng một màn 390px, card trang chủ rộng 358px (1 cột) còn card /san-pham chỉ 171px
+    // (2 cột) - lấy breakpoint màn hình thì một trong hai chỗ luôn sai.
+    <div className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white transition-shadow duration-300 hover:shadow-lg hover:shadow-stone-900/5 @container">
       {/* Nằm ngoài thẻ Link bọc ảnh: lồng button trong link là HTML không hợp lệ và bấm tim
           sẽ điều hướng luôn sang trang chi tiết. */}
       <div className="absolute right-3 top-3 z-10">
@@ -40,7 +47,7 @@ export function ProductCard({
             alt={product.name}
             fill
             priority={priority}
-            sizes="(max-width: 640px) 90vw, (max-width: 1024px) 45vw, 380px"
+            sizes={sizes}
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
@@ -61,7 +68,10 @@ export function ProductCard({
           </p>
         )}
 
-        <div className="mt-1.5 flex items-baseline justify-between gap-3">
+        {/* Card hẹp (lưới 2 cột trên điện thoại, ~171px): XẾP DỌC. Để nằm ngang thì giá
+            `whitespace-nowrap shrink-0` chiếm 106px, tên còn 19px và teo thành một sợi dọc
+            bị line-clamp cắt cụt - đo trên máy thật 2026-08-02. Đủ rộng thì mới về hàng ngang. */}
+        <div className="mt-1.5 flex flex-col gap-0.5 @min-[15rem]:flex-row @min-[15rem]:items-baseline @min-[15rem]:justify-between @min-[15rem]:gap-3">
           <Link
             href={href}
             className="line-clamp-2 text-sm font-semibold leading-snug text-ink-950 transition-colors hover:text-stone-600"
@@ -70,7 +80,7 @@ export function ProductCard({
           </Link>
 
           {/* Shop có thể không công khai giá. Khi đó mời khách hỏi thay vì để chỗ trống. */}
-          <span className="shrink-0 whitespace-nowrap text-sm font-semibold text-ink-950">
+          <span className="whitespace-nowrap text-sm font-semibold text-ink-950 @min-[15rem]:shrink-0">
             {price ?? <span className="text-xs font-medium text-stone-500">Liên hệ</span>}
           </span>
         </div>

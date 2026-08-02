@@ -17,14 +17,18 @@ export async function HeroBanner() {
   const settings = await getSiteSettings()
 
   return (
-    <section className="mx-auto grid w-full max-w-7xl items-center gap-10 px-4 pb-12 pt-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12 lg:pb-16 lg:pt-12">
+    // Tỉ lệ cột nghiêng hẳn về phía ảnh (user 2026-08-02: "banner to ra"). Poster là tài sản
+    // quảng cáo thật của shop - nó đã in tên shop, cam kết và số điện thoại - nên nó xứng đáng
+    // nhiều chỗ hơn cột chữ. minmax(0,…) chứ không để `0.7fr` trần: item lưới mặc định
+    // min-width:auto, ảnh rộng sẽ tự nống cột ra và phá đúng tỉ lệ vừa đặt.
+    <section className="mx-auto grid w-full max-w-7xl items-center gap-8 px-4 pb-10 pt-6 sm:gap-10 sm:pb-12 sm:pt-8 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] lg:gap-10 lg:pb-16 lg:pt-12">
       <div className="max-w-xl">
         <h1 className="reveal text-balance text-4xl font-bold leading-[1.05] tracking-tighter text-ink-950 sm:text-5xl lg:text-6xl">
           {settings.shopName}
         </h1>
 
         {settings.heroNote && (
-          <p className="reveal mt-6 max-w-md text-pretty text-[15px] leading-relaxed text-stone-600 [animation-delay:160ms]">
+          <p className="reveal mt-5 max-w-md text-pretty text-[15px] leading-relaxed text-stone-600 sm:mt-6 lg:text-base [animation-delay:160ms]">
             {settings.heroNote}
           </p>
         )}
@@ -55,14 +59,16 @@ export async function HeroBanner() {
             nào, panel admin của nó rỗng nên user cho gỡ hẳn. Đừng dựng lại. */}
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white">
+      <div className="overflow-hidden rounded-2xl border border-stone-200 bg-white sm:rounded-3xl">
         <Image
           src="/images/shop_background.jpg"
           alt="Bộ sưu tập diều cánh cốc của xưởng Hậu Trần trải trên sân thượng lúc hoàng hôn"
           width={1671}
           height={949}
           priority
-          sizes="(max-width: 1024px) 100vw, 700px"
+          // Phải khớp bề rộng THẬT sau khi đổi tỉ lệ cột (~780px ở khung 1280px), không thì
+          // trình duyệt chọn bản ảnh nhỏ hơn ô hiển thị và poster bị nhoè đúng chỗ có chữ.
+          sizes="(max-width: 1024px) 100vw, 800px"
           className="w-full object-contain"
         />
       </div>

@@ -85,7 +85,14 @@ export default async function ProductsPage({
       ) : (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-3 md:gap-4 lg:grid-cols-4">
           {products.map((product, i) => (
-            <ProductCard key={product.id} product={product} priority={i === 0} />
+            <ProductCard
+              key={product.id}
+              product={product}
+              priority={i === 0}
+              // Lưới này là 2 cột ngay từ điện thoại (trang chủ mới là 1 cột), nên ô chỉ rộng
+              // ~45vw. Để mặc định 90vw là bắt máy khách tải ảnh to gấp đôi cỡ cần, tốn 3G/4G.
+              sizes="(max-width: 768px) 45vw, (max-width: 1024px) 30vw, 300px"
+            />
           ))}
         </div>
       )}
