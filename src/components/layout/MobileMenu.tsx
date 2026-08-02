@@ -5,9 +5,12 @@
 import { List, Phone, X } from '@phosphor-icons/react'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
-import { HOTLINE_HREF, type NavLink, SHOP } from '@/lib/shop'
+import { type NavLink, telHref } from '@/lib/shop'
 
-export function MobileMenu({ items }: { items: NavLink[] }) {
+// `hotline` nhận từ SiteHeader (đọc site_settings) chứ KHÔNG lấy hằng SHOP nữa: hằng đó chỉ là
+// lưới an toàn khi DB hỏng, dùng thẳng ở đây là admin đổi số trong /admin/cai-dat mà nút gọi
+// trên điện thoại vẫn quay số cũ - mà điện thoại đúng là chỗ khách bấm gọi nhiều nhất.
+export function MobileMenu({ items, hotline }: { items: NavLink[]; hotline: string }) {
   const [open, setOpen] = useState(false)
 
   // Khoá scroll nền khi drawer mở; luôn trả lại giá trị cũ lúc unmount.
@@ -41,9 +44,9 @@ export function MobileMenu({ items }: { items: NavLink[] }) {
           />
           <div className="absolute inset-y-0 right-0 flex w-[82%] max-w-xs flex-col bg-white shadow-xl">
             <div className="flex items-center justify-between border-b border-stone-200 px-4 py-3">
-              <span className="text-sm font-bold tracking-tight text-ink-950">
-                Danh mục
-              </span>
+              {/* Không đặt là "Danh mục": drawer này là MENU CHÍNH (Trang chủ, Giới thiệu,
+                  Liên hệ…), mà 'Danh mục' lại đúng tên một mục nằm bên trong nó. */}
+              <span className="text-sm font-bold tracking-tight text-ink-950">Menu</span>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
@@ -78,11 +81,11 @@ export function MobileMenu({ items }: { items: NavLink[] }) {
             </nav>
 
             <a
-              href={HOTLINE_HREF}
+              href={telHref(hotline)}
               className="m-4 flex items-center justify-center gap-2 rounded-full bg-ink-950 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-ink-800"
             >
               <Phone size={18} weight="fill" />
-              Gọi {SHOP.hotline}
+              Gọi {hotline}
             </a>
           </div>
         </div>

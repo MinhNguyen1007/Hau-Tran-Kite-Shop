@@ -58,7 +58,7 @@ export async function SiteHeader() {
           <AccountLink profile={profile} />
           {/* Chỉ hiện với admin — khách thường không thấy gì thêm. */}
           <AdminLink profile={profile} />
-          <MobileMenu items={navLinks} />
+          <MobileMenu items={navLinks} hotline={settings.hotline} />
         </div>
       </div>
     </header>
