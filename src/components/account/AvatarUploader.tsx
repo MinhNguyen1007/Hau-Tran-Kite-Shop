@@ -121,7 +121,12 @@ export function AvatarUploader({
           {error}
         </span>
       )}
-      <span className="text-xs text-stone-600">Ảnh vuông đẹp nhất. Tối đa 2MB.</span>
+      {/* Nói thẳng ra chuyện ảnh chưa được gắn: file lên Storage ngay lúc chọn nên ảnh hiện ra
+          liền, còn `profiles.avatar_path` thì đợi nút Lưu. Không nói thì người dùng đóng tab. */}
+      <span className="text-xs text-stone-600">
+        Ảnh vuông đẹp nhất. Tối đa 2MB. Ảnh chỉ được gắn vào hồ sơ sau khi bấm nút lưu ở cuối
+        trang.
+      </span>
     </div>
   )
 }

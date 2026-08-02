@@ -14,7 +14,7 @@ import { useState } from 'react'
 import { checkNavHref, NAV_DESTINATIONS } from '@/lib/nav-destinations'
 import type { NavItem } from '@/lib/nav-items'
 import { inputClass } from './FormField'
-import { UnsavedGuard } from './UnsavedGuard'
+import { UnsavedGuard } from '../ui/UnsavedGuard'
 
 const CUSTOM = '__khac__'
 

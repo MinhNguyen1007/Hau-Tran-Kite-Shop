@@ -1,11 +1,16 @@
 'use client'
 
-// Chặn rời trang khi form admin còn thay đổi chưa lưu.
+// Chặn rời trang khi form còn thay đổi chưa lưu. Dùng ở CẢ khu admin lẫn trang khách
+// (/tai-khoan) nên nằm ở ui/, đừng chuyển về admin/.
 //
 // Vì sao có file này: `ImageUploader` đẩy ảnh lên Storage NGAY lúc chọn file, nên ảnh hiện ra
 // liền và trông như đã lưu. Nhưng dòng trong `product_images` / `categories` chỉ được ghi khi
 // bấm "Lưu". Ngày 2026-07-28 đã mất một bộ 6 ảnh đúng theo đường đó: file còn nguyên trong
 // bucket, DB không có dòng nào trỏ tới, và không có gì trên màn hình cho biết điều đó.
+//
+// `AvatarUploader` ở /tai-khoan đi đúng đường ấy (`profiles.avatar_path` cũng chỉ ghi lúc bấm
+// Lưu) và đã dính thật: đo trên production 2026-08-02, thư mục avatar của một khách có 3 file
+// mà chỉ 1 được trỏ tới — hai lần đổi ảnh kia rời trang trước khi lưu.
 //
 // Hai lớp, vì một lớp không phủ hết:
 //  1. `beforeunload` — đóng tab, tải lại trang, gõ URL khác. Hộp thoại do TRÌNH DUYỆT vẽ nên
