@@ -9,14 +9,19 @@
 //
 // KHÔNG nghe sự kiện scroll: nó chạy mỗi khung hình và bắt React render lại theo, đúng thứ
 // làm giật trang trên điện thoại. IntersectionObserver để trình duyệt tự báo, rẻ hơn nhiều.
+//
+// Từ 2026-08-02 nav này hiện ở MỌI khổ màn hình. Trước đó nó `hidden lg:block` và điện thoại
+// phải bấm nút ba gạch mới thấy menu; user cho bỏ hẳn nút đó, nên đây thành đường điều hướng
+// duy nhất trên điện thoại - hàng pill cuộn ngang, luôn nhìn thấy, không phải bấm mở.
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { NavLink } from '@/lib/shop'
 
-export function MainNav({ items }: { items: NavLink[] }) {
+export function MainNav({ items, className }: { items: NavLink[]; className?: string }) {
   const pathname = usePathname()
   const [activeAnchor, setActiveAnchor] = useState<string | null>(null)
+  const listRef = useRef<HTMLUListElement>(null)
 
   // Danh sách mục giờ đến từ DB qua prop nên phải tính lại mỗi lần nó đổi. Dựng KHOÁ dạng chuỗi
   // cho dependency: mảng prop là object mới sau mỗi lần render của header, để thẳng vào deps là
@@ -63,12 +68,28 @@ export function MainNav({ items }: { items: NavLink[] }) {
     return () => observer.disconnect()
   }, [pathname, anchorKey])
 
+  // Trên điện thoại hàng pill cuộn ngang nên mục đang xem dễ nằm ngoài tầm mắt. Kéo nó vào
+  // giữa khay bằng scrollLeft chứ KHÔNG scrollIntoView: hàm kia có thể cuộn cả TRANG theo
+  // trục dọc, gây cú giật ngay khi vừa mở web.
+  useEffect(() => {
+    const list = listRef.current
+    if (!list) return
+    const active = list.querySelector<HTMLElement>('[aria-current="page"]')
+    if (!active) return
+    list.scrollLeft = active.offsetLeft - (list.clientWidth - active.clientWidth) / 2
+  }, [pathname, activeAnchor])
+
   // Admin tắt hết các mục thì không vẽ khay xám rỗng lơ lửng giữa header.
   if (items.length === 0) return null
 
   return (
-    <nav aria-label="Điều hướng chính" className="hidden lg:mx-auto lg:block">
-      <ul className="flex items-center gap-0.5 rounded-full bg-stone-100 p-1">
+    <nav aria-label="Điều hướng chính" className={className}>
+      {/* no-scrollbar + overflow-x-auto: điện thoại vuốt ngang được mà không lòi thanh cuộn
+          xám cắt ngang khay. Từ lg trở lên khay co lại vừa nội dung và nằm giữa header. */}
+      <ul
+        ref={listRef}
+        className="no-scrollbar flex items-center gap-0.5 overflow-x-auto rounded-full bg-stone-100 p-1 lg:justify-center lg:overflow-x-visible"
+      >
         {items.map((item) => {
           const [path, anchor] = item.href.split('#')
           const active = anchor
@@ -80,11 +101,11 @@ export function MainNav({ items }: { items: NavLink[] }) {
               : pathname.startsWith(path)
 
           return (
-            <li key={item.href}>
+            <li key={item.href} className="shrink-0">
               <Link
                 href={item.href}
                 aria-current={active ? 'page' : undefined}
-                className={`block whitespace-nowrap rounded-full px-4 py-1.5 text-sm transition-colors ${
+                className={`block whitespace-nowrap rounded-full px-4 py-2 text-sm transition-colors lg:py-1.5 ${
                   active
                     ? 'bg-white font-semibold text-ink-950 shadow-sm'
                     : 'font-medium text-stone-600 hover:text-ink-950'

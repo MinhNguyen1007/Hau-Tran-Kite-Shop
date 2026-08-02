@@ -46,8 +46,11 @@ export async function SiteFooter() {
 
   return (
     <footer className="mt-8 border-t border-stone-200 bg-white">
-      <div className="mx-auto grid w-full max-w-7xl gap-10 px-4 py-14 md:grid-cols-2 lg:grid-cols-4">
-        <div className="lg:pr-8">
+      {/* Điện thoại: khối thương hiệu chiếm trọn hàng, ba nhóm link chia HAI CỘT. Xếp dọc một
+          cột như bản cũ thì riêng footer đã dài bằng một phần tư trang, khách phải vuốt qua
+          mười mấy dòng link mới tới dòng bản quyền. */}
+      <div className="mx-auto grid w-full max-w-7xl grid-cols-2 gap-x-4 gap-y-8 px-4 py-10 sm:gap-x-8 lg:grid-cols-4 lg:gap-10 lg:py-14">
+        <div className="col-span-2 lg:col-span-1 lg:pr-8">
           <div className="mb-4 flex items-center gap-2.5">
             <span className="grid h-9 w-9 place-items-center rounded-xl bg-ink-950 text-white">
               <Wind size={19} weight="fill" />
