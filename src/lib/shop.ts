@@ -18,7 +18,10 @@ export const SHOP = {
 export const telHref = (phone: string) => `tel:${phone.replace(/\s/g, '')}`
 export const zaloHref = (phone: string) => `https://zalo.me/${phone.replace(/\s/g, '')}`
 
-export const HOTLINE_HREF = telHref(SHOP.hotline)
+// ĐỪNG thêm lại hằng kiểu `HOTLINE_HREF = telHref(SHOP.hotline)`. Nó từng tồn tại ở đây và
+// `MobileMenu` đã lỡ dùng, hậu quả là admin đổi số trong /admin/cai-dat mà nút gọi trên điện
+// thoại vẫn quay số dự phòng. Số hiển thị luôn phải đi từ `site_settings` xuống qua prop;
+// `SHOP` chỉ được dùng làm giá trị dự phòng trong site-settings.ts khi truy vấn hỏng.
 
 export type NavLink = { label: string; href: string }
 
