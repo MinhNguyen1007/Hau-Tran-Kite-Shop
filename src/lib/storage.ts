@@ -12,7 +12,9 @@ const supabase = createClient(
 const BUCKET = 'products'
 // Bucket riêng cho ảnh đại diện: quyền ghi khác hẳn bucket 'products' (mỗi khách chỉ ghi vào
 // thư mục mang uid của mình) nên không dùng chung được — xem migration 20260728160000.
-const AVATAR_BUCKET = 'avatars'
+// Xuất ra vì đường XOÁ file (dọn ảnh cũ) nằm ở nơi khác và phải nhắm đúng bucket này:
+// client trong file này cố ý không giữ session nên không xoá được gì.
+export const AVATAR_BUCKET = 'avatars'
 
 export function getProductImageUrl(path: string): string {
   return supabase.storage.from(BUCKET).getPublicUrl(path).data.publicUrl

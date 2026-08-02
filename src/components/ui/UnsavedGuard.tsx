@@ -35,9 +35,14 @@ const DEFAULT_MESSAGE =
 export function UnsavedGuard({
   dirty,
   message = DEFAULT_MESSAGE,
+  onDiscard,
 }: {
   dirty: boolean
   message?: string
+  // Chạy khi người dùng chọn "Rời đi, bỏ thay đổi" — chỗ duy nhất biết CHẮC là thay đổi bị vứt
+  // đi, nên cũng là chỗ dọn được file đã trót đẩy lên Storage. CỐ Ý không gắn vào `beforeunload`:
+  // ở đó trình duyệt cắt mọi request đang bay, gọi cũng chỉ dọn được nửa vời.
+  onDiscard?: () => void
 }) {
   const router = useRouter()
   const [pendingHref, setPendingHref] = useState<string | null>(null)
@@ -141,6 +146,7 @@ export function UnsavedGuard({
             onClick={() => {
               const href = pendingHref
               setPendingHref(null)
+              onDiscard?.()
               // Tắt cảnh báo TRƯỚC khi đi, không thì chính lần điều hướng này bị nó chặn lại.
               dirtyRef.current = false
               router.push(href)

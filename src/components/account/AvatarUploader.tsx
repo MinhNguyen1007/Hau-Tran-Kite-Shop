@@ -8,6 +8,7 @@
 import { Trash, UploadSimple, UserCircle } from '@phosphor-icons/react'
 import Image from 'next/image'
 import { useRef, useState } from 'react'
+import { removeAvatarFile } from '@/lib/avatar-storage'
 import { getAvatarUrl } from '@/lib/storage'
 import { createBrowserSupabase } from '@/lib/supabase-browser'
 
@@ -24,15 +25,25 @@ function safeName(file: File): string {
 export function AvatarUploader({
   userId,
   path,
+  savedPath,
   onChange,
 }: {
   userId: string
   path: string | null
+  // Path đang NẰM TRONG hồ sơ (đã lưu). File này tuyệt đối không xoá ở đây: khách đổi ảnh rồi
+  // bỏ dở và rời trang là chuyện thường, lúc đó hồ sơ vẫn phải trỏ vào một file còn sống.
+  // Nó chỉ được dọn SAU khi lưu thành công, và do server dọn (updateMyProfile).
+  savedPath: string | null
   onChange: (path: string | null) => void
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Dọn file vừa bị thay chỗ TRONG lần sửa này — chọn ảnh 3 lần rồi lưu thì chỉ nên còn 1 file.
+  function discardIfTemporary(previous: string | null) {
+    if (previous && previous !== savedPath) void removeAvatarFile(previous)
+  }
 
   async function handleFile(files: FileList | null) {
     const file = files?.[0]
@@ -64,6 +75,8 @@ export function AvatarUploader({
       return
     }
 
+    // Dọn SAU khi file mới đã lên tới nơi: xoá trước mà upload hỏng là mất cả ảnh đang có.
+    discardIfTemporary(path)
     onChange(objectPath)
     setBusy(false)
     // Cho phép chọn lại đúng file vừa chọn (input giữ nguyên value thì onChange không bắn).
@@ -97,7 +110,10 @@ export function AvatarUploader({
           {path && (
             <button
               type="button"
-              onClick={() => onChange(null)}
+              onClick={() => {
+                discardIfTemporary(path)
+                onChange(null)
+              }}
               disabled={busy}
               className="flex items-center gap-2 rounded-full border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-600 transition-colors hover:bg-stone-100 disabled:opacity-60"
             >

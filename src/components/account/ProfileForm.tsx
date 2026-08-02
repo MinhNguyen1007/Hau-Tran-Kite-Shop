@@ -8,6 +8,7 @@
 import { WarningCircle } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { removeAvatarFile } from '@/lib/avatar-storage'
 import type { MyProfile } from '@/lib/profiles'
 import { UnsavedGuard } from '../ui/UnsavedGuard'
 import { AvatarUploader } from './AvatarUploader'
@@ -21,6 +22,10 @@ export function ProfileForm({ profile }: { profile: MyProfile }) {
   const [phone, setPhone] = useState(profile.phone)
   const [address, setAddress] = useState(profile.address)
   const [avatarPath, setAvatarPath] = useState<string | null>(profile.avatarPath)
+  // Path ĐANG nằm trong hồ sơ. Không đọc thẳng `profile.avatarPath`: sau khi lưu, prop chỉ mới
+  // đúng trở lại khi router.refresh() vẽ xong, mà giữa hai mốc đó khách bấm đổi ảnh tiếp được —
+  // lúc ấy file vừa lưu sẽ bị coi là file tạm và bị xoá mất.
+  const [savedAvatarPath, setSavedAvatarPath] = useState<string | null>(profile.avatarPath)
 
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -58,6 +63,7 @@ export function ProfileForm({ profile }: { profile: MyProfile }) {
       }
 
       setSaved(true)
+      setSavedAvatarPath(avatarPath)
       setSaving(false)
       // Header và các Server Component khác đọc lại hồ sơ mới (tên, ảnh).
       router.refresh()
@@ -74,10 +80,16 @@ export function ProfileForm({ profile }: { profile: MyProfile }) {
       <UnsavedGuard
         dirty={dirty}
         message="Thông tin vừa sửa chưa được lưu. Nếu bạn vừa đổi ảnh đại diện thì ảnh đã tải lên nhưng chưa gắn vào hồ sơ — rời trang lúc này là mất hết, phải chọn lại từ đầu."
+        // Khách đã chọn bỏ thay đổi ⇒ ảnh vừa tải lên không còn ai dùng tới. Chỉ xoá file TẠM,
+        // ảnh đang nằm trong hồ sơ thì giữ nguyên.
+        onDiscard={() => {
+          if (avatarPath && avatarPath !== savedAvatarPath) void removeAvatarFile(avatarPath)
+        }}
       />
       <AvatarUploader
         userId={profile.id}
         path={avatarPath}
+        savedPath={savedAvatarPath}
         onChange={(next) => {
           setAvatarPath(next)
           setSaved(false)
