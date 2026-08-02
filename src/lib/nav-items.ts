@@ -5,7 +5,7 @@
 //
 // KHÔNG import file này vào Client Component: nó kéo theo createServerSupabase → next/headers
 // → gãy build, mà lỗi chỉ lộ ra lúc `npm run build`. Header đọc ở đây rồi truyền xuống
-// MainNav/MobileMenu bằng prop. Kiểu NavLink nằm ở shop.ts (file thuần) chính vì vậy.
+// MainNav bằng prop. Kiểu NavLink nằm ở shop.ts (file thuần) chính vì vậy.
 import { FALLBACK_NAV_ITEMS, type NavLink } from './shop'
 import { createServerSupabase } from './supabase'
 

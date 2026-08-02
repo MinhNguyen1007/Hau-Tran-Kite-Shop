@@ -33,10 +33,12 @@ export async function HeroBanner() {
           </p>
         )}
 
-        <div className="reveal mt-8 flex flex-wrap gap-3 [animation-delay:240ms]">
+        {/* Điện thoại: hai nút tràn đủ bề ngang và xếp dọc. Để `inline-flex` co theo chữ thì
+            mép phải của hai nút so le nhau, cụm CTA trông lỏng và rời rạc. */}
+        <div className="reveal mt-7 grid gap-2.5 sm:mt-8 sm:flex sm:flex-wrap sm:gap-3 [animation-delay:240ms]">
           <Link
             href="/san-pham"
-            className="group inline-flex items-center gap-2 rounded-full bg-ink-950 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-ink-800 active:scale-[0.98]"
+            className="group inline-flex w-full items-center justify-center gap-2 rounded-full bg-ink-950 px-6 py-3 text-sm font-semibold text-white transition-colors hover:bg-ink-800 active:scale-[0.98] sm:w-auto"
           >
             Xem sản phẩm
             <ArrowRight
@@ -48,7 +50,7 @@ export async function HeroBanner() {
           {/* Gọi/Zalo là "nút chốt đơn" thật của shop nên đứng ngang hàng nút xem hàng. */}
           <a
             href={telHref(settings.hotline)}
-            className="inline-flex items-center gap-2 rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-ink-950 transition-colors hover:border-stone-400 hover:bg-stone-50 active:scale-[0.98]"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-stone-300 bg-white px-6 py-3 text-sm font-semibold text-ink-950 transition-colors hover:border-stone-400 hover:bg-stone-50 active:scale-[0.98] sm:w-auto"
           >
             <Phone size={16} weight="fill" />
             Gọi {settings.hotline}
