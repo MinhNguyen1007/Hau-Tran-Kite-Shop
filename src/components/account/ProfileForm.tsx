@@ -9,6 +9,7 @@ import { WarningCircle } from '@phosphor-icons/react'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import type { MyProfile } from '@/lib/profiles'
+import { UnsavedGuard } from '../ui/UnsavedGuard'
 import { AvatarUploader } from './AvatarUploader'
 
 const inputClass =
@@ -24,6 +25,12 @@ export function ProfileForm({ profile }: { profile: MyProfile }) {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Giống ProductForm: so sánh bằng chuỗi hoá vì form chỉ có chữ và một path ảnh.
+  const snapshot = JSON.stringify([fullName, phone, address, avatarPath])
+  // Initializer của useState chỉ chạy lần đầu → chốt đúng trạng thái lúc mở form.
+  const [initialSnapshot] = useState(snapshot)
+  const dirty = !saved && snapshot !== initialSnapshot
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -62,6 +69,12 @@ export function ProfileForm({ profile }: { profile: MyProfile }) {
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      {/* Câu riêng chứ không dùng mặc định: form này lệch được cả khi chưa đụng tới ảnh (mới
+          sửa mỗi tên), mà câu mặc định chỉ nói về ảnh. */}
+      <UnsavedGuard
+        dirty={dirty}
+        message="Thông tin vừa sửa chưa được lưu. Nếu bạn vừa đổi ảnh đại diện thì ảnh đã tải lên nhưng chưa gắn vào hồ sơ — rời trang lúc này là mất hết, phải chọn lại từ đầu."
+      />
       <AvatarUploader
         userId={profile.id}
         path={avatarPath}
@@ -132,6 +145,15 @@ export function ProfileForm({ profile }: { profile: MyProfile }) {
         {saved && (
           <span role="status" className="text-sm font-semibold text-stone-600">
             Đã lưu
+          </span>
+        )}
+
+        {/* Chấm mang trạng thái THẬT (form đang lệch với bản đã lưu), không phải trang trí.
+            Cần nó vì ảnh upload xong hiện ra ngay, trông y như đã lưu. */}
+        {dirty && (
+          <span className="ml-auto flex items-center gap-1.5 text-xs font-semibold text-stone-600">
+            <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-red-500" />
+            Chưa lưu
           </span>
         )}
       </div>

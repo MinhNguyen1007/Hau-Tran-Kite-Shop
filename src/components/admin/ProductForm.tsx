@@ -11,7 +11,7 @@ import type { Product } from '@/lib/products'
 import { Field, inputClass } from './FormField'
 import { ImageUploader } from './ImageUploader'
 import { slugify } from './slugify'
-import { UnsavedGuard } from './UnsavedGuard'
+import { UnsavedGuard } from '../ui/UnsavedGuard'
 
 export function ProductForm({
   product,

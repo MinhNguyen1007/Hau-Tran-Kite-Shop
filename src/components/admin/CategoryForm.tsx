@@ -9,7 +9,7 @@ import type { Category } from '@/lib/categories'
 import { Field, inputClass } from './FormField'
 import { ImageUploader } from './ImageUploader'
 import { slugify } from './slugify'
-import { UnsavedGuard } from './UnsavedGuard'
+import { UnsavedGuard } from '../ui/UnsavedGuard'
 
 export function CategoryForm({ category }: { category?: Category }) {
   const router = useRouter()
