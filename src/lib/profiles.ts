@@ -2,6 +2,7 @@
 // (select: chính mình hoặc owner; update: chỉ owner và không đụng được dòng owner), nhưng
 // người gọi VẪN phải requireOwner() trước, kiểm hai lớp như mọi route admin khác.
 import type { Role } from './roles'
+import { AVATAR_BUCKET } from './storage'
 import { createServerSupabase } from './supabase'
 
 export type ManagedProfile = {
@@ -172,6 +173,14 @@ export async function updateMyProfile(input: MyProfileInput): Promise<MyProfile 
   } = await supabase.auth.getUser()
   if (!user) return null
 
+  // Đọc path CŨ trước khi ghi đè: sau update thì không còn chỗ nào biết file nào vừa bị bỏ lại.
+  const { data: current } = await supabase
+    .from('profiles')
+    .select('avatar_path')
+    .eq('id', user.id)
+    .maybeSingle()
+  const previousAvatar = (current as { avatar_path: string | null } | null)?.avatar_path ?? null
+
   const { data, error } = await supabase
     .from('profiles')
     .update({
@@ -184,8 +193,22 @@ export async function updateMyProfile(input: MyProfileInput): Promise<MyProfile 
     .select(MY_COLUMNS)
     .maybeSingle()
   if (error) throw error
+  if (!data) return null
 
-  return data ? mapMyProfile(data as MyProfileRow) : null
+  const profile = mapMyProfile(data as MyProfileRow)
+
+  // Dọn ảnh cũ CHỈ khi dòng hồ sơ đã ghi xong. Xoá trước mà update hỏng là hồ sơ trỏ vào một
+  // file không còn tồn tại. Đi bằng session của chính khách nên RLS avatars_objects_delete_self
+  // vẫn là lớp chặn cuối: path ngoài thư mục '<uid>/' thì xoá không được.
+  if (previousAvatar && previousAvatar !== profile.avatarPath) {
+    try {
+      await supabase.storage.from(AVATAR_BUCKET).remove([previousAvatar])
+    } catch {
+      // Hồ sơ đã lưu rồi; một file thừa trong bucket không đáng để trả lỗi về cho khách.
+    }
+  }
+
+  return profile
 }
 
 // Chỉ nhận 'user' | 'admin': vai trò owner KHÔNG bao giờ gán qua đường này. Muốn đổi chủ
