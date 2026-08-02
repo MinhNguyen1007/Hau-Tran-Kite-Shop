@@ -55,15 +55,21 @@ export default async function ProductDetailPage({
         <ProductGallery paths={gallery} name={product.name} />
 
         <div className="flex flex-col gap-5">
-          {product.categoryName && (
-            <span className="w-fit rounded-full bg-brand-50 px-3 py-1 text-xs font-bold text-ink-950">
-              {product.categoryName}
-            </span>
-          )}
+          {/* Nhãn danh mục dùng ĐÚNG kiểu của ProductCard (mono, in hoa, stone-400) để lưới và
+              trang chi tiết đọc ra cùng một hệ. Trước đây là viên `bg-brand-50` — chỗ cam THỨ BA
+              trên storefront, trong khi quy ước chỉ chừa cam cho nút tim và badge yêu thích.
+              Đừng đổi về viên nền `stone-100`: nền trang CŨNG là stone-100, viên sẽ tàng hình. */}
+          <div className="flex flex-col gap-1.5">
+            {product.categoryName && (
+              <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-stone-400">
+                {product.categoryName}
+              </p>
+            )}
 
-          <h1 className="text-3xl font-extrabold tracking-tight text-ink-900">
-            {product.name}
-          </h1>
+            <h1 className="text-3xl font-extrabold tracking-tight text-ink-900">
+              {product.name}
+            </h1>
+          </div>
 
           <p className="text-3xl font-bold tracking-tight text-ink-950">
             {price ?? (
